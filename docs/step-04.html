@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Step 04: Build · Working with Claude Code</title>
+
+<!-- Fonts: Archivo (display) + Public Sans (sans) + JetBrains Mono (mono) -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Public+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<!-- Shared design system. DO NOT redefine tokens inline. Every step
+     page carries its topbar and hero layout in the style block
+     below; nothing else is page-local. -->
+<link rel="stylesheet" href="assets/css/workshop.css" />
+<link rel="stylesheet" href="assets/css/workshop-nav.css" />
+<link rel="stylesheet" href="assets/css/mobile-overrides.css" />
+
+<style>
+  /* ────────────────────────────────────────────────
+     Page-specific layout only. Tokens, type, and the
+     shared primitives (.spine, .circuit, .prompt-card)
+     all live in workshop.css. Grep the shared sheets
+     before defining any new class name here.
+     ──────────────────────────────────────────────── */
+
+  /* hero */
+  .hero{
+    padding: 30px 0 26px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .lede{
+    margin: 14px 0 0;
+    max-width: 60ch;
+    font-size: 18px;
+    line-height: 1.55;
+    color: var(--ink-2);
+  }
+  .lede b{ color: var(--ink); font-weight: 500; }
+
+  /* the loop section: layout only. A hairline and air between the
+     overview figure and the four moves, and the heading's own lede. */
+  .loop-section{
+    margin-top: 44px;
+    padding-top: 28px;
+    border-top: 1px solid var(--rule);
+  }
+  .loop-section h2{ margin: 0; }
+  .loop-section .lede{ margin-top: 8px; font-size: 17px; }
+
+</style>
+</head>
+<!-- data-step carries the display number read by workshop-nav.js.
+     data-lab stays "01" on every page: the workshop is one track, and
+     the value only namespaces the progress keys in localStorage. Keep
+     data-step, the <title>, the sheet-trigger, the step-sheet list and
+     the step-bar consistent with the step list on index.html. -->
+<body data-step="04" data-lab="01" data-screen-label="04 Build">
+
+<div class="frame">
+
+  <!-- STEP SHEET: one row per step, all four, on every page. One markup,
+       two presentations: workshop-nav.css docks it as the schedule rail
+       on the left at 940px and up, and renders it as the bottom-sheet
+       dialog below that. It is the FIRST child of .frame so the rail can
+       own grid column 1. The current row gets is-current + aria-current;
+       row titles match index.html verbatim. The closing .step-sheet__mark
+       bookend and the .step-sheet__break row are not .step-sheet__item
+       rows, so workshop-nav.js ignores them. -->
+  <div class="step-sheet" id="step-sheet" hidden role="dialog" aria-modal="true" aria-labelledby="step-sheet-title">
+    <div class="step-sheet__backdrop" data-close aria-hidden="true"></div>
+    <div class="step-sheet__panel">
+      <button class="step-sheet__handle" type="button" data-close aria-label="Close menu"></button>
+      <header class="step-sheet__head">
+        <h2 id="step-sheet-title" class="step-sheet__title">All steps</h2>
+        <span class="step-sheet__sub">Working with Claude Code · <span data-progress>0 of 4 visited</span></span>
+      </header>
+      <ol class="step-sheet__list">
+        <li><a class="step-sheet__item" href="step-01.html" data-step="01" data-min="5"><span class="step-sheet__n">01</span><span class="step-sheet__t">How Claude works</span><span class="step-sheet__d">5</span><span class="step-sheet__state" aria-hidden="true"></span></a></li>
+        <li><a class="step-sheet__item" href="step-02.html" data-step="02" data-min="5"><span class="step-sheet__n">02</span><span class="step-sheet__t">Setup</span><span class="step-sheet__d">5</span><span class="step-sheet__state" aria-hidden="true"></span></a></li>
+        <li><a class="step-sheet__item" href="step-03.html" data-step="03" data-min="5"><span class="step-sheet__n">03</span><span class="step-sheet__t">Context window</span><span class="step-sheet__d">5</span><span class="step-sheet__state" aria-hidden="true"></span></a></li>
+        <li><a class="step-sheet__break" href="break.html" data-min="5"><span class="step-sheet__n" aria-hidden="true"></span><span class="step-sheet__t">Break &middot; next steps</span><span class="step-sheet__d">5</span></a></li>
+        <li><a class="step-sheet__item is-current" href="step-04.html" data-step="04" data-min="" aria-current="step"><span class="step-sheet__n">04</span><span class="step-sheet__t">Build</span><span class="step-sheet__d" aria-hidden="true"></span><span class="step-sheet__state" aria-hidden="true"></span></a></li>
+        <li class="step-sheet__mark"><span class="step-sheet__n" aria-hidden="true"></span><span class="step-sheet__t">Demos and wrap-up</span><span class="step-sheet__d">15</span></li>
+      </ol>
+      <p class="step-sheet__sum" data-sum></p>
+      <a class="step-sheet__ref" href="cheat-sheet.html">
+        <span class="step-sheet__ref-t">Cheat sheet</span>
+        <span class="step-sheet__ref-d">slash commands and shortcuts</span>
+      </a>
+      <a class="step-sheet__ref" href="index.html#harness">
+        <span class="step-sheet__ref-t">Harness customisation</span>
+        <span class="step-sheet__ref-d">skills, subagents, hooks, MCP</span>
+      </a>
+      <button class="step-sheet__close" type="button" data-close>Close menu</button>
+    </div>
+  </div>
+
+  <!-- TOPBAR: brand is the only home affordance. Step pages carry the
+       workshop name, no year (the index and reference pages add the
+       year). Do not re-style per page. -->
+  <div class="topbar">
+    <a class="brand" href="index.html">
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3 11 L12 3 L21 11 V21 H3 Z"/><path d="M9 21 V14 H15 V21"/></svg>
+      <span>Working with Claude Code</span>
+    </a>
+    <button class="sheet-trigger" type="button" aria-haspopup="dialog" aria-controls="step-sheet" aria-expanded="false" aria-label="Open step menu">
+      <span class="sheet-trigger__count"><b>04</b>/4</span>
+      <span class="sheet-trigger__divider" aria-hidden="true"></span>
+      <span class="sheet-trigger__title">Build</span>
+      <span class="sheet-trigger__chev" aria-hidden="true">▾</span>
+    </button>
+    <!-- Desktop-only position label. CSS shows it exactly when the
+         rail is docked and the trigger is hidden. -->
+    <span class="topbar__pos">04 / 4 · Build</span>
+  </div>
+
+  <!-- HERO: eyebrow + H1 + lede. No meta-chip: the build has no
+       estimate, it takes the rest of the afternoon. The lede is the
+       workflow in one sentence; the figure under the hero draws it. -->
+  <header class="hero">
+    <p class="eyebrow"><span class="num">04</span> &nbsp;·&nbsp; Build</p>
+    <h1>Build your own idea.</h1>
+    <p class="lede">
+      One workflow for the afternoon: interview first, the plan
+      persisted in the repo, a critique of that plan, then Claude
+      verifying its own work in a browser or a simulator.
+    </p>
+  </header>
+
+  <!-- THE SPINE (workshop.css, specimen: design-system.html#spine).
+       The workflow as one line: interview, the plan in the repo,
+       critique, then the ring, where Claude builds, runs what it
+       built, looks and fixes until it works. The dots, the line, the
+       arrowheads and the tick are decorative and aria-hidden; the
+       figcaption is the text alternative. -->
+  <figure class="spine" id="spine">
+    <ol class="spine__track">
+
+      <li class="spine__node">
+        <span class="spine__dot" aria-hidden="true"></span>
+        <span class="spine__name">Interview</span>
+        <span class="spine__text">Claude interviews you first, before it writes anything.</span>
+      </li>
+
+      <li class="spine__node">
+        <span class="spine__dot" aria-hidden="true"></span>
+        <span class="spine__name">Plan in the repo</span>
+        <span class="spine__text">The plan is a file, committed to the repo. Not a chat message.</span>
+      </li>
+
+      <li class="spine__node">
+        <span class="spine__dot" aria-hidden="true"></span>
+        <span class="spine__name">Critique</span>
+        <span class="spine__text">Read the plan critically and fix it before anything is built.</span>
+      </li>
+
+      <li class="spine__node spine__node--loop">
+        <span class="spine__dot" aria-hidden="true"></span>
+        <span class="spine__ring">
+          <span class="spine__verb">Verify</span>
+          <span class="spine__step spine__step--build">build</span>
+          <span class="spine__step spine__step--run">run it</span>
+          <span class="spine__step spine__step--look">look</span>
+          <span class="spine__step spine__step--fix">fix</span>
+          <i aria-hidden="true"></i><i aria-hidden="true"></i><i aria-hidden="true"></i><i aria-hidden="true"></i>
+        </span>
+        <span class="spine__text">You set the finish line with <code>/goal</code>, then Claude runs what it built and fixes what it sees until that check is met: in a browser through the <code>playwright-cli</code> skill, or in the Xcode simulator.</span>
+      </li>
+
+      <li class="spine__node spine__node--end">
+        <span class="spine__tick" aria-hidden="true"></span>
+        <span class="spine__name">works</span>
+      </li>
+
+    </ol>
+    <figcaption class="spine__cap"><b>Nothing is built before there is a plan: interviewed, written to the repo, critiqued.</b> Then the checking is Claude's own: you state the finish line with <code>/goal</code>, and Claude runs the result in a browser or a simulator and fixes it until a separate check says it is met.</figcaption>
+  </figure>
+
+  <!-- THE LOOP (workshop.css .circuit, specimen: design-system.html#circuit).
+       Four moves, once per work item of the plan, drawn as one closed line through four
+       stations. The shortcut is the dashed branch. Moves 1 and 3 carry
+       their prompts in the system's .prompt-card, copy buttons wired by
+       workshop-nav.js. The drawn pieces are aria-hidden; the figcaption
+       is the text alternative. -->
+  <section class="loop-section" aria-labelledby="loop-title">
+    <h2 id="loop-title">The loop, four moves.</h2>
+    <p class="lede">Run it once per work item of your plan. Each move names what you press or type.</p>
+
+    <figure class="circuit" id="circuit">
+      <div class="circuit__track" role="list">
+        <span class="circuit__loop" aria-hidden="true"><span class="circuit__back">next work item</span></span>
+        <span class="circuit__branch" aria-hidden="true"></span>
+        <span class="circuit__in" aria-hidden="true"></span>
+        <span class="circuit__up" aria-hidden="true"></span>
+
+        <span class="circuit__rule"><b>Can you describe the change in one sentence?</b> Then skip 1 and 2 and start at 3, in auto mode.</span>
+
+        <div class="circuit__move circuit__move--prompt" role="listitem">
+          <span class="circuit__n">1</span>
+          <span class="circuit__head">Interview in plan mode</span>
+          <span class="circuit__mech">
+            <span class="circuit__keys"><kbd>Shift</kbd><span class="plus">+</span><kbd>Tab</kbd></span>
+            <span class="circuit__note">plan mode, then this one prompt</span>
+          </span>
+          <div class="prompt-card circuit__card">
+            <div class="pc-head">
+              <div class="meta">
+                <span class="badge"><i></i>THE ONE PROMPT</span>
+                <span data-count>… lines · … chars</span>
+              </div>
+              <button class="copy-btn" aria-label="Copy prompt">
+                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <rect x="4.5" y="4.5" width="8" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="M2.5 11V3.5A1.5 1.5 0 0 1 4 2h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <span class="label">Copy prompt</span>
+              </button>
+            </div>
+            <pre class="pc-body" data-prompt aria-label="Interview prompt">I want to build &lt;your idea&gt;. Interview me one question at a time
+with the AskUserQuestion tool until you could write an implementation
+plan for a coding agent without guessing. Split the work into work
+items, called WI- and a number, starting at WI-1. Make each work item a
+thin vertical slice, small enough for a subagent to execute.
+Then write docs/plan.md with the files, the order, and how each work
+item is proven. No code.</pre>
+            <div class="pc-foot">
+              <span class="arrow">▲</span>
+              <span>Replace <code>&lt;your idea&gt;</code> with what you are building, then paste.</span>
+            </div>
+          </div>
+          <span class="circuit__body">Answer with letters and numbers. "You decide" is allowed only on things you would not mind being surprised by.</span>
+        </div>
+
+        <div class="circuit__move" role="listitem">
+          <span class="circuit__n">2</span>
+          <span class="circuit__head">Critique the plan yourself</span>
+          <span class="circuit__mech">
+            <span class="circuit__keys"><kbd>Ctrl</kbd><span class="plus">+</span><kbd>G</kbd></span>
+            <span class="circuit__note">opens the plan in your editor</span>
+          </span>
+          <span class="circuit__body">Read it. Send it back once with what is wrong. You are the critic here, not a subagent: plan-review subagents were measured and found no gain. Approve with <b>Yes, and use auto mode</b>. That approval does not start the build: the prompt in move 1 asked for no code, so Claude writes <code>docs/plan.md</code> and stops. Auto mode is the edit mode for the rest of the session.</span>
+        </div>
+
+        <div class="circuit__move circuit__move--prompt" role="listitem">
+          <span class="circuit__n">3</span>
+          <span class="circuit__head">Set the finish line, then look</span>
+          <span class="circuit__mech">
+            <span class="circuit__cmd"><i>›</i>/goal</span>
+            <span class="circuit__note">one work item of the plan, then this prompt</span>
+          </span>
+          <div class="prompt-card circuit__card">
+            <div class="pc-head">
+              <div class="meta">
+                <span class="badge"><i></i>THE GOAL</span>
+                <span data-count>… lines · … chars</span>
+              </div>
+              <button class="copy-btn" aria-label="Copy goal">
+                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <rect x="4.5" y="4.5" width="8" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="M2.5 11V3.5A1.5 1.5 0 0 1 4 2h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <span class="label">Copy prompt</span>
+              </button>
+            </div>
+            <pre class="pc-body" data-prompt aria-label="Goal prompt">/goal WI-1 of docs/plan.md is built and its proof passed: run the
+check the plan names for this work item and show the output, for example the
+test command exiting 0 or a playwright-cli screenshot of the screen.
+No file under tests/ changes. Stop after 15 turns.</pre>
+            <div class="pc-foot">
+              <span class="arrow">▲</span>
+              <span>Paste it as it is for work item 1. Next time round, change the work item number.</span>
+            </div>
+          </div>
+          <span class="circuit__body">The plan ends every work item with how it is proven. This move hands that proof to Claude as the goal. Claude builds, runs the check and fixes until a second, smaller model reading the session agrees the goal is met, or the turn cap stops it. When it stops, look at the proof yourself: the command and its output, or the screenshot. "Tests pass" without the output is not evidence.</span>
+        </div>
+
+        <div class="circuit__move" role="listitem">
+          <span class="circuit__n">4</span>
+          <span class="circuit__head">Commit, clear, then the next work item</span>
+          <span class="circuit__mech">
+            <span class="circuit__cmd"><i>›</i>/clear</span>
+            <span class="circuit__note">next work item, back to 3</span>
+          </span>
+          <span class="circuit__body">Commit the work yourself, with a message that starts with the work item number. Then <code>/clear</code>: work item 2 starts with an empty context window, and a new session begins with the last commits in view. That log is the record of what was built. <code>CLAUDE.md</code> is for what to do differently: when Claude gets the same thing wrong twice, one line there, nothing else today. Paste the move 3 prompt again with the work item number changed, and keep going until the plan is done.</span>
+        </div>
+      </div>
+      <figcaption class="circuit__cap">One work item of the plan per loop: build it, look at the proof, commit it with the work item number, then clear and paste move 3 again with the next work item number. Back to 1 only for a different piece of work. A change you can describe in one sentence starts at 3.</figcaption>
+    </figure>
+  </section>
+
+  <!-- FOOTER -->
+  <p class="footer-help"><b>Stuck?</b> Raise a hand, a facilitator will help.</p>
+
+</div>
+
+<!-- STEP BAR: prev/next labelled with display numbers, plus progress
+     count and bar. The last step's next points at index.html with
+     step-bar__btn--end. -->
+<nav class="step-bar" aria-label="Step navigation">
+  <a class="step-bar__btn step-bar__btn--prev" href="break.html" aria-label="Previous: the break">
+    <span class="step-bar__icon" aria-hidden="true">←</span>
+    <span class="step-bar__label">
+      <span class="step-bar__dir">Previous</span>
+      <span class="step-bar__where">Break · next steps</span>
+    </span>
+  </a>
+
+  <div class="step-bar__progress" aria-hidden="true">
+    <span class="step-bar__count">Step <b>4</b>/4</span>
+    <span class="step-bar__bar"><span style="width: 100%;"></span></span>
+  </div>
+
+  <a class="step-bar__btn step-bar__btn--next step-bar__btn--end" href="index.html" aria-label="Back to workshop index">
+    <span class="step-bar__label">
+      <span class="step-bar__dir">Done</span>
+      <span class="step-bar__where">Index</span>
+    </span>
+    <span class="step-bar__icon" aria-hidden="true">→</span>
+  </a>
+</nav>
+
+<script src="assets/js/workshop-nav.js"></script>
+</body>
+</html>

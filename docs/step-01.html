@@ -1,0 +1,817 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Step 01: How Claude works · Working with Claude Code</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Public+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+          rel="stylesheet"/>
+    <link rel="stylesheet" href="assets/css/workshop.css"/>
+    <link rel="stylesheet" href="assets/css/workshop-nav.css"/>
+    <link rel="stylesheet" href="assets/css/mobile-overrides.css"/>
+
+    <style>
+        /* topbar and brand: no page-local rules. workshop-nav.css owns
+           the component, including the .topbar__pos label that replaces
+           the sheet-trigger once the rail is docked. */
+
+        /* hero */
+        .hero {
+            padding: 30px 0 26px;
+            border-bottom: 1px solid var(--rule);
+        }
+
+        .lede {
+            margin: 14px 0 0;
+            max-width: 60ch;
+            font-size: 18px;
+            line-height: 1.55;
+            color: var(--ink-2);
+        }
+
+        .lede b {
+            color: var(--ink);
+            font-weight: 500;
+        }
+
+        /* source citation: system pattern from step-03/04 */
+        .source {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            max-width: 100%;
+            overflow-wrap: anywhere;
+            margin: 22px 0 0;
+            padding: 8px 14px 8px 12px;
+            background: var(--bg-2);
+            border: 1px solid var(--rule);
+            border-radius: var(--radius);
+            font-family: "JetBrains Mono", ui-monospace, monospace;
+            font-size: 13px;
+        }
+
+        .source .source-label {
+            color: var(--ink-2);
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            font-size: 11.5px;
+            padding-right: 12px;
+            border-right: 1px solid var(--rule-strong);
+        }
+
+        .source a {
+            color: var(--ink);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .source a:hover {
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        .source .ext {
+            color: var(--ink-3);
+        }
+
+        /* section heading */
+        .section-head {
+            margin: 44px 0 18px;
+            display: flex;
+            align-items: baseline;
+            gap: 16px;
+        }
+
+        /* size, weight and tracking come from workshop.css (Archivo
+           22px/800). Only the margin is page layout. */
+        .section-head h2 {
+            margin: 0;
+        }
+
+        /* the section letter, in the eyebrow role: sentence case,
+           no tracking, no mono */
+        .section-head .num {
+            font-family: "Public Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--ink-2);
+        }
+
+        .section-lede {
+            max-width: 64ch;
+            font-size: 17px;
+            line-height: 1.55;
+            color: var(--ink-2);
+            margin: 0 0 36px;
+        }
+
+        /* ─────────  agent anatomy figure  ───────── */
+        .agent-fig {
+            margin: 8px 0 0;
+            overflow-x: auto;
+        }
+
+        .agent-fig svg {
+            display: block;
+            width: 100%;
+            /* 620, not 640 or 720: the narrowest docked reading column
+               is 628px, at a 900px viewport where the rail first appears.
+               A 720px floor hid the harness label in overflow; 640 cut
+               the panel's right edge. Below 620 the figure scrolls in
+               .agent-fig. */
+            min-width: 620px;
+            max-width: 960px;
+            height: auto;
+            /* flush left: shares its left edge with the caption below it
+               and with the loop diagram in section C */
+            margin: 0;
+        }
+
+        /* ─────────  loop diagram  ───────── */
+        .loop-stage {
+            background: var(--paper);
+            border: 1px solid var(--rule);
+            border-radius: var(--radius-lg);
+            padding: 36px 20px 44px;
+            overflow: hidden;
+        }
+
+        .loop-flow {
+            display: grid;
+            grid-template-columns: auto 20px 1fr 20px auto;
+            align-items: center;
+            gap: 0 8px;
+        }
+
+        /* generic block */
+        .lp {
+            background: var(--bg-2);
+            border: 1px solid var(--rule-strong);
+            border-radius: var(--radius);
+            padding: 14px 12px;
+            text-align: center;
+            font-size: 15px;
+            color: var(--ink);
+            line-height: 1.3;
+            min-height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lp--prompt {
+            min-width: 110px;
+        }
+
+        .lp--done {
+            background: var(--accent-soft);
+            border-color: var(--accent);
+            color: var(--ink);
+            font-weight: 500;
+            min-width: 90px;
+        }
+
+        /* arrows in the main row */
+        .lp-arrow {
+            color: var(--ink-2);
+            font-size: 20px;
+            text-align: center;
+            line-height: 1;
+        }
+
+        /* the loop container (middle column) */
+        .loop-container {
+            position: relative;
+            background: var(--bg);
+            border: 1px solid var(--rule-strong);
+            border-radius: var(--radius-lg);
+            padding: 30px 16px 22px;
+        }
+
+        .loop-container .lbl {
+            position: absolute;
+            top: -10px;
+            left: 18px;
+            background: var(--paper);
+            padding: 0 10px;
+            font-family: "JetBrains Mono", ui-monospace, monospace;
+            font-size: 11.5px;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            color: var(--ink-2);
+        }
+
+        .loop-inner {
+            display: grid;
+            grid-template-columns: 1fr 20px 1fr 20px 1fr;
+            align-items: center;
+            gap: 0 8px;
+        }
+
+        .lp--step {
+            background: var(--paper);
+            border-color: var(--rule);
+        }
+
+        /* loop-back arrow under the row.
+           The up arm aligns with Gather's horizontal center, the down arm
+           with Verify's, so it reads as "Verify → back to Gather" instead of
+           a generic U-turn. Columns are 1fr 20px 1fr 20px 1fr with an 8px
+           gap, so the fixed tracks total 72px and each step's center sits
+           at calc((100% - 72px) / 6) in from its edge. */
+        .loop-back {
+            position: relative;
+            height: 26px;
+            margin-top: 12px;
+        }
+
+        .loop-back .line {
+            position: absolute;
+            left: calc((100% - 72px) / 6);
+            right: calc((100% - 72px) / 6);
+            top: 50%;
+            height: 1px;
+            background: var(--ink-3);
+        }
+
+        .loop-back .down {
+            position: absolute;
+            right: calc((100% - 72px) / 6);
+            top: 0;
+            bottom: 50%;
+            width: 1px;
+            background: var(--ink-3);
+        }
+
+        .loop-back .up {
+            position: absolute;
+            left: calc((100% - 72px) / 6);
+            top: 0;
+            bottom: 50%;
+            width: 1px;
+            background: var(--ink-3);
+        }
+
+        .loop-back .up::before {
+            /* arrowhead pointing up, sitting just below Gather's bottom edge */
+            content: "";
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            width: 0;
+            height: 0;
+            border: 4px solid transparent;
+            border-bottom-color: var(--ink-3);
+            border-top: 0;
+        }
+
+        .loop-back .caption {
+            position: absolute;
+            right: 50%;
+            bottom: -22px;
+            transform: translateX(50%);
+            font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+            /* 12px on --ink-2, the same trade the rail minutes make:
+               --ink-3 at this size fails AA and this caption explains
+               the loop-back arm rather than decorating it. */
+            font-size: 12px;
+            color: var(--ink-2);
+            white-space: nowrap;
+            background: var(--paper);
+            padding: 0 6px;
+        }
+
+        /* interrupt arrow + box below the loop */
+        .interrupt-rail {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 26px;
+        }
+
+        .interrupt-rail .arr-up {
+            width: 2px;
+            height: 28px;
+            background: var(--accent-2);
+            position: relative;
+        }
+
+        .interrupt-rail .arr-up::after {
+            content: "";
+            position: absolute;
+            top: -1px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border: 6px solid transparent;
+            border-bottom-color: var(--accent-2);
+            border-top: 0;
+        }
+
+        .interrupt-box {
+            background: var(--accent-2-soft);
+            border: 1px solid var(--accent-2);
+            border-radius: var(--radius);
+            padding: 14px 22px;
+            color: var(--ink);
+            font-size: 15px;
+            line-height: 1.35;
+            text-align: center;
+            max-width: 420px;
+        }
+
+        .interrupt-box .who {
+            display: block;
+            font-family: "JetBrains Mono", ui-monospace, monospace;
+            font-size: 11.5px;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            color: var(--accent-2);
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .interrupt-box .what b {
+            font-weight: 600;
+        }
+
+        /* ─────────  loop caption  ───────── */
+        .loop-caption {
+            margin: 16px 0 0;
+            max-width: 64ch;
+            font-size: 17px;
+            line-height: 1.55;
+            color: var(--ink-2);
+        }
+
+
+        /* ─────────  break-ins strip  ───────── */
+        .breakins {
+            display: grid;
+            gap: 14px;
+            max-width: 78ch;
+        }
+
+        .breakin {
+            display: grid;
+            grid-template-columns: 132px 1fr;
+            gap: 18px;
+            background: var(--paper);
+            border: 1px solid var(--rule);
+            border-radius: var(--radius-lg);
+            padding: 18px 22px;
+            align-items: center;
+        }
+
+        .breakin .keys {
+            margin: 0;
+            white-space: nowrap;
+        }
+
+        .breakin p {
+            margin: 0;
+            font-size: 17px;
+            line-height: 1.5;
+            color: var(--ink-2);
+        }
+
+        /* inline mono chip; mirrors the .challenge code treatment in
+           workshop.css, which is scoped and doesn't reach this section */
+        .breakin code {
+            font-family: "JetBrains Mono", ui-monospace, monospace;
+            font-size: 0.9em;
+            background: var(--bg-2);
+            border: 1px solid var(--rule);
+            padding: 1px 6px;
+            border-radius: var(--radius-sm);
+            color: var(--ink);
+        }
+
+        .breakin .keys code {
+            font-size: 14px;
+        }
+
+
+        /* responsive */
+        @media (max-width: 720px) {
+            .loop-flow {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .lp-arrow {
+                transform: rotate(90deg);
+                justify-self: center;
+                width: 20px;
+            }
+
+            .loop-container {
+                padding-right: 42px;
+            }
+
+            .loop-inner {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .loop-inner .lp-arrow {
+                transform: rotate(90deg);
+                justify-self: center;
+                width: 20px;
+                margin: -2px 0;
+            }
+
+            /* On mobile the three boxes stack vertically. The loop-back becomes
+               a right-side rail: a vertical line spanning the inner column with
+               a short horizontal stub from Verify (bottom) and a horizontal
+               arrow pointing left into Gather (top). */
+            .loop-back {
+                display: block;
+                position: absolute;
+                right: 14px;
+                top: 30px; /* matches .loop-container padding-top */
+                bottom: 22px; /* matches .loop-container padding-bottom */
+                width: 14px;
+                height: auto;
+                margin: 0;
+            }
+
+            .loop-back .line {
+                /* the vertical rail spans only between the two horizontal arms,
+                   not the full inner height - keep these in sync with the
+                   `top` / `bottom` values on .up / .down below */
+                left: auto;
+                right: 0;
+                top: 34px;
+                bottom: 34px;
+                width: 1px;
+                height: auto;
+            }
+
+            .loop-back .down {
+                /* horizontal stub from Verify's right edge to the rail.
+                   Verify center sits 34.3px above the rail's bottom (half a
+                   68.6px-tall box). */
+                left: -10px;
+                right: 0;
+                top: auto;
+                bottom: 34px;
+                width: auto;
+                height: 1px;
+            }
+
+            .loop-back .up {
+                /* horizontal arrow from rail to Gather's right edge.
+                   Gather center sits 34.3px below the rail's top. */
+                left: -10px;
+                right: 0;
+                top: 34px;
+                bottom: auto;
+                width: auto;
+                height: 1px;
+            }
+
+            .loop-back .up::before {
+                /* override desktop's up-pointing arrowhead with a left-pointing
+                   one, apex at Gather's right edge */
+                top: -4px;
+                left: 0;
+                border: 4px solid transparent;
+                border-right-color: var(--ink-3);
+                border-left: 0;
+                border-bottom-color: transparent;
+            }
+
+            .loop-back .caption {
+                /* no room for the label on the rail at 360px; the loop shape
+                   carries the meaning */
+                display: none;
+            }
+
+            .loop-container {
+                position: relative;
+            }
+
+            .breakin {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body data-step="01" data-lab="01" data-screen-label="01 How Claude works">
+
+<div class="frame">
+
+  <!-- STEP SHEET: one row per step, all four, on every page. One markup,
+       two presentations: workshop-nav.css docks it as the schedule rail
+       on the left at 940px and up, and renders it as the bottom-sheet
+       dialog below that. It is the FIRST child of .frame so the rail can
+       own grid column 1. The current row gets is-current + aria-current;
+       row titles match index.html verbatim. The closing .step-sheet__mark
+       bookend and the .step-sheet__break row are not .step-sheet__item
+       rows, so workshop-nav.js ignores them. -->
+  <div class="step-sheet" id="step-sheet" hidden role="dialog" aria-modal="true" aria-labelledby="step-sheet-title">
+    <div class="step-sheet__backdrop" data-close aria-hidden="true"></div>
+    <div class="step-sheet__panel">
+      <button class="step-sheet__handle" type="button" data-close aria-label="Close menu"></button>
+      <header class="step-sheet__head">
+        <h2 id="step-sheet-title" class="step-sheet__title">All steps</h2>
+        <span class="step-sheet__sub">Working with Claude Code · <span data-progress>0 of 4 visited</span></span>
+      </header>
+      <ol class="step-sheet__list">
+        <li><a class="step-sheet__item is-current" href="step-01.html" data-step="01" data-min="5" aria-current="step"><span class="step-sheet__n">01</span><span class="step-sheet__t">How Claude works</span><span class="step-sheet__d">5</span><span class="step-sheet__state" aria-hidden="true"></span></a></li>
+        <li><a class="step-sheet__item" href="step-02.html" data-step="02" data-min="5"><span class="step-sheet__n">02</span><span class="step-sheet__t">Setup</span><span class="step-sheet__d">5</span><span class="step-sheet__state" aria-hidden="true"></span></a></li>
+        <li><a class="step-sheet__item" href="step-03.html" data-step="03" data-min="5"><span class="step-sheet__n">03</span><span class="step-sheet__t">Context window</span><span class="step-sheet__d">5</span><span class="step-sheet__state" aria-hidden="true"></span></a></li>
+        <li><a class="step-sheet__break" href="break.html" data-min="5"><span class="step-sheet__n" aria-hidden="true"></span><span class="step-sheet__t">Break &middot; next steps</span><span class="step-sheet__d">5</span></a></li>
+        <li><a class="step-sheet__item" href="step-04.html" data-step="04" data-min=""><span class="step-sheet__n">04</span><span class="step-sheet__t">Build</span><span class="step-sheet__d" aria-hidden="true"></span><span class="step-sheet__state" aria-hidden="true"></span></a></li>
+        <li class="step-sheet__mark"><span class="step-sheet__n" aria-hidden="true"></span><span class="step-sheet__t">Demos and wrap-up</span><span class="step-sheet__d">15</span></li>
+      </ol>
+      <p class="step-sheet__sum" data-sum></p>
+      <a class="step-sheet__ref" href="cheat-sheet.html">
+        <span class="step-sheet__ref-t">Cheat sheet</span>
+        <span class="step-sheet__ref-d">slash commands and shortcuts</span>
+      </a>
+      <a class="step-sheet__ref" href="index.html#harness">
+        <span class="step-sheet__ref-t">Harness customisation</span>
+        <span class="step-sheet__ref-d">skills, subagents, hooks, MCP</span>
+      </a>
+      <button class="step-sheet__close" type="button" data-close>Close menu</button>
+    </div>
+  </div>
+
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+        <a class="brand" href="index.html">
+            <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
+                 stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">
+                <path d="M3 11 L12 3 L21 11 V21 H3 Z"/>
+                <path d="M9 21 V14 H15 V21"/>
+            </svg>
+            <span>Working with Claude Code</span>
+        </a>
+        <button class="sheet-trigger" type="button" aria-haspopup="dialog" aria-controls="step-sheet" aria-expanded="false" aria-label="Open step menu">
+      <span class="sheet-trigger__count"><b>01</b>/4</span>
+      <span class="sheet-trigger__divider" aria-hidden="true"></span>
+      <span class="sheet-trigger__title">How Claude works</span>
+      <span class="sheet-trigger__chev" aria-hidden="true">▾</span>
+    </button>
+        <!-- Desktop-only position label. CSS shows it exactly when the
+             rail is docked and the trigger is hidden. -->
+        <span class="topbar__pos">01 / 4 · How Claude works</span>
+    </div>
+
+    <!-- HERO -->
+    <header class="hero">
+        <p class="eyebrow"><span class="num">01</span> &nbsp;·&nbsp; How Claude works</p>
+        <h1>Gather, act, verify. Repeat.</h1>
+        <p class="lede">
+            A short read on the cycle Claude Code runs on every prompt.
+        </p>
+        <div class="meta-chip">
+            <span>~5 min</span>
+            <span>·</span>
+            <span>Reading only, no typing yet</span>
+        </div>
+        <p class="source">
+            <span class="source-label">Source</span>
+            <a href="https://anthropic.skilljar.com/claude-code-101" target="_blank" rel="noopener">
+                anthropic.skilljar.com/claude-code-101
+                <span class="ext" aria-hidden="true">↗</span>
+            </a>
+        </p>
+    </header>
+
+    <!-- ═══ A. EVERY AGENT ═══ -->
+    <section>
+        <div class="section-head">
+            <span class="num">A</span>
+            <h2>What is agentic AI?</h2>
+        </div>
+        <p class="section-lede">
+            In Laurence Moroney's definition, agentic AI is four steps in a loop:
+        </p>
+
+        <blockquote class="source-quote">
+            <p>"The first of these steps is to understand intent. [...] The second
+                part then is planning. [...] Once it's then figured out that plan, then
+                it uses the tools to get to a result. [...] the fourth and final step
+                is to reflect on that result. [...] Did we meet the intent? Yes or no?
+                If we didn't, then go back to that loop."</p>
+            <footer class="source-quote__attr"><span class="lbl">Source</span>
+                <a href="https://www.youtube.com/watch?v=AuZoDsNmG_s&amp;t=3727s" target="_blank" rel="noopener">L.
+                    Moroney (guest), Stanford CS230 Autumn 2025, Lecture 9, at 1:02:07</a>
+            </footer>
+        </blockquote>
+    </section>
+
+    <!-- ═══ B. WHAT RUNS IT ═══ -->
+    <section>
+        <div class="section-head">
+            <span class="num">B</span>
+            <h2>What is a coding agent?</h2>
+        </div>
+        <p class="section-lede">
+            A coding agent has two components. The <b>model</b> reasons and decides
+            the next step. The <b>harness</b>, Claude Code here, wraps it with
+            tools, permissions, context, and an execution environment, and runs the
+            loop between them. The loop is what makes the pair an agent; your
+            prompt is what starts it. Give the harness repo-shaped tools (files,
+            shell, git) and it's a coding agent.
+        </p>
+
+        <figure class="agent-fig"
+                aria-label="Diagram: the four-step agent loop running inside the harness, steered by the model">
+            <svg viewBox="0 0 920 420" role="img" aria-hidden="true">
+                <defs>
+                    <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7"
+                            orient="auto-start-reverse">
+                        <path d="M0,0 L10,5 L0,10 z" fill="var(--ink-2)"/>
+                    </marker>
+                    <marker id="ahb" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7"
+                            orient="auto-start-reverse">
+                        <path d="M0,0 L10,5 L0,10 z" fill="var(--accent-2)"/>
+                    </marker>
+                </defs>
+
+                <!-- harness container: 8..912 x 8..412 -->
+                <rect x="8" y="8" width="904" height="404" rx="18" fill="var(--bg-2)" stroke="var(--rule-strong)"
+                      stroke-width="1.5"/>
+                <text x="32" y="42" font-family="'JetBrains Mono', monospace" font-size="14" letter-spacing="2"
+                      fill="var(--ink-2)">HARNESS</text>
+                <text x="888" y="42" text-anchor="end" font-family="'JetBrains Mono', monospace" font-size="14"
+                      fill="var(--ink-2)">tools · permissions · context · execution</text>
+
+                <!-- the four steps: columns centred on 230 / 690, rows on 129 / 335 -->
+                <rect x="134" y="100" width="192" height="58" rx="10" fill="var(--bg)" stroke="var(--rule-strong)"
+                      stroke-width="1.5"/>
+                <text x="230" y="135" text-anchor="middle" font-size="16" font-weight="600" fill="var(--ink)">1 · Understand intent</text>
+
+                <rect x="594" y="100" width="192" height="58" rx="10" fill="var(--bg)" stroke="var(--rule-strong)"
+                      stroke-width="1.5"/>
+                <text x="690" y="135" text-anchor="middle" font-size="16" font-weight="600" fill="var(--ink)">2 · Plan</text>
+
+                <rect x="594" y="306" width="192" height="58" rx="10" fill="var(--bg)" stroke="var(--rule-strong)"
+                      stroke-width="1.5"/>
+                <text x="690" y="341" text-anchor="middle" font-size="16" font-weight="600" fill="var(--ink)">3 · Act with tools</text>
+
+                <rect x="134" y="306" width="192" height="58" rx="10" fill="var(--bg)" stroke="var(--rule-strong)"
+                      stroke-width="1.5"/>
+                <text x="230" y="341" text-anchor="middle" font-size="16" font-weight="600" fill="var(--ink)">4 · Reflect</text>
+
+                <!-- the model, centred on the loop at 460,232 -->
+                <circle cx="460" cy="232" r="72" fill="var(--bg)" stroke="var(--rule-strong)" stroke-width="1.5"/>
+                <text x="460" y="218" text-anchor="middle" font-size="16" font-weight="600" fill="var(--ink)">The model</text>
+                <text x="460" y="240" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="14"
+                      fill="var(--ink-2)">reasons, decides</text>
+                <text x="460" y="258" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="14"
+                      fill="var(--ink-2)">the next step</text>
+
+                <!-- ring arrows: equal 10px stand-off at both ends -->
+                <path d="M336 129 H582" fill="none" stroke="var(--ink-2)" stroke-width="1.8" marker-end="url(#ah)"/>
+                <path d="M690 168 V294" fill="none" stroke="var(--ink-2)" stroke-width="1.8" marker-end="url(#ah)"/>
+                <path d="M584 335 H338" fill="none" stroke="var(--ink-2)" stroke-width="1.8" marker-end="url(#ah)"/>
+                <!-- the return: reflect back to intent -->
+                <path d="M230 296 V170" fill="none" stroke="var(--accent-2)" stroke-width="2.5" marker-end="url(#ahb)"/>
+                <text x="246" y="228" font-family="'JetBrains Mono', monospace" font-size="14" fill="var(--accent-2)">met the intent?</text>
+                <text x="246" y="246" font-family="'JetBrains Mono', monospace" font-size="14" fill="var(--accent-2)">if not, go again</text>
+            </svg>
+            <figcaption class="loop-caption">The harness runs the loop, the model steers it.</figcaption>
+        </figure>
+
+        <p class="source">
+            <span class="source-label">Source</span>
+            <a href="https://code.claude.com/docs/en/how-claude-code-works" target="_blank" rel="noopener">
+                code.claude.com/docs/en/how-claude-code-works
+                <span class="ext" aria-hidden="true">↗</span>
+            </a>
+        </p>
+    </section>
+
+    <!-- ═══ C. THE LOOP ═══ -->
+    <section>
+        <div class="section-head">
+            <span class="num">C</span>
+            <h2>Claude Code is a coding agent</h2>
+        </div>
+        <p class="section-lede">
+            Claude Code runs that cycle as three phases: gather context, take
+            action, verify results. Every prompt kicks it off, and Claude repeats
+            it until the result satisfies what you asked for. Planning is the
+            deciding between steps; reflect is verify, the check against your
+            prompt.
+        </p>
+
+        <div class="loop-stage">
+            <div class="loop-flow">
+                <!-- left: your prompt -->
+                <div class="lp lp--prompt">Your prompt</div>
+                <div class="lp-arrow" aria-hidden="true">→</div>
+
+                <!-- center: the loop -->
+                <div class="loop-container">
+                    <span class="lbl">Agentic Loop</span>
+                    <div class="loop-inner">
+                        <div class="lp lp--step">Gather<br/>context</div>
+                        <div class="lp-arrow" aria-hidden="true">→</div>
+                        <div class="lp lp--step">Take<br/>action</div>
+                        <div class="lp-arrow" aria-hidden="true">→</div>
+                        <div class="lp lp--step">Verify<br/>results</div>
+                    </div>
+                    <div class="loop-back" aria-hidden="true">
+                        <span class="down"></span>
+                        <span class="line"></span>
+                        <span class="up"></span>
+                        <span class="caption">not done → loop back</span>
+                    </div>
+                </div>
+
+                <div class="lp-arrow" aria-hidden="true">→</div>
+                <!-- right: done -->
+                <div class="lp lp--done">Done</div>
+            </div>
+
+            <!-- the participant's interrupt arrow + box -->
+            <div class="interrupt-rail">
+                <span class="arr-up" aria-hidden="true"></span>
+                <div class="interrupt-box">
+                    <span class="who">You</span>
+                    <span class="what">add context · <b>interrupt</b> · steer</span>
+                </div>
+            </div>
+        </div>
+
+        <p class="loop-caption">
+            Gather is reading: files, docs, command output. Act is changing: edits,
+            commands, API calls. Verify checks the result against your prompt; a miss
+            loops back with what was learned.
+        </p>
+    </section>
+
+    <!-- ═══ D. YOUR THREE BREAK-INS ═══ -->
+    <section>
+        <div class="section-head">
+            <span class="num">D</span>
+            <h2>Your interrupts</h2>
+        </div>
+        <p class="section-lede">
+            Claude streams every action to your terminal as it runs. When something
+            looks off, step in.
+        </p>
+
+        <div class="breakins">
+            <div class="breakin">
+                <p class="keys"><kbd>Esc</kbd></p>
+                <p>Interrupts the run. Tell Claude what to do instead of letting a wrong answer finish.</p>
+            </div>
+            <div class="breakin">
+                <p class="keys"><kbd>Esc</kbd> <kbd>Esc</kbd></p>
+                <p>Opens <code>/rewind</code>. Rewinding past a mistake and re-prompting with what you learned beats
+                    stacking corrections on a wrong run.</p>
+            </div>
+            <div class="breakin">
+                <p class="keys"><code>/btw</code></p>
+                <p>A side question mid-run, answered without stopping the work.</p>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- FOOTER -->
+    <p class="footer-help"><b>Stuck?</b> Raise a hand, a facilitator will help.</p>
+
+</div>
+
+<nav class="step-bar" aria-label="Step navigation">
+  <a class="step-bar__btn step-bar__btn--prev step-bar__btn--end" href="index.html" aria-label="Back to workshop index">
+    <span class="step-bar__icon" aria-hidden="true">←</span>
+    <span class="step-bar__label">
+      <span class="step-bar__dir">Back</span>
+      <span class="step-bar__where">Index</span>
+    </span>
+  </a>
+  <div class="step-bar__progress" aria-hidden="true">
+    <span class="step-bar__count">Step <b>1</b>/4</span>
+    <span class="step-bar__bar"><span style="width: 25%;"></span></span>
+  </div>
+  <a class="step-bar__btn step-bar__btn--next" href="step-02.html" aria-label="Next: Step 02 Setup">
+    <span class="step-bar__label">
+      <span class="step-bar__dir">Next</span>
+      <span class="step-bar__where"><span class="n">02</span>Setup</span>
+    </span>
+    <span class="step-bar__icon" aria-hidden="true">→</span>
+  </a>
+</nav>
+
+
+<script src="assets/js/workshop-nav.js"></script>
+</body>
+</html>

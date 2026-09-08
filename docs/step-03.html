@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Step 03: Context window · Working with Claude Code</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Public+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/css/workshop.css" />
+<link rel="stylesheet" href="assets/css/workshop-nav.css" />
+<link rel="stylesheet" href="assets/css/mobile-overrides.css" />
+
+<style>
+  /* Page-local LAYOUT only for step 03. Everything shared comes from
+     the system: .topbar / .brand / .sheet-trigger / .topbar__pos and
+     the docked step-sheet rail from workshop-nav.css; h1, h2,
+     .eyebrow, .meta-chip, .input-chip, .prompt-card and .pass-check
+     from workshop.css. No token is redefined here. */
+
+  .hero{
+    padding: 30px 0 26px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .lede{
+    margin: 14px 0 0;
+    max-width: 60ch;
+    font-size: 18px; line-height: 1.55;
+    color: var(--ink-2);
+  }
+  .lede b{ color: var(--ink); font-weight: 500; }
+  /* .eyebrow and .meta-chip come from workshop.css; do not redefine them here */
+
+  /* inline mono token */
+  .mono-chip{
+    font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 14px;
+    background: var(--bg-2);
+    border: 1px solid var(--rule);
+    padding: 1px 6px;
+    border-radius: var(--radius-sm);
+    color: var(--ink);
+  }
+
+  .section-head{
+    margin: 40px 0 20px;
+    display: flex; align-items: baseline; gap: 14px;
+  }
+  /* h2 size and face come from workshop.css (Archivo 22/800) */
+  .section-head .num{
+    font-family:"Public Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px; font-weight: 600;
+    color: var(--ink-2);
+  }
+  .section-lede{
+    max-width: 62ch;
+    font-size: 17px; line-height: 1.55;
+    color: var(--ink-2);
+    margin: 0 0 20px;
+  }
+
+  /* prompt card: the shared .prompt-card family lives in workshop.css;
+     do not redefine it here (a local fork of it once drifted). */
+  .prompt-card{ margin-bottom: 28px; }
+
+  /* expected-result terminal.
+     Everything from .term-window down sits on the dark --term-*
+     palette, which this design leaves unchanged (it is warm on
+     purpose). The few literal oklch values below are that palette's
+     own mid greys, used for the empty half of a gauge bar and for
+     the segment separators: decoration, never a value to read. */
+  .term-label{
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+    font-family:"Public Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px; font-weight: 600;
+    color: var(--ink-2);
+    margin: 0 0 10px;
+  }
+  .term-label .live{ display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .term-label .live i{
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+  }
+  .term-window{
+    background: var(--term-bg);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow:
+      0 1px 0 0 oklch(1 0 0 / 0.04) inset,
+      0 16px 34px -24px oklch(0 0 0 / 0.22);
+  }
+  .term-chrome{
+    display: flex; align-items: center; padding: 10px 14px;
+    background: var(--term-bg-2);
+    border-bottom: 1px solid oklch(1 0 0 / 0.06);
+    position: relative;
+  }
+  .term-chrome .dots{ display: flex; gap: 7px; }
+  .term-chrome .dots i{ width: 10px; height: 10px; border-radius: 50%; }
+  .term-chrome .dots i:nth-child(1){ background: oklch(0.65 0.16 30); }
+  .term-chrome .dots i:nth-child(2){ background: oklch(0.78 0.14 85); }
+  .term-chrome .dots i:nth-child(3){ background: oklch(0.72 0.14 145); }
+  .term-chrome .ttl{
+    position: absolute; left: 0; right: 0; text-align: center;
+    font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11.5px; color: var(--term-dim); pointer-events: none;
+  }
+  .term-body{
+    padding: 20px;
+    font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--term-fg);
+  }
+  .term-body .input-line{
+    border: 1px solid oklch(1 0 0 / 0.12);
+    border-radius: var(--radius-sm);
+    padding: 9px 12px;
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 20px;
+  }
+  .term-body .input-line .chev{ color: var(--term-amber); }
+  .term-body .input-line .cursor{
+    display: inline-block; width: 8px; height: 14px;
+    background: var(--term-fg);
+    transform: translateY(1px);
+    animation: blink 1.05s steps(1) infinite;
+  }
+  @keyframes blink{ 50%{ opacity: 0; } }
+
+  .sl-row{
+    display: flex; align-items: center; gap: 14px;
+    font-size: 13px;
+    /* the values are the page's whole point: term-fg, never dim */
+    color: var(--term-fg);
+    flex-wrap: wrap;
+  }
+  .sl-row .seg{ display: inline-flex; align-items: center; gap: 8px; }
+  .sl-row .sl-sep{ color: oklch(0.42 0.005 80); }
+  .sl-row .bar{ letter-spacing: 0; }
+  .sl-row .bar .empty{ color: oklch(0.42 0.005 80); }
+</style>
+</head>
+<body data-step="03" data-lab="01" data-screen-label="03 Context window">
+
+<div class="frame">
+
+  <!-- STEP SHEET: one row per step, all four, on every page. One markup,
+       two presentations: workshop-nav.css docks it as the schedule rail
+       on the left at 940px and up, and renders it as the bottom-sheet
+       dialog below that. It is the FIRST child of .frame so the rail can
+       own grid column 1. The current row gets is-current + aria-current;
+       row titles match index.html verbatim. The closing .step-sheet__mark
+       bookend and the .step-sheet__break row are not .step-sheet__item
+       rows, so workshop-nav.js ignores them. -->
+  <div class="step-sheet" id="step-sheet" hidden role="dialog" aria-modal="true" aria-labelledby="step-sheet-title">
+    <div class="step-sheet__backdrop" data-close aria-hidden="true"></div>
+    <div class="step-sheet__panel">
+      <button class="step-sheet__handle" type="button" data-close aria-label="Close menu"></button>
+      <header class="step-sheet__head">
+        <h2 id="step-sheet-title" class="step-sheet__title">All steps</h2>
+        <span class="step-sheet__sub">Working with Claude Code · <span data-progress>0 of 4 visited</span></span>
+      </header>
+      <ol class="step-sheet__list">
+        <li><a class="step-sheet__item" href="step-01.html" data-step="01" data-min="5"><span class="step-sheet__n">01</span><span class="step-sheet__t">How Claude works</span><span class="step-sheet__d">5</span><span class="step-sheet__state" aria-hidden="true"></span></a></li>
+        <li><a class="step-sheet__item" href="step-02.html" data-step="02" data-min="5"><span class="step-sheet__n">02</span><span class="step-sheet__t">Setup</span><span class="step-sheet__d">5</span><span class="step-sheet__state" aria-hidden="true"></span></a></li>
+        <li><a class="step-sheet__item is-current" href="step-03.html" data-step="03" data-min="5" aria-current="step"><span class="step-sheet__n">03</span><span class="step-sheet__t">Context window</span><span class="step-sheet__d">5</span><span class="step-sheet__state" aria-hidden="true"></span></a></li>
+        <li><a class="step-sheet__break" href="break.html" data-min="5"><span class="step-sheet__n" aria-hidden="true"></span><span class="step-sheet__t">Break &middot; next steps</span><span class="step-sheet__d">5</span></a></li>
+        <li><a class="step-sheet__item" href="step-04.html" data-step="04" data-min=""><span class="step-sheet__n">04</span><span class="step-sheet__t">Build</span><span class="step-sheet__d" aria-hidden="true"></span><span class="step-sheet__state" aria-hidden="true"></span></a></li>
+        <li class="step-sheet__mark"><span class="step-sheet__n" aria-hidden="true"></span><span class="step-sheet__t">Demos and wrap-up</span><span class="step-sheet__d">15</span></li>
+      </ol>
+      <p class="step-sheet__sum" data-sum></p>
+      <a class="step-sheet__ref" href="cheat-sheet.html">
+        <span class="step-sheet__ref-t">Cheat sheet</span>
+        <span class="step-sheet__ref-d">slash commands and shortcuts</span>
+      </a>
+      <a class="step-sheet__ref" href="index.html#harness">
+        <span class="step-sheet__ref-t">Harness customisation</span>
+        <span class="step-sheet__ref-d">skills, subagents, hooks, MCP</span>
+      </a>
+      <button class="step-sheet__close" type="button" data-close>Close menu</button>
+    </div>
+  </div>
+
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <a class="brand" href="index.html">
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3 11 L12 3 L21 11 V21 H3 Z"/><path d="M9 21 V14 H15 V21"/></svg>
+      <span>Working with Claude Code</span>
+    </a>
+    <button class="sheet-trigger" type="button" aria-haspopup="dialog" aria-controls="step-sheet" aria-expanded="false" aria-label="Open step menu">
+      <span class="sheet-trigger__count"><b>03</b>/4</span>
+      <span class="sheet-trigger__divider" aria-hidden="true"></span>
+      <span class="sheet-trigger__title">Context window</span>
+      <span class="sheet-trigger__chev" aria-hidden="true">▾</span>
+    </button>
+    <!-- Desktop-only position label. CSS shows it exactly when the
+         rail is docked and the trigger is hidden. -->
+    <span class="topbar__pos">03 / 4 · Context window</span>
+  </div>
+
+  <header class="hero">
+    <p class="eyebrow"><span class="num">03</span> &nbsp;·&nbsp; Context window</p>
+    <h1>Make your context window visible.</h1>
+    <p class="lede">
+      You'll paste one spec into Claude Code. It configures a custom statusline through
+      <span class="mono-chip">/statusline</span>, so the bottom of your terminal shows how
+      full your context window is for the rest of the day.
+    </p>
+    <div class="meta-chip">
+      <span>~5 min</span>
+      <span>·</span>
+      <span>One task, one spec</span>
+    </div>
+  </header>
+
+  <!-- FRAME CALLOUT (workshop.css .callout--key): the one key callout on
+       this page, and the first thing after the hero on purpose (decided
+       2026-09-04). The page is deliberately ordered paste-then-read: the
+       prompt runs for a few minutes, and section B is what the room reads
+       while it runs. Do not reorder the sections back. -->
+  <aside class="callout callout--key">
+    <div class="callout__body">
+      <p class="callout__label"><i></i>Start here</p>
+      <h4>Paste first, read after</h4>
+      <p>Switch Claude Code to auto mode, then copy the prompt in section A and press
+      Return. You do not need to understand the prompt yet. It runs for a few minutes,
+      and section B explains what it is measuring while you wait.</p>
+    </div>
+    <div class="callout__action">
+      <span class="callout__arrow" aria-hidden="true">→</span>
+      <div class="input-chip">
+        <kbd>Shift</kbd>
+        <span class="plus">+</span>
+        <kbd>Tab</kbd>
+        <span class="kbd">until the status bar reads <span class="mono">auto mode on</span></span>
+      </div>
+    </div>
+  </aside>
+
+  <section>
+    <div class="section-head">
+      <span class="num">A</span>
+      <h2>Paste the spec</h2>
+    </div>
+    <p class="section-lede">
+      Copy the whole prompt and press Return. Claude reads the statusline docs [1], writes
+      the script, tests it at three fill levels, and then shows you what it built. Leave it
+      running and read section B.
+    </p>
+
+    <div class="prompt-card">
+      <div class="pc-head">
+        <div class="meta">
+          <span class="badge"><i></i>FULL SPEC</span>
+          <span data-count>… lines · … chars</span>
+        </div>
+        <button class="copy-btn" aria-label="Copy prompt">
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <rect x="4.5" y="4.5" width="8" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M2.5 11V3.5A1.5 1.5 0 0 1 4 2h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <span class="label">Copy prompt</span>
+        </button>
+      </div>
+      <pre class="pc-body" data-prompt aria-label="Prompt">Read https://code.claude.com/docs/en/statusline first.
+Configure my statusline via /statusline. Single line, segments separated
+by │, left to right:
+
+Model display name in [brackets]
+Context bar: ▓▓▓▓▓░░░░░ 47%. 10 chars, filled blocks = used context,
+rounded to nearest block. Color rules apply to filled blocks only; empty
+stays dim grey:
+
+&lt; 30% → green
+30%–70% → amber
+&gt; 70% → red
+
+
+Git branch (omit this segment entirely when not in a git repo)
+Session cost formatted as $0.42 (two decimals)
+
+Pull from model.display_name, context_window.used_percentage (treat null
+as 0), and cost.total_cost_usd. Use git directly for the branch.
+The context bar is the focal point. It should be the only colored
+element on the line so my eye lands on it. A glance should tell me how
+full I am, not how empty.
+After installing, verify with mocked stdin at 15%, 50%, and 85% to
+confirm the color thresholds work, then show me the final script.</pre>
+      <div class="pc-foot">
+        <span class="arrow">▲</span>
+        <span>Copy with the button above, paste into Claude, press Return.</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <span class="num">B</span>
+      <h2>What the gauge measures</h2>
+    </div>
+    <p class="section-lede">
+      Claude is working now. The number you are about to see on your status bar is how much
+      of one shared context window the session has used: the system prompt, CLAUDE.md, the
+      conversation, every tool call and every file Claude reads. On the default model that
+      window caps at one million tokens, and answer quality can degrade well before the cap
+      [2]. As a rule of thumb, keep it under 50% [3].
+    </p>
+    <p class="section-lede">
+      Two commands give the room back, and they cost you different things.
+    </p>
+
+    <figure class="two-ways">
+      <div class="two-ways__grid">
+        <div class="two-ways__side">
+          <span class="two-ways__name">/compact</span>
+          <span class="two-ways__say">/compact keep the spec and what we ruled out</span>
+          <span class="two-ways__do">Claude replaces the session with its own summary of it and carries on from there.</span>
+          <span class="two-ways__then">Compact is lossy. Whatever the summary left out is gone, and nothing tells you what that was.</span>
+        </div>
+        <div class="two-ways__side two-ways__side--this">
+          <span class="two-ways__name">/clear</span>
+          <span class="two-ways__say">/clear</span>
+          <span class="two-ways__do">The session starts empty and Claude reads what it needs back off disk.</span>
+          <span class="two-ways__then">Nothing gets paraphrased behind your back, so what comes back is the file, not a memory of it.</span>
+        </div>
+      </div>
+      <figcaption class="two-ways__cap"><b>Clear is the default between tasks.</b> Compact only where the thread itself has to survive the reset, and then give it a hint on what to keep.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <span class="num">C</span>
+      <h2>Expected result</h2>
+    </div>
+    <p class="section-lede">
+      With the spec as written, this is what lands at the bottom of your terminal. What
+      matters is that the context number is live and the bar changes colour as it climbs.
+    </p>
+
+    <div class="term-label">
+      <span>Your terminal, after the statusline is applied</span>
+      <span class="live"><i></i> live preview</span>
+    </div>
+    <div class="term-window">
+      <div class="term-chrome">
+        <div class="dots"><i></i><i></i><i></i></div>
+        <div class="ttl">workshop · claude · 96×8</div>
+      </div>
+      <div class="term-body">
+        <div class="input-line">
+          <span class="chev">›</span>
+          <span class="cursor"></span>
+        </div>
+        <div style="margin: -10px 0 18px;">
+          <span style="color: var(--term-amber);">»</span>
+          auto mode on
+        </div>
+        <div class="sl-row">
+          <span class="seg">[Opus 5]</span>
+          <span class="sl-sep" aria-hidden="true">│</span>
+          <span class="seg">
+            <span class="bar">
+              <span class="filled" style="color: var(--term-green);">▓</span><span class="empty">░░░░░░░░░</span>
+            </span>
+            <span class="pct">12%</span>
+          </span>
+          <span class="sl-sep" aria-hidden="true">│</span>
+          <span class="seg">main</span>
+          <span class="sl-sep" aria-hidden="true">│</span>
+          <span class="seg">$0.04</span>
+        </div>
+      </div>
+    </div>
+
+    <aside class="pass-check" style="margin-top: 32px;">
+      <p class="pc-label">Pass check</p>
+      <p>
+        Your statusline shows the current model, a live context-fill percentage, the branch
+        name (if it is a git repo) and the cost for the session so far.
+      </p>
+      <p class="miss">
+        Missed? Tell Claude what it did wrong and copy paste the spec again in Claude Code.
+      </p>
+      <p><b>Passed?</b> The gauge rides along for the rest of the day; when it climbs past 50%,
+      <code>/clear</code> between tasks, and <code>/compact</code> with a hint only where the
+      thread has to survive. Then the
+      break: the room talks the next steps through before the build starts.</p>
+    </aside>
+  </section>
+
+  <aside class="sources" aria-label="Sources">
+    <p class="sources-label">Sources</p>
+    <ol>
+      <li><span class="n">[1]</span><span><a href="https://code.claude.com/docs/en/statusline">code.claude.com &middot; Status line configuration</a> &middot; Anthropic <span class="when">&middot; checked 2026-09-04</span></span></li>
+      <li><span class="n">[2]</span><span><a href="https://claude.com/blog/using-claude-code-session-management-and-1m-context">claude.com &middot; Session management and 1M context</a> &middot; Anthropic <span class="when">&middot; checked 2026-09-04</span></span></li>
+      <li><span class="n">[3]</span><span><a href="https://github.com/shanraisshan/claude-code-best-practice/blob/main/tips/claude-thariq-tips-16-apr-26.md">github.com &middot; Thariq's Claude Code tips</a> &middot; shanraisshan <span class="when">&middot; checked 2026-09-04</span></span></li>
+    </ol>
+  </aside>
+
+  <!-- FOOTER -->
+  <p class="footer-help"><b>Stuck?</b> Raise a hand, a facilitator will help.</p>
+
+</div>
+
+<nav class="step-bar" aria-label="Step navigation">
+  <a class="step-bar__btn step-bar__btn--prev" href="step-02.html" aria-label="Previous: Step 02 Setup">
+    <span class="step-bar__icon" aria-hidden="true">←</span>
+    <span class="step-bar__label">
+      <span class="step-bar__dir">Previous</span>
+      <span class="step-bar__where"><span class="n">02</span>Setup</span>
+    </span>
+  </a>
+  <div class="step-bar__progress" aria-hidden="true">
+    <span class="step-bar__count">Step <b>3</b>/4</span>
+    <span class="step-bar__bar"><span style="width: 75%;"></span></span>
+  </div>
+  <!-- Next is the break, not step 04: the room talks the next steps
+       through before the build starts. -->
+  <a class="step-bar__btn step-bar__btn--next" href="break.html" aria-label="Next: the break">
+    <span class="step-bar__label">
+      <span class="step-bar__dir">Next</span>
+      <span class="step-bar__where">Break · next steps</span>
+    </span>
+    <span class="step-bar__icon" aria-hidden="true">→</span>
+  </a>
+</nav>
+
+
+<script src="assets/js/workshop-nav.js"></script>
+</body>
+</html>

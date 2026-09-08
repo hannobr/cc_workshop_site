@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Skills · Working with Claude Code</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Public+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="assets/css/workshop.css" />
+<link rel="stylesheet" href="assets/css/workshop-nav.css" />
+<link rel="stylesheet" href="assets/css/harness.css" />
+<link rel="stylesheet" href="assets/css/mobile-overrides.css" />
+</head>
+<body data-page="harness" data-screen-label="Skills">
+
+<div class="frame">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <a class="brand" href="index.html">
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3 11 L12 3 L21 11 V21 H3 Z"/><path d="M9 21 V14 H15 V21"/></svg>
+      <span>Working with Claude Code</span>
+      <span style="color: var(--ink-3); margin: 0 4px;">·</span>
+      <b>2026</b>
+    </a>
+    <div class="meta">Harness</div>
+  </div>
+
+  <!-- HERO -->
+  <header class="hero">
+    <a class="hx-back" href="index.html"><span aria-hidden="true">←</span> Back to the index</a>
+    <p class="eyebrow">Customise the harness &nbsp;·&nbsp; Skills</p>
+    <h1>Skills.</h1>
+    <p class="lede">
+      A folder of instructions Claude loads by itself when the work
+      matches. A skill is the answer to &ldquo;I keep pasting the same
+      procedure into the chat&rdquo;, and since 2026 it is also what a
+      custom slash command is.
+    </p>
+    <div class="meta-chip">
+      <span>~4 min</span>
+      <span>·</span>
+      <span>Reference; lives in <code>.claude/skills/</code></span>
+    </div>
+  </header>
+
+  <!-- WHAT -->
+  <section class="hx-section" aria-labelledby="what">
+    <div class="hx-head">
+      <p class="hx-eye">A &middot; What they are</p>
+      <h2 id="what">A folder Claude opens only when it needs to.</h2>
+    </div>
+    <div class="hx-body">
+      <p>
+        A skill is a directory holding a <code>SKILL.md</code>: YAML
+        frontmatter on top, your instructions under it. Claude does not read
+        the instructions at startup. It reads one line, the description, and
+        opens the rest when the work in front of it matches.
+      </p>
+    </div>
+
+    <figure class="dx">
+      <div class="dx__box">
+        <span class="dx__name">what is in the context window, and when</span>
+
+        <div class="dx-ladder__row">
+          <span class="dx-ladder__when">at startup</span>
+          <span class="dx-ladder__what">Every skill's <b>description</b>, one line each. That single line is the whole trigger.</span>
+          <span class="dx-ladder__bar"><span class="dx-ladder__fill dx-ladder__fill--a"></span></span>
+        </div>
+
+        <div class="dx-ladder__row">
+          <span class="dx-ladder__when">when it matches</span>
+          <span class="dx-ladder__what">The <b>SKILL.md body</b>: your procedure, in full, however long it needs to be.</span>
+          <span class="dx-ladder__bar"><span class="dx-ladder__fill dx-ladder__fill--b"></span></span>
+        </div>
+
+        <div class="dx-ladder__row">
+          <span class="dx-ladder__when">only if needed</span>
+          <span class="dx-ladder__what">Files beside it: <code>reference.md</code>, <code>examples.md</code>, a script in <code>scripts/</code>.</span>
+          <span class="dx-ladder__bar"><span class="dx-ladder__fill dx-ladder__fill--c"></span></span>
+        </div>
+
+        <span class="dx__foot">Claude chooses the skill from the description alone, so write it as <b>when to use this</b>, not as what this is.</span>
+      </div>
+      <figcaption class="dx__cap">
+        This is progressive disclosure. A four hundred line reference sits in
+        the repo costing you nothing until the moment it is opened, which is
+        why a skill can afford to be thorough where a <b>CLAUDE.md</b> cannot.
+      </figcaption>
+    </figure>
+
+    <figure class="dx">
+      <div class="dx__box">
+        <span class="dx__name">where the folder sits, and what that means</span>
+        <div class="dx-rows__row">
+          <span class="dx-rows__k">~/.claude/skills/</span>
+          <span class="dx-rows__v">Yours. Follows you into <b>every project</b> on this machine.</span>
+        </div>
+        <div class="dx-rows__row">
+          <span class="dx-rows__k">.claude/skills/</span>
+          <span class="dx-rows__v">This project. Committed, so <b>the team gets it</b> with the repo.</span>
+        </div>
+        <div class="dx-rows__row">
+          <span class="dx-rows__k">the folder name</span>
+          <span class="dx-rows__v">Is the command. <code>.claude/skills/deploy/</code> gives you <b><code>/deploy</code></b>.</span>
+        </div>
+        <div class="dx-rows__row">
+          <span class="dx-rows__k">.claude/commands/</span>
+          <span class="dx-rows__v">The old custom commands. <b>One thing now</b>: a command file and a skill both make <code>/deploy</code>, and existing files keep working.</span>
+        </div>
+      </div>
+      <figcaption class="dx__cap">
+        Two frontmatter keys are worth knowing on day one:
+        <code>disable-model-invocation: true</code> makes a skill
+        yours-to-trigger-only, and <code>allowed-tools</code> pre-approves the
+        tools it needs for that turn.
+      </figcaption>
+    </figure>
+
+    <div class="hx-body">
+      <p>
+        You do not have to write one by hand. Hand a finished run to
+        <code>/skill-creator</code> and rule on what generalises.
+      </p>
+    </div>
+  </section>
+
+  <!-- WHEN -->
+  <section class="hx-section" aria-labelledby="when">
+    <div class="hx-head">
+      <p class="hx-eye">B · When to use them</p>
+      <h2 id="when">When a procedure keeps repeating.</h2>
+      <p class="hx-sub">A skill is for something you do more than once and want done the same way each time.</p>
+    </div>
+    <div class="hx-when">
+      <div class="hx-when__col hx-when__col--yes">
+        <p class="hx-when__lbl">Reach for a skill</p>
+        <ul class="hx-list">
+          <li><span><b>A checklist you keep pasting</b>: how a release goes out, how a page gets verified.</span></li>
+          <li><span><b>A section of CLAUDE.md that grew into a procedure</b> rather than a fact.</span></li>
+          <li><span><b>Reference material</b> a house style, an API convention, that only matters sometimes.</span></li>
+          <li><span><b>A command you want to trigger yourself</b>, with <code>disable-model-invocation</code>.</span></li>
+          <li><span><b>Work you want handed to a subagent</b>, with <code>context: fork</code> in the frontmatter.</span></li>
+        </ul>
+      </div>
+      <div class="hx-when__col hx-when__col--no">
+        <p class="hx-when__lbl">Reach for something else</p>
+        <ul class="hx-list">
+          <li><span>A single fact. That belongs in <a href="harness-memory.html">CLAUDE.md</a>.</span></li>
+          <li><span>A convention tied to one folder. That is a <a href="harness-rules.html">path-based rule</a>.</span></li>
+          <li><span>Something that must happen every time. That is a <a href="harness-hooks.html">hook</a>.</span></li>
+          <li><span>A guidelines-only skill with <code>context: fork</code>. The fork gets no task and returns nothing.</span></li>
+          <li><span>A SKILL.md over about 500 lines. Push the detail into files beside it.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXAMPLE -->
+  <section class="hx-section" aria-labelledby="example">
+    <div class="hx-head">
+      <p class="hx-eye">C · A real example</p>
+      <h2 id="example">A skill that reviews your own diff.</h2>
+      <p class="hx-sub">Anthropic's own getting-started example, and a good first skill because it shows the one trick that makes skills feel alive.</p>
+    </div>
+
+    <figure class="hx-file">
+      <div class="prompt-card">
+        <div class="pc-head">
+          <div class="meta">
+            <span class="badge"><i></i>~/.claude/skills/summarize-changes/SKILL.md</span>
+            <span data-count>… lines · … chars</span>
+          </div>
+          <button class="copy-btn" aria-label="Copy this file">
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <rect x="4.5" y="4.5" width="8" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M2.5 11V3.5A1.5 1.5 0 0 1 4 2h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span class="label">Copy file</span>
+          </button>
+        </div>
+        <pre class="pc-body" data-prompt>---
+description: Summarizes uncommitted changes and flags anything risky.
+  Use when the user asks what changed, wants a commit message, or asks
+  to review their diff.
+---
+
+## Current changes
+
+!`git diff HEAD`
+
+## Instructions
+
+Summarize the changes above in two or three bullet points, then list
+any risks you notice such as missing error handling, hardcoded values,
+or tests that need updating. If the diff is empty, say there are no
+uncommitted changes.</pre>
+        <div class="pc-foot">
+          <span class="arrow">→</span>
+          <span>Personal scope: this one follows you into every project.</span>
+        </div>
+      </div>
+      <figcaption class="hx-file__cap">The <code>!</code> line is dynamic context: Claude Code runs the command
+        and inlines its output <b>before</b> Claude reads the skill, so the review
+        is grounded in your real working tree rather than in a guess about it.</figcaption>
+    </figure>
+
+    <ol class="hx-flow">
+      <li><span class="hx-flow__n">01</span><span>You finish an afternoon of edits and type &ldquo;what did I change?&rdquo;.</span></li>
+      <li><span class="hx-flow__n">02</span><span><b>The description matches</b>, so Claude loads the skill without being told to. Typing <code>/summarize-changes</code> does the same thing on purpose.</span></li>
+      <li><span class="hx-flow__n">03</span><span>The harness runs <code>git diff HEAD</code> and pastes the real diff into the skill body.</span></li>
+      <li><span class="hx-flow__n">04</span><span>You get three bullets and a risk list, in the same shape, every time you ask.</span></li>
+    </ol>
+
+    <div class="hx-body" style="margin-top: 18px;">
+      <p>
+        Once a skill exists, it is a file in git like any other. The review that
+        matters is not &ldquo;is this prompt nice&rdquo; but <b>does the
+        description fire when it should and stay quiet when it should not</b>.
+      </p>
+    </div>
+  </section>
+
+  <!-- SOURCES -->
+  <aside class="sources" aria-label="Sources">
+    <p class="sources-label">Official documentation</p>
+    <ol>
+      <li><span class="n">[1]</span><span><a href="https://code.claude.com/docs/en/skills" target="_blank" rel="noopener">code.claude.com &middot; Extend Claude with skills</a> &middot; Anthropic <span class="when">&middot; checked 2026-08-26</span></span></li>
+      <li><span class="n">[2]</span><span><a href="https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills" target="_blank" rel="noopener">anthropic.com &middot; Equipping agents for the real world with Agent Skills</a> &middot; Anthropic <span class="when">&middot; checked 2026-08-26</span></span></li>
+      <li><span class="n">[3]</span><span><a href="https://agentskills.io" target="_blank" rel="noopener">agentskills.io &middot; The Agent Skills standard</a> &middot; Anthropic <span class="when">&middot; checked 2026-08-26</span></span></li>
+    </ol>
+  </aside>
+
+  <!-- THE OTHER FIVE -->
+  <nav class="hx-siblings" aria-label="The other customisation surfaces">
+    <p class="hx-siblings__lbl">The other five</p>
+    <div class="hx-siblings__grid">
+      <a class="hx-sibling" href="harness-subagents.html">Subagents<span class="hx-sibling__what">A second Claude, own context</span></a>
+      <a class="hx-sibling" href="harness-hooks.html">Hooks<span class="hx-sibling__what">Your commands, run by the harness</span></a>
+      <a class="hx-sibling" href="harness-rules.html">Path-based rules<span class="hx-sibling__what">Guidance scoped to a folder</span></a>
+      <a class="hx-sibling" href="harness-memory.html">CLAUDE.md &amp; AGENTS.md<span class="hx-sibling__what">The always-loaded brief</span></a>
+      <a class="hx-sibling" href="harness-mcp.html">MCP<span class="hx-sibling__what">Outside tools and data</span></a>
+      <a class="hx-sibling" href="cheat-sheet.html">Cheat sheet<span class="hx-sibling__what">Commands and shortcuts</span></a>
+    </div>
+  </nav>
+
+  <!-- FOOTER -->
+  <p class="footer-help"><b>Stuck?</b> Raise a hand, a facilitator will help.</p>
+
+</div>
+
+<script src="assets/js/workshop-nav.js"></script>
+</body>
+</html>

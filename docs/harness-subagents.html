@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Subagents · Working with Claude Code</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Public+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="assets/css/workshop.css" />
+<link rel="stylesheet" href="assets/css/workshop-nav.css" />
+<link rel="stylesheet" href="assets/css/harness.css" />
+<link rel="stylesheet" href="assets/css/mobile-overrides.css" />
+</head>
+<body data-page="harness" data-screen-label="Subagents">
+
+<div class="frame">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <a class="brand" href="index.html">
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3 11 L12 3 L21 11 V21 H3 Z"/><path d="M9 21 V14 H15 V21"/></svg>
+      <span>Working with Claude Code</span>
+      <span style="color: var(--ink-3); margin: 0 4px;">·</span>
+      <b>2026</b>
+    </a>
+    <div class="meta">Harness</div>
+  </div>
+
+  <!-- HERO -->
+  <header class="hero">
+    <a class="hx-back" href="index.html"><span aria-hidden="true">←</span> Back to the index</a>
+    <p class="eyebrow">Customise the harness &nbsp;·&nbsp; Subagents</p>
+    <h1>Subagents.</h1>
+    <p class="lede">
+      A second Claude with its own context window, its own system prompt
+      and its own tool list. It does the noisy part of the work somewhere
+      else and hands back a summary.
+    </p>
+    <div class="meta-chip">
+      <span>~4 min</span>
+      <span>·</span>
+      <span>Reference; lives in <code>.claude/agents/</code></span>
+    </div>
+  </header>
+
+  <!-- WHAT -->
+  <section class="hx-section" aria-labelledby="what">
+    <div class="hx-head">
+      <p class="hx-eye">A &middot; What they are</p>
+      <h2 id="what">A second window, doing the noisy part.</h2>
+    </div>
+    <div class="hx-body">
+      <p>
+        A subagent is a markdown file with frontmatter: a name, a description
+        saying when to delegate, and optionally the tools, the model and the
+        permissions it runs under. The body of the file is its system prompt.
+        It works in a context window of its own and hands back a summary.
+      </p>
+    </div>
+
+    <figure class="ctx-pair">
+      <div class="ctx-pair__grid">
+
+        <div class="ctx-pair__win">
+          <span class="ctx-pair__name">your session</span>
+          <ul class="ctx-pair__list">
+            <li>your conversation, your files, your plan</li>
+            <li>every tool you have</li>
+          </ul>
+          <span class="ctx-pair__because">so this is the side that decides and edits</span>
+        </div>
+
+        <div class="ctx-pair__flow ctx-pair__flow--out">
+          <span class="ctx-pair__arrow" aria-hidden="true"></span>
+          <span class="ctx-pair__label">the task, in one message</span>
+        </div>
+
+        <div class="ctx-pair__win ctx-pair__win--sub">
+          <span class="ctx-pair__name">the subagent</span>
+          <ul class="ctx-pair__list">
+            <li>a fresh window, none of your chat</li>
+            <li>your <code>CLAUDE.md</code> and a git snapshot</li>
+            <li>only the tools its file lists</li>
+            <li class="ctx-pair__none">no <code>Edit</code>, no <code>Write</code>, if you leave them out</li>
+          </ul>
+          <span class="ctx-pair__because">so this side cannot do what it was not given</span>
+          <span class="ctx-pair__keep">the thousand lines of test output stay here</span>
+        </div>
+
+        <div class="ctx-pair__flow ctx-pair__flow--back">
+          <span class="ctx-pair__arrow" aria-hidden="true"></span>
+          <span class="ctx-pair__label">
+            <b class="ctx-pair__tag">summary</b>
+            <span>what it found</span>
+            <span>what it ran</span>
+            <span>nothing else</span>
+          </span>
+        </div>
+
+      </div>
+      <figcaption class="ctx-pair__cap">Two things come back from that split. <b>Context</b>: the noise is spent in a window you never see. <b>Constraint</b>: a tool you leave out of the file is a thing the agent cannot do, whatever it decides.</figcaption>
+    </figure>
+
+    <figure class="dx">
+      <div class="dx__box">
+        <span class="dx__name">what a fresh subagent starts with</span>
+        <div class="dx-rows__row">
+          <span class="dx-rows__k">your conversation</span>
+          <span class="dx-rows__v"><b>No.</b> It never sees the chat so far. A conversation fork is the one kind that does.</span>
+        </div>
+        <div class="dx-rows__row">
+          <span class="dx-rows__k">CLAUDE.md</span>
+          <span class="dx-rows__v"><b>Yes</b>, the whole hierarchy, plus a git status snapshot.</span>
+        </div>
+        <div class="dx-rows__row">
+          <span class="dx-rows__k">tools</span>
+          <span class="dx-rows__v">Exactly what the <code>tools</code> line lists. Leave it out and it inherits the full set.</span>
+        </div>
+        <div class="dx-rows__row">
+          <span class="dx-rows__k">model and effort</span>
+          <span class="dx-rows__v">Inherits yours unless you say otherwise, so mechanical work can run somewhere cheaper.</span>
+        </div>
+        <div class="dx-rows__row">
+          <span class="dx-rows__k">what you get back</span>
+          <span class="dx-rows__v">A summary. <b>Not a transcript</b>, and you cannot scroll its window.</span>
+        </div>
+      </div>
+      <figcaption class="dx__cap">
+        Scope runs the opposite way round from skills:
+        <code>.claude/agents/</code> in the project outranks
+        <code>~/.claude/agents/</code> in your home directory.
+      </figcaption>
+    </figure>
+  </section>
+
+  <!-- WHEN -->
+  <section class="hx-section" aria-labelledby="when">
+    <div class="hx-head">
+      <p class="hx-eye">B · When to use them</p>
+      <h2 id="when">When you want the work, not the transcript.</h2>
+      <p class="hx-sub">The question to ask is whether you need to watch the work happen. If you only need its verdict, delegate it.</p>
+    </div>
+    <div class="hx-when">
+      <div class="hx-when__col hx-when__col--yes">
+        <p class="hx-when__lbl">Reach for a subagent</p>
+        <ul class="hx-list">
+          <li><span><b>Verbose, self-contained work</b>: run the suite, read the logs, come back with what failed.</span></li>
+          <li><span><b>A read-only reviewer</b> that physically cannot edit what it is reviewing.</span></li>
+          <li><span><b>Parallel investigations</b> that do not need to talk to each other.</span></li>
+          <li><span><b>Cost control</b>: route mechanical work to a cheaper model with <code>model</code>.</span></li>
+          <li><span><b>A repeated role</b> your team should share, committed in the repo.</span></li>
+        </ul>
+      </div>
+      <div class="hx-when__col hx-when__col--no">
+        <p class="hx-when__lbl">Reach for something else</p>
+        <ul class="hx-list">
+          <li><span>Work needing back and forth. The summary is all you get back.</span></li>
+          <li><span>Phases that share a lot of context. Handing it over costs more than it saves.</span></li>
+          <li><span>A quick, targeted change. Delegation has real latency.</span></li>
+          <li><span>Something that must run every time regardless. That is a <a href="harness-hooks.html">hook</a>.</span></li>
+          <li><span>A procedure you invoke yourself. That is a <a href="harness-skills.html">skill</a>.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXAMPLE -->
+  <section class="hx-section" aria-labelledby="example">
+    <div class="hx-head">
+      <p class="hx-eye">C · A real example</p>
+      <h2 id="example">A verifier that cannot touch the code.</h2>
+      <p class="hx-sub">The agent step 06 of this workshop has you write. Its whole argument is the tool list.</p>
+    </div>
+
+    <figure class="hx-file">
+      <div class="prompt-card">
+        <div class="pc-head">
+          <div class="meta">
+            <span class="badge"><i></i>.claude/agents/verifier.md</span>
+            <span data-count>… lines · … chars</span>
+          </div>
+          <button class="copy-btn" aria-label="Copy this file">
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <rect x="4.5" y="4.5" width="8" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M2.5 11V3.5A1.5 1.5 0 0 1 4 2h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span class="label">Copy file</span>
+          </button>
+        </div>
+        <pre class="pc-body" data-prompt>---
+name: verifier
+description: Runs the acceptance check and reports what passed, what
+  failed, and what it could not check. Use after any change that claims
+  to satisfy the spec.
+tools: Read, Grep, Glob, Bash
+model: inherit
+---
+
+Run the acceptance check documented in docs/spec.md.
+
+Report in three parts:
+1. PASS or FAIL, with the exact command you ran and its exit code.
+2. For a FAIL, the failing criterion and the observed output. Do not speculate about the cause.
+3. What you did NOT check, so nobody reads a PASS as more than it is.
+
+You have no Edit or Write tool. If the check is broken rather than
+failing, say BLOCKED and describe what stopped it.</pre>
+        <div class="pc-foot">
+          <span class="arrow">→</span>
+          <span>Project scope: committed, so the whole team gets the same reviewer.</span>
+        </div>
+      </div>
+      <figcaption class="hx-file__cap">No <code>Edit</code>, no <code>Write</code>. That is the point: a verifier
+        that could fix the code could also quietly make the check pass, and then
+        a green result would tell you nothing.</figcaption>
+    </figure>
+
+    <ol class="hx-flow">
+      <li><span class="hx-flow__n">01</span><span>Claude finishes the build and claims it satisfies the spec.</span></li>
+      <li><span class="hx-flow__n">02</span><span><b>The verifier is delegated to</b>, in a fresh context window with four tools.</span></li>
+      <li><span class="hx-flow__n">03</span><span>It runs the check, reads whatever it needs, and burns its own window on the output.</span></li>
+      <li><span class="hx-flow__n">04</span><span>You get PASS, FAIL or BLOCKED and a short report. Your window never held the log.</span></li>
+    </ol>
+
+    <div class="hx-body" style="margin-top: 18px;">
+      <p>
+        Fewer tools is the design. Every tool you leave out is a class of
+        mistake the agent cannot make, and a reason to trust the answer it
+        gives you.
+      </p>
+    </div>
+  </section>
+
+  <!-- SOURCES -->
+  <aside class="sources" aria-label="Sources">
+    <p class="sources-label">Official documentation</p>
+    <ol>
+      <li><span class="n">[1]</span><span><a href="https://code.claude.com/docs/en/sub-agents" target="_blank" rel="noopener">code.claude.com &middot; Subagents</a> &middot; Anthropic <span class="when">&middot; checked 2026-08-26</span></span></li>
+      <li><span class="n">[2]</span><span><a href="https://code.claude.com/docs/en/skills" target="_blank" rel="noopener">code.claude.com &middot; Skills, including context: fork</a> &middot; Anthropic <span class="when">&middot; checked 2026-08-26</span></span></li>
+      <li><span class="n">[3]</span><span><a href="https://code.claude.com/docs/en/settings" target="_blank" rel="noopener">code.claude.com &middot; Settings and permissions</a> &middot; Anthropic <span class="when">&middot; checked 2026-08-26</span></span></li>
+    </ol>
+  </aside>
+
+  <!-- THE OTHER FIVE -->
+  <nav class="hx-siblings" aria-label="The other customisation surfaces">
+    <p class="hx-siblings__lbl">The other five</p>
+    <div class="hx-siblings__grid">
+      <a class="hx-sibling" href="harness-skills.html">Skills<span class="hx-sibling__what">Instructions Claude loads by itself</span></a>
+      <a class="hx-sibling" href="harness-hooks.html">Hooks<span class="hx-sibling__what">Your commands, run by the harness</span></a>
+      <a class="hx-sibling" href="harness-rules.html">Path-based rules<span class="hx-sibling__what">Guidance scoped to a folder</span></a>
+      <a class="hx-sibling" href="harness-memory.html">CLAUDE.md &amp; AGENTS.md<span class="hx-sibling__what">The always-loaded brief</span></a>
+      <a class="hx-sibling" href="harness-mcp.html">MCP<span class="hx-sibling__what">Outside tools and data</span></a>
+      <a class="hx-sibling" href="cheat-sheet.html">Cheat sheet<span class="hx-sibling__what">Commands and shortcuts</span></a>
+    </div>
+  </nav>
+
+  <!-- FOOTER -->
+  <p class="footer-help"><b>Stuck?</b> Raise a hand, a facilitator will help.</p>
+
+</div>
+
+<script src="assets/js/workshop-nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Path-based rules · Working with Claude Code</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Public+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="assets/css/workshop.css" />
+<link rel="stylesheet" href="assets/css/workshop-nav.css" />
+<link rel="stylesheet" href="assets/css/harness.css" />
+<link rel="stylesheet" href="assets/css/mobile-overrides.css" />
+</head>
+<body data-page="harness" data-screen-label="Path-based rules">
+
+<div class="frame">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <a class="brand" href="index.html">
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3 11 L12 3 L21 11 V21 H3 Z"/><path d="M9 21 V14 H15 V21"/></svg>
+      <span>Working with Claude Code</span>
+      <span style="color: var(--ink-3); margin: 0 4px;">·</span>
+      <b>2026</b>
+    </a>
+    <div class="meta">Harness</div>
+  </div>
+
+  <!-- HERO -->
+  <header class="hero">
+    <a class="hx-back" href="index.html"><span aria-hidden="true">←</span> Back to the index</a>
+    <p class="eyebrow">Customise the harness &nbsp;·&nbsp; Path-based rules</p>
+    <h1>Path-based rules.</h1>
+    <p class="lede">
+      Guidance that loads only when the files it covers are touched. A rule
+      is how a convention that matters in one folder stays out of every
+      session that never goes near it.
+    </p>
+    <div class="meta-chip">
+      <span>~3 min</span>
+      <span>·</span>
+      <span>Reference; lives in <code>.claude/rules/</code></span>
+    </div>
+  </header>
+
+  <!-- WHAT -->
+  <section class="hx-section" aria-labelledby="what">
+    <div class="hx-head">
+      <p class="hx-eye">A &middot; What they are</p>
+      <h2 id="what">Guidance that waits for its own folder.</h2>
+    </div>
+    <div class="hx-body">
+      <p>
+        A rule is a markdown file under <code>.claude/rules/</code>, one topic
+        per file. Give it a <code>paths:</code> list of globs and it stays out
+        of the context window until Claude reads a file that matches. The
+        trigger is reading a matching file, not every tool call.
+      </p>
+    </div>
+
+    <figure class="dx">
+      <div class="dx__box">
+        <span class="dx__name">.claude/rules/testing.md</span>
+        <span class="dx-gate__glob">paths: <b>[ "tests/**/*.test.ts" ]</b></span>
+
+        <div class="dx-gate__row">
+          <span class="dx-gate__file">src/billing/invoice.ts</span>
+          <span class="dx-gate__mark" aria-hidden="true">&#10007;</span>
+          <span class="dx-gate__out">No match. The rule never enters the window, and you pay nothing for it.</span>
+        </div>
+
+        <div class="dx-gate__row">
+          <span class="dx-gate__file">src/api/handlers/user.ts</span>
+          <span class="dx-gate__mark" aria-hidden="true">&#10007;</span>
+          <span class="dx-gate__out">Still nothing. This session never learns your test conventions, because it never needs them.</span>
+        </div>
+
+        <div class="dx-gate__row dx-gate__row--hit">
+          <span class="dx-gate__file">tests/billing/invoice.test.ts</span>
+          <span class="dx-gate__mark" aria-hidden="true">&#10003;</span>
+          <span class="dx-gate__out"><b>Match.</b> The rule loads at that moment, and the convention is in context exactly when it is actionable.</span>
+        </div>
+
+        <span class="dx__foot">Leave the frontmatter off and the rule loads at launch instead, with the same weight as <code>.claude/CLAUDE.md</code>.</span>
+      </div>
+      <figcaption class="dx__cap">
+        The same file, three sessions. Only the third one pays for the rule.
+        That is the difference between a rule and a line in
+        <b>CLAUDE.md</b>, which every session pays for whether it is relevant
+        or not.
+      </figcaption>
+    </figure>
+
+    <figure class="dx">
+      <div class="dx__box">
+        <span class="dx__name">two places rules live, and which one wins</span>
+        <div class="dx-rows__row">
+          <span class="dx-rows__k">~/.claude/rules/</span>
+          <span class="dx-rows__v">Yours, every project. Loaded <b>first</b>.</span>
+        </div>
+        <div class="dx-rows__row">
+          <span class="dx-rows__k">.claude/rules/</span>
+          <span class="dx-rows__v">This project, committed. Loaded after, so it <b>wins</b> where the two disagree.</span>
+        </div>
+        <div class="dx-rows__row">
+          <span class="dx-rows__k">globs</span>
+          <span class="dx-rows__v"><code>src/**/*.tsx</code>, <code>*.md</code> for the root only, brace expansion, several patterns in one list.</span>
+        </div>
+        <div class="dx-rows__row">
+          <span class="dx-rows__k">when it loads</span>
+          <span class="dx-rows__v">With no <code>paths</code>, at launch. With <code>paths</code>, the moment the Read tool opens a matching file, and not before.</span>
+        </div>
+      </div>
+      <figcaption class="dx__cap">
+        Like CLAUDE.md, a rule is context and not enforcement. If a thing must
+        be blocked rather than advised, it is a
+        <a href="harness-hooks.html">hook</a>.
+      </figcaption>
+    </figure>
+  </section>
+
+  <!-- WHEN -->
+  <section class="hx-section" aria-labelledby="when">
+    <div class="hx-head">
+      <p class="hx-eye">B · When to use them</p>
+      <h2 id="when">When the advice is true here and wrong elsewhere.</h2>
+      <p class="hx-sub">Ask where the guidance applies. Everywhere is CLAUDE.md. One corner of the repo is a rule.</p>
+    </div>
+    <div class="hx-when">
+      <div class="hx-when__col hx-when__col--yes">
+        <p class="hx-when__lbl">Reach for a rule</p>
+        <ul class="hx-list">
+          <li><span><b>Conventions for one area</b>: API handlers, migrations, tests, one package in a monorepo.</span></li>
+          <li><span><b>A CLAUDE.md that has got long</b> and is mostly about places most sessions never go.</span></li>
+          <li><span><b>House style for a file type</b>, scoped with a glob like <code>src/**/*.tsx</code>.</span></li>
+          <li><span><b>Guidance you want in context automatically</b>, without anyone remembering to load it.</span></li>
+        </ul>
+      </div>
+      <div class="hx-when__col hx-when__col--no">
+        <p class="hx-when__lbl">Reach for something else</p>
+        <ul class="hx-list">
+          <li><span>A fact every session needs. That is <a href="harness-memory.html">CLAUDE.md</a>.</span></li>
+          <li><span>A multi-step procedure. That is a <a href="harness-skills.html">skill</a>.</span></li>
+          <li><span>Anything that must be enforced. That is a <a href="harness-hooks.html">hook</a>.</span></li>
+          <li><span>A pattern starting with <code>[</code>, unescaped. It is read as a character class and matches nothing.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXAMPLE -->
+  <section class="hx-section" aria-labelledby="example">
+    <div class="hx-head">
+      <p class="hx-eye">C · A real example</p>
+      <h2 id="example">Test conventions that arrive with the tests.</h2>
+      <p class="hx-sub">The root CLAUDE.md says nothing about tests. This file does, and only when it is relevant.</p>
+    </div>
+
+    <figure class="hx-file">
+      <div class="prompt-card">
+        <div class="pc-head">
+          <div class="meta">
+            <span class="badge"><i></i>.claude/rules/testing.md</span>
+            <span data-count>… lines · … chars</span>
+          </div>
+          <button class="copy-btn" aria-label="Copy this file">
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <rect x="4.5" y="4.5" width="8" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M2.5 11V3.5A1.5 1.5 0 0 1 4 2h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span class="label">Copy file</span>
+          </button>
+        </div>
+        <pre class="pc-body" data-prompt>---
+paths:
+  - "tests/**/*.test.ts"
+---
+
+# Test conventions
+
+- One behaviour per `it` block; the name states the expected outcome.
+- Use the `makeUser()` factory in `tests/factories.ts`, never inline object literals.
+- No network in unit tests; stub at the client boundary.</pre>
+        <div class="pc-foot">
+          <span class="arrow">→</span>
+          <span>Committed with the repo, so the convention travels with the tests.</span>
+        </div>
+      </div>
+      <figcaption class="hx-file__cap">Brace expansion works too, so one rule can cover
+        <code>src/**/*.{ts,tsx}</code> and a second path in the same list.</figcaption>
+    </figure>
+
+    <ol class="hx-flow">
+      <li><span class="hx-flow__n">01</span><span>A session opens <code>src/billing/invoice.ts</code>. This rule stays out of context entirely.</span></li>
+      <li><span class="hx-flow__n">02</span><span>Later the same session opens <code>tests/billing/invoice.test.ts</code>.</span></li>
+      <li><span class="hx-flow__n">03</span><span><b>The rule loads at that moment</b>, and the factory convention is in context exactly when it is actionable.</span></li>
+      <li><span class="hx-flow__n">04</span><span>The test comes back using <code>makeUser()</code> without anyone having said so this session.</span></li>
+    </ol>
+
+    <div class="hx-body" style="margin-top: 18px;">
+      <p>
+        Two things that look like bugs and are not. After a <code>/compact</code>
+        a path-scoped rule reloads only when a matching file is read again, so it
+        can look absent. And if you want to see exactly what loaded and when,
+        the documented tool is the <code>InstructionsLoaded</code> hook, which
+        fires every time a CLAUDE.md or a rule file enters context.
+      </p>
+    </div>
+  </section>
+
+  <!-- SOURCES -->
+  <aside class="sources" aria-label="Sources">
+    <p class="sources-label">Official documentation</p>
+    <ol>
+      <li><span class="n">[1]</span><span><a href="https://code.claude.com/docs/en/memory" target="_blank" rel="noopener">code.claude.com &middot; Memory, including path-specific rules</a> &middot; Anthropic <span class="when">&middot; checked 2026-08-26</span></span></li>
+      <li><span class="n">[2]</span><span><a href="https://code.claude.com/docs/en/large-codebases" target="_blank" rel="noopener">code.claude.com &middot; Working with large codebases</a> &middot; Anthropic <span class="when">&middot; checked 2026-08-26</span></span></li>
+      <li><span class="n">[3]</span><span><a href="https://code.claude.com/docs/en/hooks" target="_blank" rel="noopener">code.claude.com &middot; Hooks reference, InstructionsLoaded</a> &middot; Anthropic <span class="when">&middot; checked 2026-08-26</span></span></li>
+    </ol>
+  </aside>
+
+  <!-- THE OTHER FIVE -->
+  <nav class="hx-siblings" aria-label="The other customisation surfaces">
+    <p class="hx-siblings__lbl">The other five</p>
+    <div class="hx-siblings__grid">
+      <a class="hx-sibling" href="harness-skills.html">Skills<span class="hx-sibling__what">Instructions Claude loads by itself</span></a>
+      <a class="hx-sibling" href="harness-subagents.html">Subagents<span class="hx-sibling__what">A second Claude, own context</span></a>
+      <a class="hx-sibling" href="harness-hooks.html">Hooks<span class="hx-sibling__what">Your commands, run by the harness</span></a>
+      <a class="hx-sibling" href="harness-memory.html">CLAUDE.md &amp; AGENTS.md<span class="hx-sibling__what">The always-loaded brief</span></a>
+      <a class="hx-sibling" href="harness-mcp.html">MCP<span class="hx-sibling__what">Outside tools and data</span></a>
+      <a class="hx-sibling" href="cheat-sheet.html">Cheat sheet<span class="hx-sibling__what">Commands and shortcuts</span></a>
+    </div>
+  </nav>
+
+  <!-- FOOTER -->
+  <p class="footer-help"><b>Stuck?</b> Raise a hand, a facilitator will help.</p>
+
+</div>
+
+<script src="assets/js/workshop-nav.js"></script>
+</body>
+</html>

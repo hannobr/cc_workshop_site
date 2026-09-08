@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Step NN: Title · Working with Claude Code</title>
+
+<!-- Fonts: Archivo (display) + Public Sans (sans) + JetBrains Mono (mono) -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Public+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<!-- Shared design system. DO NOT redefine tokens inline. Every step
+     page carries its topbar and hero layout in the style block
+     below; nothing else is page-local. -->
+<link rel="stylesheet" href="assets/css/workshop.css" />
+<link rel="stylesheet" href="assets/css/workshop-nav.css" />
+<link rel="stylesheet" href="assets/css/mobile-overrides.css" />
+
+<style>
+  /* ────────────────────────────────────────────────
+     Page-specific layout only. Tokens, type, and the
+     shared primitives (figures, .sources, .meta-chip,
+     chips) all live in workshop.css. Grep the shared
+     sheets before defining any new class name here.
+     ──────────────────────────────────────────────── */
+
+  /* hero */
+  .hero{
+    padding: 30px 0 26px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .lede{
+    margin: 14px 0 0;
+    max-width: 60ch;
+    font-size: 18px;
+    line-height: 1.55;
+    color: var(--ink-2);
+  }
+  .lede b{ color: var(--ink); font-weight: 500; }
+
+</style>
+</head>
+<!-- data-step carries the display number read by workshop-nav.js.
+     data-lab stays "01" on every page: the workshop is one track, and
+     the value only namespaces the progress keys in localStorage. Keep
+     data-step, the <title>, the sheet-trigger, the step-sheet list and
+     the step-bar consistent with the step list on index.html. -->
+<body data-step="NN" data-lab="01" data-screen-label="NN Short">
+
+<div class="frame">
+
+  <!-- STEP SHEET: one row per step, all four, on every page. One markup,
+       two presentations: workshop-nav.css docks it as the schedule rail
+       on the left at 940px and up, and renders it as the bottom-sheet
+       dialog below that. It is the FIRST child of .frame so the rail can
+       own grid column 1. The current row gets is-current + aria-current;
+       row titles match index.html verbatim. The closing .step-sheet__mark
+       bookend and the .step-sheet__break row are not .step-sheet__item
+       rows, so workshop-nav.js ignores them. -->
+  <div class="step-sheet" id="step-sheet" hidden role="dialog" aria-modal="true" aria-labelledby="step-sheet-title">
+    <div class="step-sheet__backdrop" data-close aria-hidden="true"></div>
+    <div class="step-sheet__panel">
+      <button class="step-sheet__handle" type="button" data-close aria-label="Close menu"></button>
+      <header class="step-sheet__head">
+        <h2 id="step-sheet-title" class="step-sheet__title">All steps</h2>
+        <span class="step-sheet__sub">Working with Claude Code · <span data-progress>0 of 4 visited</span></span>
+      </header>
+      <ol class="step-sheet__list">
+        <li><a class="step-sheet__item" href="step-01.html" data-step="01" data-min="5"><span class="step-sheet__n">01</span><span class="step-sheet__t">How Claude works</span><span class="step-sheet__d">5</span><span class="step-sheet__state" aria-hidden="true"></span></a></li>
+        <li><a class="step-sheet__item" href="step-02.html" data-step="02" data-min="5"><span class="step-sheet__n">02</span><span class="step-sheet__t">Setup</span><span class="step-sheet__d">5</span><span class="step-sheet__state" aria-hidden="true"></span></a></li>
+        <li><a class="step-sheet__item" href="step-03.html" data-step="03" data-min="5"><span class="step-sheet__n">03</span><span class="step-sheet__t">Context window</span><span class="step-sheet__d">5</span><span class="step-sheet__state" aria-hidden="true"></span></a></li>
+        <li><a class="step-sheet__break" href="break.html" data-min="5"><span class="step-sheet__n" aria-hidden="true"></span><span class="step-sheet__t">Break &middot; next steps</span><span class="step-sheet__d">5</span></a></li>
+        <li><a class="step-sheet__item" href="step-04.html" data-step="04" data-min=""><span class="step-sheet__n">04</span><span class="step-sheet__t">Build</span><span class="step-sheet__d" aria-hidden="true"></span><span class="step-sheet__state" aria-hidden="true"></span></a></li>
+        <li class="step-sheet__mark"><span class="step-sheet__n" aria-hidden="true"></span><span class="step-sheet__t">Demos and wrap-up</span><span class="step-sheet__d">15</span></li>
+      </ol>
+      <p class="step-sheet__sum" data-sum></p>
+      <a class="step-sheet__ref" href="cheat-sheet.html">
+        <span class="step-sheet__ref-t">Cheat sheet</span>
+        <span class="step-sheet__ref-d">slash commands and shortcuts</span>
+      </a>
+      <a class="step-sheet__ref" href="index.html#harness">
+        <span class="step-sheet__ref-t">Harness customisation</span>
+        <span class="step-sheet__ref-d">skills, subagents, hooks, MCP</span>
+      </a>
+      <button class="step-sheet__close" type="button" data-close>Close menu</button>
+    </div>
+  </div>
+
+  <!-- TOPBAR: brand is the only home affordance. Step pages carry the
+       workshop name, no year (the index and reference pages add the
+       year). Do not re-style per page. -->
+  <div class="topbar">
+    <a class="brand" href="index.html">
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3 11 L12 3 L21 11 V21 H3 Z"/><path d="M9 21 V14 H15 V21"/></svg>
+      <span>Working with Claude Code</span>
+    </a>
+    <button class="sheet-trigger" type="button" aria-haspopup="dialog" aria-controls="step-sheet" aria-expanded="false" aria-label="Open step menu">
+      <span class="sheet-trigger__count"><b>NN</b>/4</span>
+      <span class="sheet-trigger__divider" aria-hidden="true"></span>
+      <span class="sheet-trigger__title">Step name</span>
+      <span class="sheet-trigger__chev" aria-hidden="true">▾</span>
+    </button>
+    <!-- Desktop-only position label. CSS shows it exactly when the
+         rail is docked and the trigger is hidden. -->
+    <span class="topbar__pos">NN / 4 · Step name</span>
+  </div>
+
+  <!-- HERO: eyebrow + H1 + lede + meta-chip. The lede is ONE sentence
+       carrying the page's point and nothing else. The meta-chip carries
+       an honest time estimate; drop it where the page has none. -->
+  <header class="hero">
+    <p class="eyebrow"><span class="num">NN</span> &nbsp;·&nbsp; Step name</p>
+    <h1>Step title.</h1>
+    <p class="lede">
+      One sentence carrying the point of this step.
+    </p>
+    <div class="meta-chip">
+      <span>~NN min</span>
+    </div>
+  </header>
+
+  <!-- BODY: the page's content goes here. A concept page uses its own
+       sections (step-01.html is the specimen); the afternoon page is
+       one figure (step-04.html). Copy every primitive from
+       design-system.html; never retype one from memory. The build-step
+       chrome (.step-io, .blocks/.blk, .brief, .spar, the pass check)
+       was retired on 2026-09-04 and stays out of new pages. -->
+
+  <!-- SOURCES: numbered refs with publisher and checked date. Drop the
+       aside when the page cites nothing. -->
+  <aside class="sources" aria-label="Sources">
+    <p class="sources-label">Sources</p>
+    <ol>
+      <li><span class="n">[1]</span><span><a href="https://example.com">example.com · Title</a> · Publisher <span class="when">· checked YYYY-MM-DD</span></span></li>
+    </ol>
+  </aside>
+
+  <!-- FOOTER -->
+  <p class="footer-help"><b>Stuck?</b> Raise a hand, a facilitator will help.</p>
+
+</div>
+
+<!-- STEP BAR: prev/next labelled with display numbers, plus progress
+     count and bar (width = position / 10). The first step's prev and
+     the last step's next point at index.html with step-bar__btn--end. -->
+<nav class="step-bar" aria-label="Step navigation">
+  <a class="step-bar__btn step-bar__btn--prev" href="step-NN-minus-1.html" aria-label="Previous: Step NN-1 Title">
+    <span class="step-bar__icon" aria-hidden="true">←</span>
+    <span class="step-bar__label">
+      <span class="step-bar__dir">Previous</span>
+      <span class="step-bar__where"><span class="n">NN</span>Previous step name</span>
+    </span>
+  </a>
+
+  <div class="step-bar__progress" aria-hidden="true">
+    <span class="step-bar__count">Step <b>N</b>/4</span>
+    <span class="step-bar__bar"><span style="width: 50%;"></span></span>
+  </div>
+
+  <a class="step-bar__btn step-bar__btn--next" href="step-NN-plus-1.html" aria-label="Next: Step NN+1 Title">
+    <span class="step-bar__label">
+      <span class="step-bar__dir">Next</span>
+      <span class="step-bar__where"><span class="n">NN</span>Next step name</span>
+    </span>
+    <span class="step-bar__icon" aria-hidden="true">→</span>
+  </a>
+</nav>
+
+
+<script src="assets/js/workshop-nav.js"></script>
+</body>
+</html>

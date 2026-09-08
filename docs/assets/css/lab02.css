@@ -1,0 +1,272 @@
+/*
+ * lab02.css: LEGACY chrome for the retired Lab 02 build pages
+ * (archive/build-0N-*-9step.html). Since 2026-08-25 no live step page
+ * links it; the nine-step track carries its topbar, hero and section
+ * layout in page-local style blocks per _template.html. Only
+ * design-system.html still links this file, to keep the retired
+ * components (.sdlc-strip, .term-card, .ftree, .checks, .do-steps,
+ * .tk) inventoried. Tokens live in workshop.css. Never redefine them
+ * here. Cross-page primitives (.prompt-card family, .meta-chip,
+ * .sources, .pass-check) live in workshop.css.
+ */
+
+/* ─────────── SDLC phase strip ─────────── */
+/* Sits under the topbar on every Lab 02 page: the six playbook phases
+   with the current one lit. Blue = current, per the system. */
+.sdlc-strip{
+  display:flex; align-items:center; gap: 16px;
+  padding: 14px 0 0;
+  font-family:"JetBrains Mono", ui-monospace, monospace;
+  font-size: 12.5px; letter-spacing: .03em;
+}
+.sdlc-strip__tag{
+  font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.sdlc-strip__phases{
+  display:flex; align-items:center; flex-wrap: wrap;
+  gap: 4px 0;
+  list-style: none; margin: 0; padding: 0;
+}
+.sdlc-strip__phases li{ display:flex; align-items:center; }
+.sdlc-strip__phases li + li::before{
+  content:"→";
+  margin: 0 9px;
+  color: var(--ink-3);
+}
+.sdlc-strip__phases a{
+  display:inline-flex; align-items:baseline; gap: 5px;
+  padding: 3px 1px;
+  color: var(--ink-2); text-decoration: none;
+}
+.sdlc-strip__phases a:hover{ color: var(--ink); }
+.sdlc-strip__phases a .n{ font-size: 11px; color: var(--ink-3); }
+.sdlc-strip__phases a.is-current{
+  color: var(--accent-2, oklch(0.50 0.14 240));
+  font-weight: 600;
+}
+.sdlc-strip__phases a.is-current .n{ color: var(--accent-2, oklch(0.50 0.14 240)); }
+.sdlc-strip__loop{ color: var(--ink-3); }
+@media (max-width: 720px){
+  .sdlc-strip{ flex-wrap: wrap; gap: 8px 16px; }
+}
+
+/* ─────────── SDLC loop map (the lab's opening figure) ─────────── */
+.sdlc-loop{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+@media (max-width: 900px){ .sdlc-loop{ grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px){ .sdlc-loop{ grid-template-columns: 1fr; } }
+.sdlc-loop__phase{
+  display: grid; gap: 6px; align-content: start;
+  padding: 16px 18px;
+  background: var(--bg-2);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+}
+.sdlc-loop__phase .n{
+  font-family:"JetBrains Mono", ui-monospace, monospace;
+  font-size: 12.5px; font-weight: 600;
+  color: var(--accent-2, oklch(0.50 0.14 240));
+}
+.sdlc-loop__phase h3{
+  margin: 0;
+  font-size: 17px; line-height: 1.3; letter-spacing: -0.005em;
+}
+.sdlc-loop__phase p{
+  margin: 0;
+  font-size: 16px; line-height: 1.5;
+  color: var(--ink-2);
+}
+.sdlc-loop__note{
+  margin: 14px 0 0;
+  font-family:"JetBrains Mono", ui-monospace, monospace;
+  font-size: 13px; line-height: 1.5;
+  color: var(--ink-2);
+}
+.sdlc-loop__note .loop-mark{ color: var(--accent-2, oklch(0.50 0.14 240)); }
+
+/* ─────────── topbar ─────────── */
+.topbar{
+  display:flex; align-items:center; justify-content:space-between;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--rule);
+}
+.brand{
+  display:flex; align-items:center; gap:10px;
+  font-size:14px; letter-spacing:.02em; color:var(--ink-2);
+  text-decoration:none;
+}
+.brand b{ font-weight:600; color:var(--ink); letter-spacing:0; }
+/* crumbs retired (2026-08-23): the brand strip is the only home
+   affordance; the old .crumbs rules are gone with their markup. */
+
+/* ─────────── hero ─────────── */
+.hero{ padding: 56px 0 32px; border-bottom: 1px solid var(--rule); }
+.hero .lede{
+  margin: 20px 0 0; max-width: 62ch;
+  font-size: 19px; line-height: 1.55; color: var(--ink-2);
+}
+.hero .lede b{ color: var(--ink); font-weight: 500; }
+/* .meta-chip now lives in workshop.css so every lab can use it. */
+
+/* ─────────── sections ─────────── */
+.section{ padding: 52px 0 0; }
+.section-head{ display: grid; gap: 6px; margin-bottom: 22px; max-width: 70ch; }
+.section-head .eye{
+  font-family:"JetBrains Mono", ui-monospace, monospace;
+  font-size: 12.5px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--ink-2);
+}
+.section-head h2{
+  font-size: 30px; line-height: 1.2; letter-spacing: -0.01em;
+  margin: 4px 0 0;
+}
+.section-head .sub{
+  margin: 8px 0 0; font-size: 17px; line-height: 1.55; color: var(--ink-2);
+}
+.section-head .sub b{ color: var(--ink); font-weight: 500; }
+
+/* inline mono token */
+.tk{
+  font-family:"JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.9em;
+  background: var(--bg-2);
+  border: 1px solid var(--rule);
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: var(--ink);
+}
+
+/* ─────────── prompt card ─────────── */
+/* .prompt-card, .pc-head, .pc-body, .pc-foot and .copy-btn now live in
+   workshop.css so every lab can use them. Do not redefine them here. */
+
+/* ─────────── terminal output mockup (read-only, no copy) ─────────── */
+.term-card{
+  background: var(--term-bg, oklch(0.16 0.008 80));
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow:
+    0 1px 0 0 oklch(1 0 0 / 0.05) inset,
+    0 22px 44px -26px oklch(0 0 0 / 0.32);
+}
+.term-card pre{
+  margin: 0;
+  padding: 20px 24px 24px;
+  font-family:"JetBrains Mono", ui-monospace, monospace;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--term-fg, oklch(0.94 0.005 85));
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+.term-card .t-dim{   color: var(--term-dim, oklch(0.78 0.008 85)); }
+.term-card .t-green{ color: var(--term-green, oklch(0.78 0.14 150)); }
+.term-card .t-amber{ color: var(--term-amber, oklch(0.82 0.12 80)); }
+.term-label{
+  display:flex; align-items:center; justify-content:space-between;
+  margin: 0 0 10px;
+  font-family:"JetBrains Mono", ui-monospace, monospace;
+  font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+/* ─────────── file-tree figure ─────────── */
+.ftree{
+  margin: 0;
+  padding: 22px 26px;
+  background: var(--bg-2);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+}
+.ftree pre{
+  margin: 0;
+  font-family:"JetBrains Mono", ui-monospace, monospace;
+  font-size: 13.5px;
+  line-height: 1.75;
+  color: var(--ink-2);
+  white-space: pre;
+  overflow-x: auto;
+}
+.ftree .f-dir{  color: var(--ink); font-weight: 600; }
+.ftree .f-hi{   color: var(--accent-2, oklch(0.50 0.14 240)); font-weight: 600; }
+.ftree .f-note{ color: var(--ink-2); }   /* annotations carry teaching content: --ink-3 is decorative-only */
+.fig-cite{
+  margin: 12px 0 0;
+  font-family:"JetBrains Mono", ui-monospace, monospace;
+  font-size: 11.5px; letter-spacing: .02em;
+  color: var(--ink-3);
+}
+
+/* ─────────── pass check ─────────── */
+/* .pass-check, .pass-check .pc-label and .pass-check .miss now live
+   in workshop.css so every lab can use them. Lab 02 pages load both
+   files; rendering is unchanged. Do not redefine them here. */
+.fig-cite b{ color: var(--ink-2); font-weight: 500; }
+.fig-cite a{ color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.section-head .sub a{ color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.section-head .sub a:hover{ color: var(--ink); }
+
+/* ─────────── numbered do-steps ─────────── */
+.do-steps{ display: grid; gap: 16px; }
+.do-step{
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 18px;
+  align-items: start;
+  padding: 20px 22px;
+}
+.do-step .num{
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 1px solid var(--rule-strong);
+  display:flex; align-items:center; justify-content:center;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 14px; font-weight: 600;
+  color: var(--ink); background: var(--bg-2);
+}
+.do-step h3{ margin: 6px 0 6px; font-size: 19px; }
+.do-step .hint{ margin: 0; }
+.do-step .hint + .hint{ margin-top: 6px; }
+
+/* ─────────── checklist (anatomy checks) ─────────── */
+.checks{ display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.checks li{
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  gap: 14px;
+  align-items: baseline;
+  padding: 16px 20px;
+  background: var(--bg-2);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+.checks li b{ color: var(--ink); font-weight: 600; }
+.checks .ck{
+  font-family:"JetBrains Mono", ui-monospace, monospace;
+  font-size: 13px; font-weight: 600;
+  color: var(--accent, oklch(0.50 0.14 150));
+}
+
+/* ─────────── sources ─────────── */
+/* .sources now lives in workshop.css so every lab can use it. */
+
+/* ─────────── footer ─────────── */
+.footer{
+  margin-top: 64px;
+  padding-top: 26px;
+  border-top: 1px solid var(--rule);
+  display:flex; align-items:center; justify-content:space-between; gap: 24px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 720px){
+  .do-step{ grid-template-columns: 1fr; }
+  .do-step .num{ width: 32px; height: 32px; font-size: 12.5px; }
+}

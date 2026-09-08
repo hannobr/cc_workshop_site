@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hooks · Working with Claude Code</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Public+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="assets/css/workshop.css" />
+<link rel="stylesheet" href="assets/css/workshop-nav.css" />
+<link rel="stylesheet" href="assets/css/harness.css" />
+<link rel="stylesheet" href="assets/css/mobile-overrides.css" />
+</head>
+<body data-page="harness" data-screen-label="Hooks">
+
+<div class="frame">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <a class="brand" href="index.html">
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3 11 L12 3 L21 11 V21 H3 Z"/><path d="M9 21 V14 H15 V21"/></svg>
+      <span>Working with Claude Code</span>
+      <span style="color: var(--ink-3); margin: 0 4px;">·</span>
+      <b>2026</b>
+    </a>
+    <div class="meta">Harness</div>
+  </div>
+
+  <!-- HERO -->
+  <header class="hero">
+    <a class="hx-back" href="index.html"><span aria-hidden="true">←</span> Back to the index</a>
+    <p class="eyebrow">Customise the harness &nbsp;·&nbsp; Hooks</p>
+    <h1>Hooks.</h1>
+    <p class="lede">
+      Your own commands, run by the harness at fixed points in the loop.
+      A hook is the only customisation on this site that does not depend
+      on Claude deciding to do something: the harness runs it either way.
+    </p>
+    <div class="meta-chip">
+      <span>~4 min</span>
+      <span>·</span>
+      <span>Reference; lives in <code>.claude/settings.json</code></span>
+    </div>
+  </header>
+
+  <!-- WHAT -->
+  <section class="hx-section" aria-labelledby="what">
+    <div class="hx-head">
+      <p class="hx-eye">A &middot; What they are</p>
+      <h2 id="what">Your command, wired into the loop.</h2>
+    </div>
+    <div class="hx-body">
+      <p>
+        Claude Code runs a loop: you send a prompt, the model calls a tool, the
+        tool returns, the model tries to finish. A hook is a command of yours
+        registered at one of those points. The harness runs it. Nothing in the
+        conversation gets a vote on whether it happens.
+      </p>
+    </div>
+
+    <figure class="dx">
+      <div class="dx__box">
+        <span class="dx__name">one turn, and the points a hook can fire at</span>
+        <div class="dx-wire">
+          <div class="dx-wire__track">
+
+            <div class="dx-wire__node">
+              <span class="dx-wire__dot"></span>
+              <span class="dx-wire__ev">UserPromptSubmit</span>
+              <span class="dx-wire__what">You send a prompt</span>
+            </div>
+
+            <div class="dx-wire__node">
+              <span class="dx-wire__dot"></span>
+              <span class="dx-wire__ev">PreToolUse</span>
+              <span class="dx-wire__what">Before a tool runs, and able to block it</span>
+            </div>
+
+            <div class="dx-wire__node dx-wire__node--fire">
+              <span class="dx-wire__dot"></span>
+              <span class="dx-wire__ev">PostToolUse</span>
+              <span class="dx-wire__what">The edit landed</span>
+              <span class="dx-wire__yours">your command runs here</span>
+            </div>
+
+            <div class="dx-wire__node">
+              <span class="dx-wire__dot"></span>
+              <span class="dx-wire__ev">Stop</span>
+              <span class="dx-wire__what">Claude tries to finish, and can be sent back</span>
+            </div>
+
+          </div>
+        </div>
+        <span class="dx__foot">Four of about thirty events. Others fire on session start and end, on compaction, when a file changes by any route, and when a <code>CLAUDE.md</code> or a rule is loaded.</span>
+      </div>
+      <figcaption class="dx__cap">
+        A <code>matcher</code> narrows a hook further: an exact tool name, a
+        list like <code>Edit|Write</code>, or a regex. <b>The harness fires it,
+        not the model</b>, which is the whole difference between a hook and a
+        line of guidance.
+      </figcaption>
+    </figure>
+
+    <figure class="dx">
+      <div class="dx__box">
+        <span class="dx__name">what your command is handed, and what it can say back</span>
+        <div class="dx-rows__row">
+          <span class="dx-rows__k">stdin</span>
+          <span class="dx-rows__v">JSON: the session id, the working directory, the permission mode, and for tool events <b>the tool name and its input</b>.</span>
+        </div>
+        <div class="dx-rows__row">
+          <span class="dx-rows__k">exit 0</span>
+          <span class="dx-rows__v">Fine, carry on. Nothing shows in the conversation.</span>
+        </div>
+        <div class="dx-rows__row">
+          <span class="dx-rows__k">exit 2</span>
+          <span class="dx-rows__v"><b>Blocked.</b> What you printed on stderr becomes the reason Claude reads.</span>
+        </div>
+        <div class="dx-rows__row">
+          <span class="dx-rows__k">JSON on stdout</span>
+          <span class="dx-rows__v">The richer form: allow, deny, feed context back, or rewrite the tool input before it runs.</span>
+        </div>
+      </div>
+      <figcaption class="dx__cap">
+        Hooks live in any settings file, and the file is the scope:
+        <code>~/.claude/settings.json</code> for every project,
+        <code>.claude/settings.json</code> for this one and committed with it,
+        <code>.claude/settings.local.json</code> for this one and kept out of
+        git. <code>/hooks</code> shows what is loaded.
+      </figcaption>
+    </figure>
+  </section>
+
+  <!-- WHEN -->
+  <section class="hx-section" aria-labelledby="when">
+    <div class="hx-head">
+      <p class="hx-eye">B · When to use them</p>
+      <h2 id="when">When asking nicely is not enough.</h2>
+      <p class="hx-sub">
+        The test is whether you would accept the thing being skipped. If you
+        would, write it down instead. If you would not, hook it.
+      </p>
+    </div>
+    <div class="hx-when">
+      <div class="hx-when__col hx-when__col--yes">
+        <p class="hx-when__lbl">Reach for a hook</p>
+        <ul class="hx-list">
+          <li><span><b>Format or lint after every edit</b>, so style never becomes a review topic.</span></li>
+          <li><span><b>Block a path</b> such as <code>.env</code> or a production config, whatever the session thinks.</span></li>
+          <li><span><b>Run the test suite before Claude is allowed to stop</b>, and hand back the failure.</span></li>
+          <li><span><b>Inject context on every prompt</b>: the current ticket, the branch, the on-call name.</span></li>
+          <li><span><b>Log or notify</b>: desktop ping when a long run finishes, an audit line per tool call.</span></li>
+        </ul>
+      </div>
+      <div class="hx-when__col hx-when__col--no">
+        <p class="hx-when__lbl">Reach for something else</p>
+        <ul class="hx-list">
+          <li><span>A convention or a preference. That is <a href="harness-memory.html">CLAUDE.md</a>.</span></li>
+          <li><span>A convention for one part of the tree. That is a <a href="harness-rules.html">path-based rule</a>.</span></li>
+          <li><span>A procedure Claude should choose to run. That is a <a href="harness-skills.html">skill</a>.</span></li>
+          <li><span>Anything needing judgment about the content. A shell script cannot read intent.</span></li>
+          <li><span>Slow work on a hot event. Every <code>PreToolUse</code> hook is on the critical path.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXAMPLE -->
+  <section class="hx-section" aria-labelledby="example">
+    <div class="hx-head">
+      <p class="hx-eye">C · A real example</p>
+      <h2 id="example">Prettier on everything Claude writes.</h2>
+      <p class="hx-sub">
+        A front-end repo where formatting arguments were eating review time.
+        One hook ends them.
+      </p>
+    </div>
+
+    <figure class="hx-file">
+      <div class="prompt-card">
+        <div class="pc-head">
+          <div class="meta">
+            <span class="badge"><i></i>.claude/settings.json</span>
+            <span data-count>… lines · … chars</span>
+          </div>
+          <button class="copy-btn" aria-label="Copy this file">
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <rect x="4.5" y="4.5" width="8" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M2.5 11V3.5A1.5 1.5 0 0 1 4 2h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span class="label">Copy file</span>
+          </button>
+        </div>
+        <pre class="pc-body" data-prompt>{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path' | xargs npx prettier --write"
+          }
+        ]
+      }
+    ]
+  }
+}</pre>
+        <div class="pc-foot">
+          <span class="arrow">→</span>
+          <span>Commit this file and every teammate gets the same behaviour.</span>
+        </div>
+      </div>
+      <figcaption class="hx-file__cap">
+        The command reads the event JSON on stdin, pulls the edited path out of
+        <code>tool_input.file_path</code>, and formats it. This is the example
+        Anthropic's own hooks guide ships with.
+      </figcaption>
+    </figure>
+
+    <ol class="hx-flow">
+      <li><span class="hx-flow__n">01</span><span>You ask for a new component. Claude writes it with single quotes and a stray trailing comma.</span></li>
+      <li><span class="hx-flow__n">02</span><span><b>The Write call returns</b>, and the harness fires <code>PostToolUse</code> because the matcher <code>Edit|Write</code> hit.</span></li>
+      <li><span class="hx-flow__n">03</span><span>Prettier rewrites the file in place. On success nothing appears in the conversation.</span></li>
+      <li><span class="hx-flow__n">04</span><span>The diff you review is already formatted, on the first pass, with no line in CLAUDE.md asking for it.</span></li>
+    </ol>
+
+    <div class="hx-body" style="margin-top: 18px;">
+      <p>
+        One sharp edge worth knowing: this fires on the <code>Edit</code> and
+        <code>Write</code> tools only. If Claude rewrites the file through a
+        <code>Bash</code> command, the matcher never hits. To catch a file
+        however it changes, hook <code>FileChanged</code> instead.
+      </p>
+    </div>
+  </section>
+
+  <!-- SOURCES -->
+  <aside class="sources" aria-label="Sources">
+    <p class="sources-label">Official documentation</p>
+    <ol>
+      <li><span class="n">[1]</span><span><a href="https://code.claude.com/docs/en/hooks-guide" target="_blank" rel="noopener">code.claude.com &middot; Get started with hooks</a> &middot; Anthropic <span class="when">&middot; checked 2026-08-26</span></span></li>
+      <li><span class="n">[2]</span><span><a href="https://code.claude.com/docs/en/hooks" target="_blank" rel="noopener">code.claude.com &middot; Hooks reference</a> &middot; Anthropic <span class="when">&middot; checked 2026-08-26</span></span></li>
+      <li><span class="n">[3]</span><span><a href="https://code.claude.com/docs/en/settings" target="_blank" rel="noopener">code.claude.com &middot; Settings</a> &middot; Anthropic <span class="when">&middot; checked 2026-08-26</span></span></li>
+    </ol>
+  </aside>
+
+  <!-- THE OTHER FIVE -->
+  <nav class="hx-siblings" aria-label="The other customisation surfaces">
+    <p class="hx-siblings__lbl">The other five</p>
+    <div class="hx-siblings__grid">
+      <a class="hx-sibling" href="harness-skills.html">Skills<span class="hx-sibling__what">Instructions Claude loads by itself</span></a>
+      <a class="hx-sibling" href="harness-subagents.html">Subagents<span class="hx-sibling__what">A second Claude, own context</span></a>
+      <a class="hx-sibling" href="harness-rules.html">Path-based rules<span class="hx-sibling__what">Guidance scoped to a folder</span></a>
+      <a class="hx-sibling" href="harness-memory.html">CLAUDE.md &amp; AGENTS.md<span class="hx-sibling__what">The always-loaded brief</span></a>
+      <a class="hx-sibling" href="harness-mcp.html">MCP<span class="hx-sibling__what">Outside tools and data</span></a>
+      <a class="hx-sibling" href="cheat-sheet.html">Cheat sheet<span class="hx-sibling__what">Commands and shortcuts</span></a>
+    </div>
+  </nav>
+
+  <!-- FOOTER -->
+  <p class="footer-help"><b>Stuck?</b> Raise a hand, a facilitator will help.</p>
+
+</div>
+
+<script src="assets/js/workshop-nav.js"></script>
+</body>
+</html>

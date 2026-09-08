@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Opening &middot; Working with Claude Code</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Public+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<!-- Shared design system. -->
+<link rel="stylesheet" href="assets/css/workshop.css" />
+<!-- Shared nav components: this page uses the topbar only. -->
+<link rel="stylesheet" href="assets/css/workshop-nav.css" />
+
+<style>
+  /* Page-local LAYOUT only. Tokens live in workshop.css.
+
+     What this page is: the slide the room looks at while the
+     facilitator opens the day. One word per beat, and under a beat
+     only the lines the room has to read for itself, because
+     everything else about them is said out loud.
+
+     How it works: it is the run sheet at stage scale. One hairline
+     spine, one marker per beat, the live beat in ink at full size
+     with a blue marker, the beats behind it green and ticked, the
+     beat ahead quiet. Blue is NOW and green is DONE on every other
+     page in this workshop, and they mean the same thing here.
+
+     Click anywhere, or use the arrows, to move. */
+
+  body[data-page="opening"]{
+    /* the stage is the viewport, so the page never scrolls under
+       a projector */
+    height: 100vh;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .stage-frame{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-width: 1180px;
+    padding: 12px 40px 22px;
+  }
+  @media (max-width: 720px){
+    .stage-frame{ padding: 8px 20px 18px; }
+  }
+
+  /* ─────────── the stage ───────────
+     Centred in whatever height is left under the topbar. */
+  .stage{
+    flex: 1;
+    display: flex;
+    align-items: center;
+    min-height: 0;
+  }
+
+  /* ─────────── the beats ───────────
+     The spine is one hairline behind the markers: every stop on a
+     single line, which is what the talk is. */
+  .beats{
+    position: relative;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+  }
+  .beats::before{
+    content: "";
+    position: absolute;
+    left: 5px;
+    top: 6px;
+    bottom: 6px;
+    width: 1px;
+    background: var(--rule);
+  }
+
+  .beat{
+    display: grid;
+    grid-template-columns: 11px minmax(0, 1fr);
+    align-items: center;
+    gap: 0 clamp(18px, 3vw, 40px);
+    padding: clamp(6px, 1.4vh, 16px) 0;
+  }
+
+  /* the marker: the rail's own tick, drawn at stage size */
+  .beat__mark{
+    /* positioned so it sits on the spine, not under it */
+    position: relative;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--paper);
+    box-shadow: inset 0 0 0 1px var(--rule-strong);
+    transition: box-shadow .3s ease, background-color .3s ease;
+  }
+  .beat.is-past .beat__mark{
+    background: var(--accent);
+    box-shadow: inset 0 0 0 1px var(--accent);
+  }
+  .beat.is-live .beat__mark{
+    background: var(--accent-2);
+    box-shadow: inset 0 0 0 1px var(--accent-2), 0 0 0 5px var(--accent-2-soft);
+  }
+
+  /* the word: a button, so a keyboard can land on any beat and the
+     room can be taken back to one that has already been talked
+     through */
+  .beat__word{
+    justify-self: start;
+    appearance: none;
+    background: none;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+    font-family: "Archivo", "Public Sans", Arial, sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.02;
+    font-size: clamp(30px, 4.4vw, 58px);
+    color: var(--ink-2);
+    transition: font-size .38s cubic-bezier(.2,.7,.2,1), color .3s ease;
+  }
+  .beat.is-live .beat__word{
+    font-size: clamp(58px, 11.4vw, 156px);
+    color: var(--ink);
+  }
+  .beat.is-past .beat__word{ color: var(--ink-2); }
+  .beat__word:focus-visible{ outline-offset: 6px; }
+
+  /* a beat that carries lines under it runs a step smaller than a
+     bare word at full size, so the word and its lines fit together */
+  .beat--notes.is-live .beat__word{ font-size: clamp(40px, 7.2vw, 104px); }
+  /* with lines under the word the beat is two rows tall, so the
+     marker is pinned to the middle of the word's own line instead of
+     drifting to the middle of the pair */
+  .beat--notes.is-live .beat__mark{
+    align-self: start;
+    margin-top: calc(clamp(40px, 7.2vw, 104px) * 0.51 - 5.5px);
+  }
+
+  /* ─────────── the lines under a beat ───────────
+     They only exist while their own beat is live: the room reads
+     them, the facilitator says the rest. */
+  .beat__notes{
+    grid-column: 2;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height .38s cubic-bezier(.2,.7,.2,1), opacity .3s ease, margin-top .38s cubic-bezier(.2,.7,.2,1);
+    font: 500 clamp(15px, 1.9vw, 26px)/1.5 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--ink-2);
+  }
+  .beat.is-live .beat__notes{
+    max-height: 40vh;
+    opacity: 1;
+    margin-top: clamp(10px, 1.8vh, 22px);
+  }
+  .beat__notes li{
+    position: relative;
+    padding-left: 1.5em;
+  }
+  .beat__notes li + li{ margin-top: .38em; }
+  .beat__notes li::before{
+    content: "";
+    position: absolute;
+    left: 0;
+    top: .62em;
+    width: .7em;
+    height: 1px;
+    background: var(--rule-strong);
+  }
+
+  /* ─────────── the hint ───────────
+     Only there until the presenter has moved once. */
+  .hint-row{
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding-top: 14px;
+    border-top: 1px solid var(--rule);
+    font: 400 13px/1.5 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--ink-2);
+    transition: opacity .4s ease;
+  }
+  body.has-moved .hint-row{ opacity: 0; }
+  .hint-row kbd{ font-size: 11.5px; padding: 1px 5px; }
+  .hint-row .back{ color: var(--ink-2); text-decoration: none; }
+  .hint-row .back:hover{ color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+
+  @media (max-width: 560px){
+    .hint-row .keys{ display: none; }
+  }
+</style>
+</head>
+<body data-page="opening">
+
+<div class="frame stage-frame">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <a class="brand" href="index.html">
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3 11 L12 3 L21 11 V21 H3 Z"/><path d="M9 21 V14 H15 V21"/></svg>
+      <span>Working with Claude Code</span>
+      <span style="color: var(--ink-3); margin: 0 4px;">&middot;</span>
+      <b>2026</b>
+    </a>
+    <div class="meta">Opening</div>
+  </div>
+
+  <!-- THE STAGE -->
+  <main class="stage">
+    <ol class="beats" id="beats">
+      <li class="beat is-live"><span class="beat__mark" aria-hidden="true"></span><button type="button" class="beat__word">Welcome</button></li>
+      <li class="beat beat--notes">
+        <span class="beat__mark" aria-hidden="true"></span>
+        <button type="button" class="beat__word">Goal</button>
+        <ul class="beat__notes">
+          <li>Give you the freedom to experiment with a frontier coding agent</li>
+        </ul>
+      </li>
+      <li class="beat beat--notes">
+        <span class="beat__mark" aria-hidden="true"></span>
+        <button type="button" class="beat__word">Setup</button>
+        <ul class="beat__notes">
+          <li>Mac minis, you can install whatever you want</li>
+          <li>Total separation from our work data and environment</li>
+          <li>Opus model on effort level high</li>
+        </ul>
+      </li>
+      <li class="beat beat--notes">
+        <span class="beat__mark" aria-hidden="true"></span>
+        <button type="button" class="beat__word">Today</button>
+        <ul class="beat__notes">
+          <li>Welcome &middot; 10 min</li>
+          <li>Steps 01 to 03 &middot; 15 min</li>
+          <li>Build your idea &middot; 2 hours</li>
+          <li>Demos &middot; 15 min</li>
+        </ul>
+      </li>
+      <li class="beat beat--notes">
+        <span class="beat__mark" aria-hidden="true"></span>
+        <button type="button" class="beat__word">Hints</button>
+        <ul class="beat__notes">
+          <li>Don't know what to build? Think of a personal problem or challenge you would like to work on or solve</li>
+          <li>Lots of questions from Claude and you want to get it done? Tell Claude to decide for you</li>
+          <li>Stuck, or have a question? Ask us! (or Claude ;))</li>
+        </ul>
+      </li>
+    </ol>
+  </main>
+
+  <p class="hint-row">
+    <span class="keys">Click anywhere to move on &middot; <kbd>&larr;</kbd> <kbd>&rarr;</kbd> to step &middot; <kbd>F</kbd> for full screen</span>
+    <a class="back" href="index.html">Back to the index</a>
+  </p>
+
+</div>
+
+<script>
+(function(){
+  var beats = Array.prototype.slice.call(document.querySelectorAll('.beat'));
+  var live = 0;
+
+  function show(i){
+    var next = Math.max(0, Math.min(beats.length - 1, i));
+    if (next !== live) document.body.classList.add('has-moved');
+    live = next;
+    beats.forEach(function(b, n){
+      b.classList.toggle('is-live', n === live);
+      b.classList.toggle('is-past', n < live);
+    });
+  }
+
+  // the whole page is the advance button: a presenter clicks where
+  // the pointer already is, not where a control happens to sit
+  document.addEventListener('click', function(e){
+    var word = e.target.closest('.beat__word');
+    if (word){ show(beats.indexOf(word.closest('.beat'))); return; }
+    if (e.target.closest('a')) return;
+    show(live + 1);
+  });
+
+  document.addEventListener('keydown', function(e){
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var k = e.key;
+    if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'PageDown' || k === ' ' || k === 'Enter'){
+      // Enter on a focused word is that word's own job
+      if (k === 'Enter' && document.activeElement && document.activeElement.classList.contains('beat__word')) return;
+      e.preventDefault(); show(live + 1);
+    } else if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp'){
+      e.preventDefault(); show(live - 1);
+    } else if (k === 'Home'){
+      e.preventDefault(); show(0);
+    } else if (k >= '1' && k <= '9' && Number(k) <= beats.length){
+      show(Number(k) - 1);
+    } else if (k === 'f' || k === 'F'){
+      e.preventDefault();
+      if (document.fullscreenElement) document.exitFullscreen();
+      else document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
+    } else if (k === 'Escape' && !document.fullscreenElement){
+      window.location.href = 'index.html';
+    }
+  });
+})();
+</script>
+
+</body>
+</html>

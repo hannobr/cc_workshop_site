@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cheat sheet · Working with Claude Code</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Public+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="assets/css/workshop.css" />
+<link rel="stylesheet" href="assets/css/workshop-nav.css" />
+<link rel="stylesheet" href="assets/css/mobile-overrides.css" />
+
+<style>
+  /* ────────────────────────────────────────────────
+     cheat-sheet · Commands and shortcuts, outside the step sequence.
+     Design: "Run sheet". Page-specific layout only; tokens, type and
+     the .topbar .meta label live in workshop.css / workshop-nav.css.
+     No rail here: the docked step sheet is scoped to body[data-step]
+     and this page sits outside the step sequence.
+     ──────────────────────────────────────────────── */
+
+  .nowrap{ white-space: nowrap; }
+
+  /* hero */
+  .hero{ padding: 30px 0 26px; border-bottom: 1px solid var(--rule); }
+  .hero .lede{
+    margin: 18px 0 0; max-width: 60ch;
+    font-size: 18px; line-height: 1.55; color: var(--ink-2);
+  }
+  .hero .lede b{ color: var(--ink); font-weight: 600; }
+  .hero .lede em{ font-style: normal; color: var(--ink); font-weight: 600; }
+  .hero .lede code{
+    font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.88em;
+    background: var(--bg-2);
+    border: 1px solid var(--rule);
+    padding: 1px 6px;
+    border-radius: var(--radius-sm);
+    color: var(--ink);
+  }
+
+  /* cite-line: one compact line of source links. Named .cite-line, not
+     .sources: workshop.css owns .sources (the page-foot aside) and a
+     local redefinition of a system name restyles it everywhere here. */
+  .cite-line{
+    margin: 26px 0 0;
+    padding: 12px 18px;
+    background: var(--bg-2);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+    font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px; line-height: 1.9; color: var(--ink-2);
+  }
+  .cite-line .cite-label{
+    font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink-2); margin-right: 10px;
+  }
+  .cite-line a{ color: var(--ink); text-decoration: none; white-space: nowrap; }
+  .cite-line a:hover{ text-decoration: underline; text-underline-offset: 3px; }
+  .cite-line .sep{ color: var(--ink-3); }
+  .cite-line .when{ color: var(--ink-2); white-space: nowrap; }
+
+  /* .memo chips and the .try snippet are shared primitives in workshop.css */
+
+  /* ─────────── Section ─────────── */
+  .section{ padding: 48px 0 0; }
+  .section-head{ display: grid; gap: 6px; margin-bottom: 22px; max-width: 72ch; }
+  .section-head .eye{
+    /* the sentence-case eyebrow role, same as the hero's and steps 01
+       to 03. The tracked mono uppercase label is retired. */
+    font-family:"Public Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink-2);
+  }
+  /* size, weight and tracking come from h2 in workshop.css
+     (Archivo 22px/800, -0.01em); only the spacing is page layout */
+  .section-head h2{ margin: 4px 0 0; }
+  .section-head .sub{
+    margin: 6px 0 0; font-size: 17px; line-height: 1.55; color: var(--ink-2);
+    max-width: 66ch;
+  }
+
+  /* ─────────── Card grid ─────────── */
+  .cards{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  @media (max-width: 900px){ .cards{ grid-template-columns: 1fr; } }
+
+  .cmd-card{
+    padding: 18px 20px 18px;
+    background: var(--bg-2);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+    display: grid;
+    gap: 10px;
+    align-content: start;
+  }
+  .cmd-card .head{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .cmd-card .name{
+    font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 16px;
+    color: var(--accent-2);
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .cmd-card .name kbd{
+    background: var(--bg);
+    border: 1px solid var(--accent-2);
+    border-radius: var(--radius-sm);
+    padding: 2px 7px;
+    font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+    color: var(--accent-2);
+    box-shadow: 0 1px 0 var(--accent-2);
+    line-height: 1.2;
+  }
+  .cmd-card .tag{
+    font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11.5px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    padding: 2px 8px;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    background: var(--bg);
+  }
+  .cmd-card .desc{
+    margin: 0;
+    max-width: 66ch;
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--ink-2);
+  }
+  .cmd-card .desc b{ color: var(--ink); font-weight: 600; }
+  .cmd-card .desc i{ font-style: italic; color: var(--ink); font-weight: 600; }
+  .cmd-card .desc code{
+    font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.9em;
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    padding: 1px 5px;
+    border-radius: var(--radius-sm);
+    color: var(--ink);
+  }
+</style>
+</head>
+<body data-page="reference" data-screen-label="Cheat sheet">
+
+<div class="frame">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <a class="brand" href="index.html">
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3 11 L12 3 L21 11 V21 H3 Z"/><path d="M9 21 V14 H15 V21"/></svg>
+      <span>Working with Claude Code</span>
+      <span style="color: var(--ink-3); margin: 0 4px;">·</span>
+      <b>2026</b>
+    </a>
+    <div class="meta">Reference</div>
+  </div>
+
+  <!-- HERO -->
+  <header class="hero">
+    <p class="eyebrow">Reference &nbsp;·&nbsp; Cheat sheet</p>
+    <h1>Commands and shortcuts, in one place.</h1>
+    <p class="lede">
+      A small cheat sheet of the slash commands and keyboard shortcuts
+      you'll use most in a real Claude Code session. The full list lives behind <code>/</code> in
+      your terminal. Before you file this page away, pick any three moves below and
+      run them in your live session right now.
+    </p>
+    <div class="meta-chip">
+      <span>~5 min</span>
+      <span>·</span>
+      <span>Reference; run three moves as you read</span>
+    </div>
+
+    <p class="cite-line">
+      <span class="cite-label">Sources</span>
+      <a href="https://code.claude.com/docs/en/interactive-mode" target="_blank" rel="noopener">[1] Interactive mode</a> <span class="sep">·</span>
+      <a href="https://code.claude.com/docs/en/commands" target="_blank" rel="noopener">[2] Slash commands</a> <span class="sep">·</span>
+      <a href="https://code.claude.com/docs/en/permission-modes" target="_blank" rel="noopener">[3] Permission modes</a> <span class="sep">·</span>
+      <a href="https://code.claude.com/docs/en/skills" target="_blank" rel="noopener">[4] Skills</a> <span class="sep">·</span>
+      <a href="https://code.claude.com/docs/en/sub-agents" target="_blank" rel="noopener">[5] Subagents</a> <span class="sep">·</span>
+      <a href="https://code.claude.com/docs/en/mcp" target="_blank" rel="noopener">[6] MCP</a> <span class="sep">·</span>
+      <a href="https://code.claude.com/docs/en/memory" target="_blank" rel="noopener">[7] Memory</a> <span class="sep">·</span>
+      <a href="https://code.claude.com/docs/en/hooks" target="_blank" rel="noopener">[8] Hooks</a> <span class="sep">·</span>
+      <a href="https://code.claude.com/docs/en/headless" target="_blank" rel="noopener">[9] Headless</a> <span class="sep">·</span>
+      <a href="https://code.claude.com/docs/en/goal" target="_blank" rel="noopener">[10] Goal</a>
+      <span class="when">· code.claude.com, Anthropic docs, 2026</span>
+    </p>
+
+    <!-- frame: the seven worth committing to memory -->
+    <aside class="callout callout--key" style="margin-top: 28px;">
+      <div class="callout__body">
+        <p class="callout__label"><i></i>Commit to memory</p>
+        <h4>Seven moves cover most sessions.</h4>
+        <p>
+          The rest of the page is reference. These seven are worth having in your
+          fingers before the build steps start.
+        </p>
+        <div class="memo" aria-label="Seven commands to memorize.">
+          <span class="chip"><kbd>Esc</kbd> <span class="label">interrupt</span></span>
+          <span class="chip"><kbd>Esc</kbd> <kbd>Esc</kbd> <span class="label">rewind</span></span>
+          <span class="chip"><kbd>Shift</kbd>+<kbd>Tab</kbd> <span class="label">switch modes</span></span>
+          <span class="chip">/context <span class="label">see what's loaded</span></span>
+          <span class="chip">/compact <span class="label">free the window</span></span>
+          <span class="chip">/btw <span class="label">side question</span></span>
+          <span class="chip">/ <span class="label">discover everything</span></span>
+        </div>
+      </div>
+    </aside>
+  </header>
+
+  <!-- ═════════════════════════════════════════════════════════════
+       SECTION A - Stop, undo, restart
+       ═════════════════════════════════════════════════════════════ -->
+  <section class="section" aria-labelledby="sec-a">
+    <div class="section-head">
+      <p class="eye">A · Stop, undo, restart</p>
+      <h2 id="sec-a">When Claude goes the wrong way.</h2>
+      <p class="sub">
+        Three escape hatches, each cheaper than starting over. Use them often.
+      </p>
+    </div>
+
+    <div class="cards">
+
+      <article class="cmd-card">
+        <div class="head">
+          <span class="name"><kbd>Esc</kbd></span>
+          <span class="tag">Shortcut</span>
+        </div>
+        <p class="desc">
+          Interrupts the current response or tool call mid-stream; Claude keeps the
+          work done so far [1]. Hit it the moment Claude starts down the wrong path,
+          then send a follow-up with what you learned.
+        </p>
+      </article>
+
+      <article class="cmd-card">
+        <div class="head">
+          <span class="name"><kbd>Esc</kbd> <kbd>Esc</kbd></span>
+          <span class="tag">Shortcut</span>
+        </div>
+        <p class="desc">
+          On an empty prompt, double-Esc opens the <b>rewind menu</b>. Pick a previous
+          point to jump back to, and choose whether to restore the conversation, the
+          code, or both. Cheaper than stacking corrections on a wrong run.
+        </p>
+        <div class="try"><span class="lbl">TRY</span><span class="dim">empty prompt:</span> press Esc twice</div>
+      </article>
+
+      <article class="cmd-card">
+        <div class="head">
+          <span class="name">/clear</span>
+          <span class="tag">Slash</span>
+        </div>
+        <p class="desc">
+          Wipe the conversation and start over <i>without</i> killing Claude Code itself
+          [2]. The new conversation starts empty and reads <code>CLAUDE.md</code>
+          fresh [7]. Faster than <code>/exit</code> + relaunch.
+        </p>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════
+       SECTION B - Steer Claude
+       ═════════════════════════════════════════════════════════════ -->
+  <section class="section" aria-labelledby="sec-b">
+    <div class="section-head">
+      <p class="eye">B · Steer Claude</p>
+      <h2 id="sec-b">Set the mode. Watch the window.</h2>
+      <p class="sub">
+        Know which mode you're in and how full the context window is. Most
+        confusing sessions trace back to one of the two.
+      </p>
+    </div>
+
+    <div class="cards">
+
+      <article class="cmd-card">
+        <div class="head">
+          <span class="name"><kbd>Shift</kbd>+<kbd>Tab</kbd></span>
+          <span class="tag">Shortcut</span>
+        </div>
+        <p class="desc">
+          Sessions in this workshop start in <b>auto mode</b>: Claude edits files and runs routine
+          commands without stopping to ask, with a built-in safety check on the risky
+          ones [3]. Shift+Tab cycles the four modes: manual, accept edits, plan, auto.
+          Tap until the status bar names the one you want; the afternoon build starts in plan mode.
+        </p>
+      </article>
+
+      <article class="cmd-card">
+        <div class="head">
+          <span class="name">/plan</span>
+          <span class="tag">Slash</span>
+        </div>
+        <p class="desc">
+          Jump straight into plan mode for the next prompt [3]. Claude reads, explores,
+          and writes a plan. No edits until you approve. Use before any
+          change where you want to see the approach before the edits.
+        </p>
+        <div class="try"><span class="lbl">TRY</span><span class="dim">runnable today:</span>
+<span class="lead">›</span> /plan outline the smallest first version
+of my idea</div>
+      </article>
+
+      <article class="cmd-card">
+        <div class="head">
+          <span class="name">/context</span>
+          <span class="tag">Slash</span>
+        </div>
+        <p class="desc">
+          Visualize the current context window as a color grid: system prompt, memory,
+          tool output, conversation, free space [2]. Your first stop when something feels
+          slow or off.
+        </p>
+      </article>
+
+      <article class="cmd-card">
+        <div class="head">
+          <span class="name">/compact</span>
+          <span class="tag">Slash</span>
+        </div>
+        <p class="desc">
+          Summarize the conversation so far and free the window [2]. The habit:
+          compact at a natural break, with intent. Add a focus hint after the
+          command so the summary keeps what matters.
+        </p>
+        <div class="try"><span class="lbl">TRY</span><span class="dim">at a natural break:</span>
+<span class="lead">›</span> /compact keep the API design decisions</div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════
+       SECTION C · In the prompt
+       ═════════════════════════════════════════════════════════════ -->
+  <section class="section" aria-labelledby="sec-c">
+    <div class="section-head">
+      <p class="eye">C · In the prompt</p>
+      <h2 id="sec-c">Five tricks that fit inside your prompt.</h2>
+      <p class="sub">
+        You type these <i>inside</i> the prompt. Each one changes how Claude
+        reads what comes next.
+      </p>
+    </div>
+
+    <div class="cards">
+
+      <article class="cmd-card">
+        <div class="head">
+          <span class="name">@file</span>
+          <span class="tag">Inline</span>
+        </div>
+        <p class="desc">
+          Type <code>@</code> then start typing a path; autocomplete does the rest [1].
+          Mentioned files load into context, no copy-paste needed.
+        </p>
+        <div class="try"><span class="lead">›</span> what does <span class="path">@src/auth/login.ts</span> use for
+session storage?</div>
+      </article>
+
+      <article class="cmd-card">
+        <div class="head">
+          <span class="name">!cmd</span>
+          <span class="tag">Inline</span>
+        </div>
+        <p class="desc">
+          Prefix with <code>!</code> on an empty prompt to run a shell command. The
+          output joins the session and Claude responds to it on the spot [1]; set
+          <code>respondToBashCommands</code> to false for output only.
+        </p>
+        <div class="try"><span class="lead">›</span> !git status<span class="dim">
+&middot; output lands, Claude responds</span></div>
+      </article>
+
+      <article class="cmd-card">
+        <div class="head">
+          <span class="name"><kbd>Ctrl</kbd>+<kbd>G</kbd></span>
+          <span class="tag">Shortcut</span>
+        </div>
+        <p class="desc">
+          Opens the current prompt in <code>$EDITOR</code> [1]. Save &amp; close to send.
+          Use it when the prompt is more than you want to edit inside a terminal. vim or code beats the
+          terminal for anything structured.
+        </p>
+      </article>
+
+      <article class="cmd-card">
+        <div class="head">
+          <span class="name">/btw</span>
+          <span class="tag">Slash</span>
+        </div>
+        <p class="desc">
+          Ask a side question without adding to history [1]. Works <i>even while
+          Claude is processing</i>. No tool access, answers only from what's
+          already in context. Dismiss with Space, Enter, or Esc.
+        </p>
+        <div class="try"><span class="lbl">TRY</span><span class="dim">while Claude is generating:</span>
+<span class="lead">›</span> /btw what was that env var called again?</div>
+      </article>
+
+      <article class="cmd-card">
+        <div class="head">
+          <span class="name">/</span>
+          <span class="tag">Discover</span>
+        </div>
+        <p class="desc">
+          Type <code>/</code> on an empty prompt to see every command available in
+          your setup [2]: built-ins, plugins, MCP, skills. Filter by typing more
+          letters. This is how you find anything not on this page.
+        </p>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════ D · CUSTOMIZE (build-step companions) ═══════════════ -->
+  <section class="section" aria-labelledby="sec-d">
+    <div class="section-head">
+      <p class="eye">D · Customize</p>
+      <h2 id="sec-d">The moves behind the build steps.</h2>
+      <p class="sub">
+        Skills, subagents, rules, the <code>/goal</code> finish line and hooks all
+        turn up while you build; headless mode and MCP are parked here for after
+        the workshop.
+      </p>
+    </div>
+
+    <div class="cards">
+
+      <article class="cmd-card">
+        <div class="head">
+          <span class="name">/skill-name</span>
+          <span class="tag">Skills</span>
+        </div>
+        <p class="desc">
+          A folder at <code>.claude/skills/&lt;name&gt;/SKILL.md</code> becomes the command
+          <code>/&lt;name&gt;</code>. Claude also uses skills on its own when relevant [4].
+          Write one
+          for a convention or a procedure you want applied the same way every
+          session; a one-line repo fact belongs in <code>CLAUDE.md</code>, a
+          one-off instruction stays in the prompt, and a choice about only the
+          next feature stays in the spec.
+        </p>
+      </article>
+
+      <article class="cmd-card">
+        <div class="head">
+          <span class="name">@agent</span>
+          <span class="tag">Subagents</span>
+        </div>
+        <p class="desc">
+          Subagents are Markdown files in <code>.claude/agents/</code> with their own
+          context window. Type <code>@</code> and pick one from the typeahead, or
+          address it as <code class="nowrap">@agent-&lt;name&gt;</code> [5]. The usual first one
+          is a verifier: it runs the check and reports, and cannot edit.
+        </p>
+      </article>
+
+      <article class="cmd-card">
+        <div class="head">
+          <span class="name">.claude/rules/</span>
+          <span class="tag">Rules</span>
+        </div>
+        <p class="desc">
+          Rule files with a <code>paths:</code> glob in the frontmatter load only when
+          Claude reads a matching file [7]. The overflow valve that keeps
+          <code>CLAUDE.md</code> short: a nested <code>CLAUDE.md</code> is scoped by
+          directory and has to live there, a rule is scoped by glob and can cover
+          a flat repo from one file.
+        </p>
+      </article>
+
+      <article class="cmd-card">
+        <div class="head">
+          <span class="name">/goal</span>
+          <span class="tag">Verify</span>
+        </div>
+        <p class="desc">
+          Set the finish line for this session: a check Claude can run, named by
+          the command that proves it [10]. After every turn a second, smaller
+          model reads the transcript and decides whether the condition is met.
+          If not, Claude keeps working. The judge does not run commands itself,
+          so the condition has to name the command and what its output shows.
+          Add what must not change and a turn cap. A hook is the same check made
+          permanent for every session.
+        </p>
+        <div class="try"><span class="lbl">TRY</span><span class="dim">in auto mode, once the plan is approved:</span>
+<span class="lead">›</span> /goal the tests pass and a playwright-cli
+run shows the first screen working.
+No test file changes. Stop after 15 turns.</div>
+      </article>
+
+      <article class="cmd-card">
+        <div class="head">
+          <span class="name">hooks</span>
+          <span class="tag">Guardrail</span>
+        </div>
+        <p class="desc">
+          Scripts registered in <code>.claude/settings.json</code> that run before a
+          tool call and can refuse it; exit 2 blocks [8]. Deterministic where a
+          skill and <code>CLAUDE.md</code> are advisory: the harness runs a hook,
+          so it is the one place you force a check rather than ask for it. Reach
+          for it once you know the check is the one you want.
+        </p>
+      </article>
+
+      <article class="cmd-card">
+        <div class="head">
+          <span class="name">claude -p</span>
+          <span class="tag">Headless</span>
+        </div>
+        <p class="desc">
+          One non-interactive pass from your shell. <code class="nowrap">--allowedTools</code> grants
+          tools up front; <code>-p</code> starts in manual mode on every plan, so grant what the run needs [9].
+        </p>
+      </article>
+
+      <article class="cmd-card">
+        <div class="head">
+          <span class="name">/mcp</span>
+          <span class="tag">MCP</span>
+        </div>
+        <p class="desc">
+          Lists connected MCP servers, their status, and their tool counts [6]. Add one
+          from your shell with <code>claude mcp add &lt;name&gt; <span class="nowrap">-- &lt;command&gt;</span></code>.
+        </p>
+      </article>
+
+    </div>
+
+    <aside class="pass-check" style="margin-top: 32px;">
+      <p class="pc-label">Pass check</p>
+      <p>Three moves from this page ran in your live session, and you can name
+      the one you'll reach for tomorrow.</p>
+      <p class="miss">Missed? Start with <kbd>Esc</kbd> <kbd>Esc</kbd>,
+      <code>/context</code>, and <code>/compact</code> with a hint; those three
+      pay off first.</p>
+    </aside>
+  </section>
+
+  <!-- FOOTER -->
+  <p class="footer-help"><b>Stuck?</b> Raise a hand, a facilitator will help.</p>
+
+</div>
+
+
+
+<script src="assets/js/workshop-nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,2522 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Workshop: Design System</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Public+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/css/workshop.css" />
+<!-- The nav component sheet. This page has no step nav, but the rail
+     specimen below is the real .step-sheet row vocabulary, which lives
+     here. Its docked-rail block is scoped to body[data-step], so a page
+     without that attribute keeps its own .frame layout. -->
+<link rel="stylesheet" href="assets/css/workshop-nav.css" />
+<!-- Legacy chrome of the retired build pages, so their components stay inventoried below. -->
+<link rel="stylesheet" href="assets/css/lab02.css" />
+
+<style>
+  /* page-specific layout only */
+  /* This page links workshop-nav.css for the rail specimen, which also
+     carries a .topbar and a .brand. Both rules below sit after it, so
+     they win; the two properties that would otherwise leak through
+     (padding-top and the phone brand clamp) are restated here. */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 0 0 18px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px;
+    font-size:14px; letter-spacing:.02em; color:var(--ink-2);
+    max-width: none;
+  }
+  .brand .dot{ width:8px; height:8px; border-radius:2px; background:var(--ink); transform:rotate(45deg); }
+  .brand b{ font-weight:600; color:var(--ink); letter-spacing:0; }
+  .topbar .meta{
+    font-family:"JetBrains Mono", ui-monospace, monospace;
+    font-size: 13px; color: var(--ink-2);
+  }
+
+  .hero{
+    padding: 56px 0 36px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .toc{
+    display:flex; flex-wrap:wrap; gap: 10px;
+    margin-top: 24px;
+  }
+  .toc a{
+    display:inline-flex; align-items:center; gap: 8px;
+    padding: 8px 14px;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    background: var(--paper);
+    color: var(--ink-2);
+    font-family:"JetBrains Mono", ui-monospace, monospace;
+    font-size: 12.5px; letter-spacing: .06em;
+    text-decoration: none;
+    transition: all .15s ease;
+  }
+  .toc a:hover{ border-color: var(--ink); color: var(--ink); }
+
+  /* section header */
+  section.block{
+    padding: 64px 0 8px;
+    border-bottom: 1px solid var(--rule);
+  }
+  section.block:last-of-type{ border-bottom: 0; }
+  section.block > header{
+    display:grid; grid-template-columns: 1fr auto; gap: 24px;
+    align-items: baseline;
+    margin-bottom: 28px;
+  }
+  section.block > header h2{
+    font-size: clamp(26px, 2.6vw, 34px);
+    font-weight: 800;
+    letter-spacing: -0.015em;
+    line-height: 1.1;
+    margin: 0;
+  }
+  section.block > header .meta{
+    font-family:"JetBrains Mono", ui-monospace, monospace;
+    font-size: 12.5px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--ink-2);
+  }
+
+  /* sub-block */
+  .sub-label{
+    font-family:"JetBrains Mono", ui-monospace, monospace;
+    font-size: 12.5px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink-2);
+    margin: 32px 0 14px;
+  }
+  .sub-label:first-of-type{ margin-top: 0; }
+
+  /* color grid */
+  .swatches{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+  }
+  .swatch{
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: 90px auto;
+  }
+  .swatch .chip{ width: 100%; height: 100%; }
+  .swatch .meta{
+    padding: 12px 14px 14px;
+    display: grid; gap: 4px;
+  }
+  .swatch .name{
+    font-family:"JetBrains Mono", ui-monospace, monospace;
+    font-size: 13px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .swatch .val{
+    font-family:"JetBrains Mono", ui-monospace, monospace;
+    font-size: 11.5px;
+    color: var(--ink-2);
+    letter-spacing: .02em;
+  }
+  .swatch .role{
+    margin-top: 2px;
+    font-size: 13px;
+    color: var(--ink-2);
+    line-height: 1.4;
+  }
+  .swatch.dark .meta{ background: oklch(0.14 0.008 80); }
+  .swatch.dark .name{ color: var(--term-fg); }
+  .swatch.dark .val{ color: var(--term-dim); }
+  .swatch.dark .role{ color: var(--term-dim); }
+
+  /* code text in sub-labels & body */
+  code.mono{
+    /* a token name is one unit: without this ".blk--now" breaks at the
+       hyphens and renders as two separate pills */
+    white-space: nowrap;
+    background: var(--bg-2);
+    border: 1px solid var(--rule);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--ink);
+  }
+
+  /* type ramp */
+  .type-row{
+    display:grid;
+    grid-template-columns: 220px 1fr;
+    gap: 28px;
+    padding: 18px 0;
+    border-top: 1px dashed var(--rule);
+    align-items: baseline;
+  }
+  .type-row:first-of-type{ border-top: 0; }
+  .type-row .legend{
+    font-family:"JetBrains Mono", ui-monospace, monospace;
+    font-size: 12.5px;
+    color: var(--ink-2);
+    line-height: 1.5;
+  }
+  .type-row .legend .k{ color: var(--ink); font-weight: 500; display:block; }
+  .type-row .sample{
+    color: var(--ink);
+  }
+
+  /* component cells */
+  .grid-2{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 18px;
+  }
+  .grid-3{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 18px;
+  }
+  .cell-label{
+    font-family:"JetBrains Mono", ui-monospace, monospace;
+    font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--ink-2);
+    margin: 0 0 10px;
+  }
+
+  /* step row example (composite) */
+  .step-demo{
+    display:grid;
+    grid-template-columns: 44px 1fr;
+    gap: 18px;
+    align-items:start;
+  }
+  .step-demo .num{
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 1px solid var(--rule-strong);
+    display:flex; align-items:center; justify-content:center;
+    font-family:"JetBrains Mono", ui-monospace, monospace;
+    font-size: 14px; font-weight: 600;
+    color: var(--ink); background: var(--bg-2);
+  }
+  .card--active .num{ border-color: var(--accent-2); background: var(--accent-2); color: #fff; }
+  .card--done .num{ border-color: var(--accent); background: var(--accent); color: #fff; }
+
+  /* terminal palette demo */
+  .term-demo{
+    background: var(--term-bg);
+    border-radius: var(--radius-lg);
+    padding: 22px 24px;
+    font-family:"JetBrains Mono", ui-monospace, monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--term-fg);
+  }
+  .term-demo .dim{ color: var(--term-dim); }
+  .term-demo .green{ color: var(--term-green); }
+  .term-demo .amber{ color: var(--term-amber); }
+  .term-demo .blue{ color: var(--term-blue); }
+  .term-demo .fg{ color: var(--term-fg); }
+
+  /* spacing/radius demos */
+  .scale-row{
+    display:flex; align-items:center; gap: 16px;
+    padding: 8px 0;
+    border-top: 1px dashed var(--rule);
+  }
+  .scale-row:first-child{ border-top: 0; }
+  .scale-row .bar{
+    background: var(--accent-2);
+    height: 14px;
+    border-radius: 2px;
+  }
+  .scale-row .lbl{
+    font-family:"JetBrains Mono", ui-monospace, monospace;
+    font-size: 13px;
+    color: var(--ink);
+    min-width: 90px;
+  }
+  .scale-row .val{
+    font-family:"JetBrains Mono", ui-monospace, monospace;
+    font-size: 12.5px;
+    color: var(--ink-2);
+  }
+  .radius-demo{
+    display:flex; flex-wrap:wrap; gap: 18px;
+    align-items:flex-end;
+  }
+  .radius-demo .r{
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    width: 90px; height: 90px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap: 4px;
+  }
+  .radius-demo .r .k{
+    font-family:"JetBrains Mono", ui-monospace, monospace;
+    font-size: 12px;
+    color: var(--ink-2);
+  }
+
+  /* shared caption under a sub-label, for the design rule a specimen
+     carries. Layout only; the type roles come from workshop.css. */
+  .spec-note{
+    margin: 0 0 14px;
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--ink-2);
+    max-width: 62ch;
+  }
+  .spec-note b{ color: var(--ink); font-weight: 600; }
+
+  /* ── rail specimen ──
+     The rail IS the step sheet, docked. Its row rules live in
+     workshop-nav.css and must never be restated here: a page-local
+     .step-sheet__* rule would silently restyle the real component on
+     this page. This box only supplies the rail's WIDTH and GROUND, so
+     the rows read at the size they get on a step page. Note there is
+     no .step-sheet wrapper: that base rule is position:fixed and would
+     cover the page.
+     The numbers are the docked rail's own box, measured on step-04 at
+     960px: grid column 200px plus a -24px left margin is a 224px
+     border box, padding 20/16/24/24, list padding 0. 226px here because
+     this specimen carries a border on both sides that the rail does
+     not. Measured: the title column is 86px in the specimen and 86px
+     in the live rail, and "How Claude works" wraps to two lines in
+     both, which is what the specimen has to show. */
+  .rail-spec{
+    width: 226px;
+    max-width: 100%;
+    background: var(--bg-2);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 20px 16px 24px 24px;
+  }
+  @media (min-width: 900px){
+    .rail-spec .step-sheet__list{ padding: 0; }
+  }
+  /* below 900px the same rows are the bottom sheet's tap targets, so
+     the specimen takes the dialog panel's width instead of the rail's */
+  @media (max-width: 899.98px){
+    .rail-spec{ width: 100%; max-width: 460px; padding: 12px 6px 16px; }
+  }
+
+  /* ── agenda specimen ──
+     index.html owns the canonical copy of these rules; the minimum
+     needed to render one part of the agenda is duplicated here so the
+     inventory shows the real row. Same class names on purpose: an
+     agenda row on this page must be the agenda row on the index. If
+     the two ever disagree, index.html wins and this block is stale. */
+  .agenda{
+    border: 0;
+    border-top: 2px solid var(--ink);
+    border-radius: 0;
+    background: none;
+    padding: 18px 0 22px;
+    display: block;
+    max-width: 720px;
+  }
+  .agenda h2{ margin: 0 0 4px; }
+  .agenda__sub{ margin: 0 0 10px; color: var(--ink-2); font-size: 15.5px; }
+  .agenda__rows{
+    margin: 0; padding: 0; list-style: none;
+    border: 0; display: block;
+  }
+  .agenda__rows a{
+    display: grid;
+    grid-template-columns: 70px 34px 1fr 22px;
+    grid-template-areas: "d n t s" "d n o s";
+    gap: 0 10px;
+    min-height: 0;
+    align-items: start;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--rule);
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .agenda__rows .d{
+    grid-area: d;
+    font: 600 13px/1.5 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--ink-2);
+    padding-top: 2px;
+  }
+  .agenda__rows .n{
+    grid-area: n;
+    font: 600 13px/1.5 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--ink-2);
+    padding-top: 2px;
+  }
+  .agenda__rows .t{ grid-area: t; font-size: 16.5px; font-weight: 700; line-height: 1.35; }
+  .agenda__rows .o{ grid-area: o; color: var(--ink-2); font-size: 15px; line-height: 1.4; }
+  .agenda__rows .s{ grid-area: s; }
+  /* the list closes with a rule, the way it opens with one */
+  .agenda__rows li:last-child a{ border-bottom: 1px solid var(--rule); }
+  .agenda__rows a.is-current{
+    background: var(--accent-2-soft);
+    margin: 0 -12px;
+    padding-left: 12px;
+    padding-right: 12px;
+    border-radius: var(--radius-sm);
+  }
+  .agenda__rows a.is-current .n,
+  .agenda__rows a.is-current .t{ color: var(--accent-2); }
+  .agenda__rows a.is-done .t{ color: var(--ink-2); }
+  .agenda__rows a.is-done .s::after{ content: "✓"; color: var(--accent); }
+  @media (max-width: 560px){
+    .agenda__rows a{
+      grid-template-columns: 34px 1fr 22px;
+      grid-template-areas: "n t s" "n o s" "d d d";
+    }
+    .agenda__rows .d{ padding-top: 4px; }
+  }
+
+  /* misc */
+  .row-inline{
+    display:flex; flex-wrap:wrap; align-items: center;
+    gap: 16px;
+  }
+
+  .footer{
+    margin-top: 64px;
+    padding-top: 26px;
+    border-top: 1px solid var(--rule);
+    display:flex; align-items:center; justify-content:space-between; gap: 24px;
+    flex-wrap:wrap;
+  }
+
+  /* mobile: this page does not link mobile-overrides.css (its
+     !important rules would restyle the specimens), so the two fixes
+     it would supply live here: hide the topbar meta on narrow
+     screens, and let wide specimens scroll in their own boxes. */
+  .topbar{ gap: 16px; }
+  @media (max-width: 400px){
+    .topbar .meta{ display: none; }
+  }
+  @media (max-width: 720px){
+    .sample, .term-demo{ overflow-x: auto; }
+    /* the 220px legend column leaves a specimen about 130px wide on a
+       phone, which cuts the h1 sample off; stack instead */
+    .type-row{ grid-template-columns: 1fr; gap: 10px; }
+  }
+  @media (max-width: 560px){
+    section.block > header{ grid-template-columns: 1fr; gap: 6px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="frame">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <a class="brand" href="index.html">
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3 11 L12 3 L21 11 V21 H3 Z"/><path d="M9 21 V14 H15 V21"/></svg>
+      <span>Working with Claude Code</span>
+      <span style="color: var(--ink-3); margin: 0 4px;">·</span>
+      <b>2026</b>
+    </a>
+    <div class="meta">Design system reference</div>
+  </div>
+
+  <!-- HERO -->
+  <header class="hero">
+    <p class="eyebrow"><span class="num">ds</span> &nbsp;·&nbsp; Reference</p>
+    <h1>Design system.</h1>
+    <p class="lede" style="margin-top: 18px; max-width: 60ch; font-size: 18px; color: var(--ink-2); line-height: 1.55;">
+      Every token, every primitive, every state is driven by
+      <span class="mono">workshop.css</span>. If something on this page
+      looks broken, the system is broken.
+    </p>
+    <div class="toc">
+      <a href="#color">Color</a>
+      <a href="#type">Type</a>
+      <a href="#rail">Rail</a>
+      <a href="#blocks">Blocks</a>
+      <a href="#brief">Brief</a>
+      <a href="#stepio">Step IO</a>
+      <a href="#twoways">Two ways</a>
+      <a href="#ctxpair">Context pair</a>
+      <a href="#runswhen">Runs when</a>
+      <a href="#skillmodes">Skill modes</a>
+      <a href="#lands">Lands</a>
+      <a href="#isnot">Is / is not</a>
+      <a href="#spar">Spar</a>
+      <a href="#routemap">Route map</a>
+      <a href="#spine">Spine</a>
+      <a href="#circuit">Circuit</a>
+      <a href="#agenda">Agenda</a>
+      <a href="#cards">Cards</a>
+      <a href="#badges">Badges</a>
+      <a href="#buttons">Buttons</a>
+      <a href="#kbd">Keyboard</a>
+      <a href="#instructions">Instructions</a>
+      <a href="#challenge">Challenge</a>
+      <a href="#lab02">Retired build chrome</a>
+      <a href="#terminal">Terminal</a>
+      <a href="#spacing">Spacing</a>
+      <a href="#radius">Radius</a>
+    </div>
+  </header>
+
+  <!-- ─── COLOR ─── -->
+  <section class="block" id="color">
+    <header>
+      <h2>Color</h2>
+      <span class="meta">22 tokens · oklch</span>
+    </header>
+
+    <p class="sub-label">Surfaces</p>
+    <div class="swatches">
+      <div class="swatch">
+        <div class="chip" style="background: var(--bg); border-bottom: 1px solid var(--rule);"></div>
+        <div class="meta">
+          <div class="name">--bg</div>
+          <div class="val">oklch(1 0 0)</div>
+          <div class="role">Page ground. Pure white by decision, so the reading column stays the brightest surface beside a terminal.</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background: var(--bg-2);"></div>
+        <div class="meta">
+          <div class="name">--bg-2</div>
+          <div class="val">oklch(0.968 .006 85)</div>
+          <div class="role">Rail and panel grey, warm. The docked step sheet sits on it. It carries the terminal's warm hue up into the daylight page; the reading column stays pure white.</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background: var(--paper); border-bottom: 1px solid var(--rule);"></div>
+        <div class="meta">
+          <div class="name">--paper</div>
+          <div class="val">oklch(1 0 0)</div>
+          <div class="role">Cards and blocks. Same white as the ground; the 1px rule does the separating.</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="sub-label">Ink (text)</p>
+    <div class="swatches">
+      <div class="swatch">
+        <div class="chip" style="background: var(--ink);"></div>
+        <div class="meta">
+          <div class="name">--ink</div>
+          <div class="val">oklch(0.24 .012 260)</div>
+          <div class="role">Headlines, primary copy, button fills. Cool near-black.</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background: var(--ink-2);"></div>
+        <div class="meta">
+          <div class="name">--ink-2</div>
+          <div class="val">oklch(0.48 .015 255)</div>
+          <div class="role"><b style="color:var(--ink)">Instructional copy.</b> Hints, kickers, help text, the rail's minutes.</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background: var(--ink-3);"></div>
+        <div class="meta">
+          <div class="name">--ink-3</div>
+          <div class="val">oklch(0.66 .012 255)</div>
+          <div class="role"><b style="color:var(--ink)">Decorative only.</b> Separators, ambient meta. Never for instructional text.</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="sub-label">Rules (hairlines)</p>
+    <div class="swatches">
+      <div class="swatch">
+        <div class="chip" style="background: var(--rule);"></div>
+        <div class="meta">
+          <div class="name">--rule</div>
+          <div class="val">oklch(0.905 .008 85)</div>
+          <div class="role">Every hairline: block borders, section rules, the rail's right edge.</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background: var(--rule-strong);"></div>
+        <div class="meta">
+          <div class="name">--rule-strong</div>
+          <div class="val">oklch(0.835 .012 85)</div>
+          <div class="role">Heavier dividers, and the strike-through on a done rail row.</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="sub-label">Status accents (semantic)</p>
+    <p class="spec-note">Three meanings, three colors, and no fourth.
+      <b>Blue</b> is now, <b>green</b> is done, <b>amber</b> is the break.
+      All three are the terminal palette's own hues, darkened to read on white:
+      <code class="mono">--accent-2</code> sits on <code class="mono">--term-blue</code>'s 240,
+      <code class="mono">--accent</code> on <code class="mono">--term-green</code>'s 150,
+      <code class="mono">--warn</code> on <code class="mono">--term-amber</code>'s 80.
+      The page and the dark prompt card are one palette at two lightnesses.
+      A caption anywhere that still calls <code class="mono">--accent-2</code> teal is out of date.</p>
+    <div class="swatches">
+      <div class="swatch">
+        <div class="chip" style="background: var(--accent-2);"></div>
+        <div class="meta">
+          <div class="name">--accent-2 · now</div>
+          <div class="val">oklch(0.50 .14 240)</div>
+          <div class="role"><b style="color:var(--ink)">Blue: now, current, actions.</b> The rail's current row, the eyebrow number, <code class="mono">.blk--now</code>, the copy button, focus rings. Same hue as <code class="mono">--term-blue</code>.</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background: var(--accent-2-soft);"></div>
+        <div class="meta">
+          <div class="name">--accent-2-soft</div>
+          <div class="val">oklch(0.955 .035 240)</div>
+          <div class="role">Tint behind the current row, the current agenda row, and block 1.</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background: var(--accent);"></div>
+        <div class="meta">
+          <div class="name">--accent · done</div>
+          <div class="val">oklch(0.50 .14 150)</div>
+          <div class="role"><b style="color:var(--ink)">Green: done, pass.</b> Rail ticks, .blk--pass, .card--done, the copied state of the copy button. Same hue as <code class="mono">--term-green</code>.</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background: var(--accent-soft);"></div>
+        <div class="meta">
+          <div class="name">--accent-soft</div>
+          <div class="val">oklch(0.955 .040 150)</div>
+          <div class="role">Tint behind block 2 and done cards.</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background: var(--warn);"></div>
+        <div class="meta">
+          <div class="name">--warn · break</div>
+          <div class="val">oklch(0.525 .13 80)</div>
+          <div class="role"><b style="color:var(--ink)">Amber: the break.</b> The rail's break row and the index break band, and nothing else. Same hue as <code class="mono">--term-amber</code>.</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background: var(--warn-soft);"></div>
+        <div class="meta">
+          <div class="name">--warn-soft</div>
+          <div class="val">oklch(0.955 .045 85)</div>
+          <div class="role">Ground of the break row and the break band. Paired with --warn-line for a border.</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background: var(--accent-3);"></div>
+        <div class="meta">
+          <div class="name">--accent-3 · key</div>
+          <div class="val">oklch(0.51 .16 330)</div>
+          <div class="role">Magenta, reserved for .callout--key and the Copilot crosswalk. The one accent with no status meaning.</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background: var(--accent-3-soft);"></div>
+        <div class="meta">
+          <div class="name">--accent-3-soft</div>
+          <div class="val">oklch(0.955 .030 330)</div>
+          <div class="role">Ground of the key callout. Paired with <code class="mono">--accent-3-line</code>.</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="sub-label">Terminal palette</p>
+    <div class="swatches">
+      <div class="swatch dark">
+        <div class="chip" style="background: var(--term-bg);"></div>
+        <div class="meta">
+          <div class="name">--term-bg</div>
+          <div class="val">oklch(0.16 .008 80)</div>
+          <div class="role">Terminal canvas.</div>
+        </div>
+      </div>
+      <div class="swatch dark">
+        <div class="chip" style="background: var(--term-fg);"></div>
+        <div class="meta">
+          <div class="name">--term-fg</div>
+          <div class="val">oklch(0.96 .005 85)</div>
+          <div class="role">Primary terminal text.</div>
+        </div>
+      </div>
+      <div class="swatch dark">
+        <div class="chip" style="background: var(--term-dim);"></div>
+        <div class="meta">
+          <div class="name">--term-dim</div>
+          <div class="val">oklch(0.80 .008 85)</div>
+          <div class="role">Secondary terminal text. Lightness ≥ 0.78. Anything dimmer is unreadable.</div>
+        </div>
+      </div>
+      <div class="swatch dark">
+        <div class="chip" style="background: var(--term-green);"></div>
+        <div class="meta">
+          <div class="name">--term-green</div>
+          <div class="val">oklch(0.78 .14 150)</div>
+          <div class="role">Prompts, success, OK state.</div>
+        </div>
+      </div>
+      <div class="swatch dark">
+        <div class="chip" style="background: var(--term-amber);"></div>
+        <div class="meta">
+          <div class="name">--term-amber</div>
+          <div class="val">oklch(0.82 .12 80)</div>
+          <div class="role">Highlights, prompt chevrons, mid-states.</div>
+        </div>
+      </div>
+      <div class="swatch dark">
+        <div class="chip" style="background: var(--term-blue);"></div>
+        <div class="meta">
+          <div class="name">--term-blue</div>
+          <div class="val">oklch(0.78 .10 240)</div>
+          <div class="role">Paths, identifiers, links.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── TYPE ─── -->
+  <section class="block" id="type">
+    <header>
+      <h2>Type</h2>
+      <span class="meta">Archivo · Public Sans · JetBrains Mono</span>
+    </header>
+
+    <p class="spec-note">Headings are <b>Archivo</b>, everything else is
+      <b>Public Sans</b>, commands and terminal mocks are
+      <b>JetBrains Mono</b>. Body is 17px for the 24-inch room screens.
+      A computed <code class="mono">font-family</code> that lands on a
+      fallback means the fonts link is wrong.</p>
+
+    <div class="type-row">
+      <div class="legend">
+        <span class="k">h1</span>
+        Archivo · clamp(34, 4vw, 50)<br/>
+        800 / -0.02em / 1.08
+      </div>
+      <div class="sample"><h1 style="margin:0">Let Claude interview you</h1></div>
+    </div>
+    <div class="type-row">
+      <div class="legend">
+        <span class="k">h2</span>
+        Archivo · 22px<br/>
+        800 / -0.01em
+      </div>
+      <div class="sample"><h2 style="margin:0">Before the break</h2></div>
+    </div>
+    <div class="type-row">
+      <div class="legend">
+        <span class="k">h3 / .blk__title</span>
+        Archivo · 18px<br/>
+        800 / -0.01em
+      </div>
+      <div class="sample"><h3 style="margin:0">Paste this into Claude</h3></div>
+    </div>
+    <div class="type-row">
+      <div class="legend">
+        <span class="k">.lede</span>
+        Public Sans · 18px<br/>
+        1.55 · ink-2 · max 60ch
+      </div>
+      <div class="sample">
+        <p style="margin:0; max-width: 60ch; font-size:18px; line-height:1.55; color: var(--ink-2);">
+          One sentence on what you'll do. One sentence on what you'll have at the end.
+        </p>
+      </div>
+    </div>
+    <div class="type-row">
+      <div class="legend">
+        <span class="k">body / .blk p</span>
+        Public Sans · 17px<br/>
+        400 / 1.55 · max 62ch<br/>
+        <span style="color:var(--ink-2);">never smaller for copy</span>
+      </div>
+      <div class="sample">
+        <p style="margin:0; max-width: 62ch;">
+          Claude reads your repository the way a new colleague would, one
+          file at a time, and it keeps everything it has read in one window.
+        </p>
+      </div>
+    </div>
+    <div class="type-row">
+      <div class="legend">
+        <span class="k">.hint</span>
+        Public Sans · 17px<br/>
+        1.55 · ink-2
+      </div>
+      <div class="sample"><p class="hint">Press ⌘ + Space, type "Terminal", hit return.</p></div>
+    </div>
+    <div class="type-row">
+      <div class="legend">
+        <span class="k">.help / footer help</span>
+        Public Sans · 15px<br/>
+        1.55 · ink-2
+      </div>
+      <div class="sample"><p class="help"><b>Stuck?</b> Raise a hand, a facilitator will help.</p></div>
+    </div>
+    <div class="type-row">
+      <div class="legend">
+        <span class="k">.eyebrow</span>
+        Public Sans · 14px · 600<br/>
+        sentence case, no tracking<br/>
+        <span style="color:var(--ink-2);">.num in accent-2</span>
+      </div>
+      <div class="sample"><p class="eyebrow"><span class="num">04</span> &nbsp;·&nbsp; Intent</p></div>
+    </div>
+    <div class="type-row">
+      <div class="legend">
+        <span class="k">.kicker</span>
+        Public Sans · 15px · 600<br/>
+        sentence case · ink-2
+      </div>
+      <div class="sample"><p class="kicker" style="margin:0">Open the app</p></div>
+    </div>
+    <div class="type-row">
+      <div class="legend">
+        <span class="k">rail / prompt-head labels</span>
+        JetBrains Mono · 12 to 13px<br/>
+        500 · ink-2
+      </div>
+      <div class="sample">
+        <span style="font: 500 12.5px/1.35 'JetBrains Mono', ui-monospace, monospace; color: var(--ink-2);">04 / 8 · Intent &nbsp; 10 min &nbsp; 14 lines · 612 chars</span>
+      </div>
+    </div>
+    <div class="type-row">
+      <div class="legend">
+        <span class="k">prompt body / commands</span>
+        JetBrains Mono · 13px<br/>
+        400 / 1.7<br/>
+        <span style="color:var(--ink-2);">13, not 13.5: a 72-char line has 588px at 960</span>
+      </div>
+      <div class="sample">
+        <pre style="margin:0; font: 400 13px/1.7 'JetBrains Mono', ui-monospace, monospace; color: var(--ink); white-space: pre-wrap;">Interview me about what I want to build. Ask one question at a
+time and stop when you can write the intent down.</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── RAIL (the docked step sheet) ─── -->
+  <section class="block" id="rail">
+    <header>
+      <h2>The rail</h2>
+      <span class="meta">.step-sheet, docked</span>
+    </header>
+
+    <p class="spec-note">The rail is not a second list. It is the page's own
+      <code class="mono">.step-sheet</code>, the same markup that is the
+      bottom-sheet dialog below 900px, docked as a 200px sidebar at 900px and
+      up. It is the first child of <code class="mono">.frame</code> on every
+      step page so it can own grid column 1. All of its type, colour and
+      geometry live in <code class="mono">workshop-nav.css</code>. A page-local
+      <code class="mono">.step-sheet__*</code> rule would restyle the real
+      component, so this specimen only supplies the surrounding width and ground.</p>
+
+    <p class="sub-label">Row vocabulary: <code class="mono">__mark</code> bookend · item · <code class="mono">is-done</code> · <code class="mono">is-current</code> · <code class="mono">__break</code> · <code class="mono">__group</code> · <code class="mono">__fold</code> · <code class="mono">__alt</code> · <code class="mono">__sum</code></p>
+    <p class="spec-note">The specimen stands with route A open (<code class="mono">data-route-a="open"</code>). On a live page those five rows are folded away until that route is picked.</p>
+    <div class="rail-spec">
+      <ol class="step-sheet__list" data-route-a="open">
+        <li><a class="step-sheet__item is-done" href="#rail" data-step="01" data-min="5"><span class="step-sheet__n">01</span><span class="step-sheet__t">How Claude works</span><span class="step-sheet__d">5</span><span class="step-sheet__state" aria-hidden="true"></span></a></li>
+        <li><a class="step-sheet__item is-done" href="#rail" data-step="02" data-min="5"><span class="step-sheet__n">02</span><span class="step-sheet__t">Setup</span><span class="step-sheet__d">5</span><span class="step-sheet__state" aria-hidden="true"></span></a></li>
+        <li><a class="step-sheet__item is-done" href="#rail" data-step="03" data-min="5"><span class="step-sheet__n">03</span><span class="step-sheet__t">Context window</span><span class="step-sheet__d">5</span><span class="step-sheet__state" aria-hidden="true"></span></a></li>
+        <li><a class="step-sheet__break" href="#rail" data-min="5"><span class="step-sheet__n" aria-hidden="true"></span><span class="step-sheet__t">Break · how you build</span><span class="step-sheet__d">5</span></a></li>
+        <li><button class="step-sheet__group" type="button" data-route-toggle aria-expanded="true"><span class="step-sheet__n">A</span><span class="step-sheet__t">The guided route</span><span class="step-sheet__d" aria-hidden="true"></span></button></li>
+        <li class="step-sheet__fold"><a class="step-sheet__item is-current" aria-current="step" href="#rail" data-step="04" data-min="10"><span class="step-sheet__n">04</span><span class="step-sheet__t">Intent</span><span class="step-sheet__d">10</span><span class="step-sheet__state" aria-hidden="true"></span></a></li>
+        <li class="step-sheet__fold"><a class="step-sheet__item" href="#rail" data-step="05" data-min="10"><span class="step-sheet__n">05</span><span class="step-sheet__t">Spec</span><span class="step-sheet__d">10</span><span class="step-sheet__state" aria-hidden="true"></span></a></li>
+        <li class="step-sheet__fold"><a class="step-sheet__item" href="#rail" data-step="06" data-min="15"><span class="step-sheet__n">06</span><span class="step-sheet__t">Check + verifier</span><span class="step-sheet__d">15</span><span class="step-sheet__state" aria-hidden="true"></span></a></li>
+        <li class="step-sheet__fold"><a class="step-sheet__item" href="#rail" data-step="07" data-min="10"><span class="step-sheet__n">07</span><span class="step-sheet__t">Plan</span><span class="step-sheet__d">10</span><span class="step-sheet__state" aria-hidden="true"></span></a></li>
+        <li class="step-sheet__fold"><a class="step-sheet__item" href="#rail" data-step="08" data-min=""><span class="step-sheet__n">08</span><span class="step-sheet__t">Build</span><span class="step-sheet__d" aria-hidden="true"></span><span class="step-sheet__state" aria-hidden="true"></span></a></li>
+        <li><a class="step-sheet__alt" href="#rail"><span class="step-sheet__n">B</span><span class="step-sheet__t">Your own way</span><span class="step-sheet__d">or</span></a></li>
+        <li class="step-sheet__mark"><span class="step-sheet__n" aria-hidden="true"></span><span class="step-sheet__t">Demos and wrap-up</span><span class="step-sheet__d">15</span></li>
+      </ol>
+      <p class="step-sheet__sum" data-sum>you are here: 4 of 8
+~10 min</p>
+      <a class="step-sheet__ref" href="cheat-sheet.html">
+        <span class="step-sheet__ref-t">Cheat sheet</span>
+        <span class="step-sheet__ref-d">slash commands and shortcuts</span>
+      </a>
+      <a class="step-sheet__ref" href="index.html#harness">
+        <span class="step-sheet__ref-t">Harness customisation</span>
+        <span class="step-sheet__ref-d">skills, subagents, hooks, MCP</span>
+      </a>
+    </div>
+
+    <p class="spec-note" style="margin-top:18px">
+      Reading the rows: <b>green tick</b> in the minutes column is done,
+      <b>blue fill with the inset left bar</b> is the current step,
+      <b>amber</b> is the break. The break row is a link to
+      <code class="mono">break.html</code>, the stop where the participant chooses
+      how they build; it takes <code class="mono">is-current</code> there, in amber
+      rather than blue. The two afternoon routes are lettered rows on the
+      same track as the steps, so A and B line up in one column:
+      <code class="mono">.step-sheet__group</code> above step 04 is a button,
+      the door to the seven <code class="mono">.step-sheet__fold</code> rows under
+      it; the <code class="mono">.step-sheet__alt</code> row under
+      step 08 opens <code class="mono">route-b.html</code>, the afternoon that
+      is not the guided steps, taking <code class="mono">is-current</code> in blue.
+      They mirror the fork the run sheet on the index carries, and the fold
+      follows the pick made there. <code class="mono">data-route-a</code> on the
+      list holds it: <code class="mono">closed</code>,
+      <code class="mono">open</code>, or <code class="mono">here</code> on one of
+      the five, where the caret goes and the A turns blue because the step being
+      read is inside that route. The closing
+      <code class="mono">.step-sheet__mark</code>
+      (Demos and wrap-up), the break row and both route rows are not
+      <code class="mono">.step-sheet__item</code> rows and carry no
+      <code class="mono">data-step</code>, so <code class="mono">workshop-nav.js</code>
+      ignores them. Every item carries <code class="mono">data-min</code>. An
+      estimated item renders the same number in a <code class="mono">.step-sheet__d</code>
+      span; Build leaves both values blank because its plan determines the duration.
+      <code class="mono">.step-sheet__sum</code> is written by the script from
+      the current row; it is empty in markup. On a live page the hrefs are the
+      real step files, and only one row is current. Below 900px these same rows
+      grow to 44px tap targets inside the dialog, which is what the specimen
+      shows on a phone.
+    </p>
+  </section>
+
+  <!-- ─── NUMBERED BLOCKS ─── -->
+  <section class="block" id="blocks">
+    <header>
+      <h2>Numbered blocks</h2>
+      <span class="meta">.blocks · .blk · --now · --pass</span>
+    </header>
+
+    <p class="spec-note">A build step after the hero is one
+      <code class="mono">.blocks</code> section holding exactly three
+      <code class="mono">.blk</code> blocks, numbered 0, 1, 2:
+      <b>0 why this step exists</b>, <b>1 write the prompt yourself</b> (blue),
+      <b>2 pass check</b> (green). The design rule the specimen carries:
+      <b>one heavy object per build step</b>, and it is the
+      <a href="#brief">brief card</a> inside block 1 (until 2026-09-01 it was a
+      prompt card; route A build steps carry no pasteable prompt any more).
+      Blocks 0 and 2 stay light, a 1px rule on a soft tint. Never give block 0
+      or block 2 a dark fill, a thick border, or a numeral heavier than the
+      brief; that is what makes the card the participant writes from win at a
+      glance from across a room and beside a terminal.</p>
+
+    <p class="sub-label">The three states in one <code class="mono">.blocks</code> wrapper</p>
+    <section class="blocks" style="margin-top:0; max-width: 688px;">
+      <div class="blk">
+        <span class="blk__num" aria-hidden="true">0</span>
+        <div>
+          <h2 class="blk__title">State the problem, not the solution</h2>
+          <p>Three to five sentences of motivation. The heading is the "Why"
+          heading the page already has, without its trailing period. A
+          participant who reads only the hero and this block can say why the
+          step exists.</p>
+        </div>
+      </div>
+      <div class="blk blk--now">
+        <span class="blk__num" aria-hidden="true">1</span>
+        <div>
+          <h2 class="blk__title">Write the prompt yourself</h2>
+          <p>There is no prompt to paste. You write it, from the card below, and Claude helps you sharpen it before you run it.</p>
+          <div class="brief">
+            <div class="brief__head">
+              <span class="brief__badge"><i></i>CHECKLIST</span>
+              <span class="brief__stage">stage 1 · plan</span>
+            </div>
+            <div class="brief__row brief__row--where">
+              <span class="brief__lbl">which stage this is</span>
+              <span class="brief__val">Stage 1, Plan, the play <b>Capture as intent.md</b> in the <a href="https://claude.com/blog/the-ai-native-sdlc-playbook#sd-s1" target="_blank" rel="noopener">playbook</a>. Name the stage in your prompt. Say this workshop is a loose version of the playbook. Give Claude the link so it reads the stage itself: <a href="https://claude.com/blog/the-ai-native-sdlc-playbook" target="_blank" rel="noopener">claude.com/blog/the-ai-native-sdlc-playbook</a>.</span>
+            </div>
+            <div class="brief__row brief__row--must">
+              <span class="brief__lbl">must be in your prompt<span class="brief__sub">a later step or the pass check needs it</span></span>
+              <ul class="brief__list">
+                <li>The file at <code>docs/intent.md</code>.<span class="brief__why">Steps 05 to 08 read it from that path.</span></li>
+                <li>What was already fixed and what you decided during the interview are kept apart in the file.<span class="brief__why">Step 05 reopens what you decided and never touches what was fixed.</span></li>
+                <li>Claude shows you the file and commits it only when you say it is right. No code.<span class="brief__why">Your one look at the file before a later step reads it. Code now has no spec behind it.</span></li>
+              </ul>
+            </div>
+            <div class="brief__row brief__row--tips">
+              <span class="brief__lbl">tips and hints<span class="brief__sub">nothing later depends on it</span></span>
+              <ul class="brief__list">
+                <li>One question at a time, with the AskUserQuestion tool, each answer choosing the next question.</li>
+                <li>Facts are Claude's to look up, decisions are yours.</li>
+              </ul>
+            </div>
+            <div class="brief__foot">
+              <span class="arrow">▲</span>
+              <span>Build the prompt with Claude. Check it against this list. Then run it.</span>
+            </div>
+          </div>
+          <p class="hint" style="margin: 18px 0 0;">Build the prompt with Claude the way <a href="step-04.html#spar">step 04</a> shows. One more thing to check before you run it: the one line this prompt loses most easily.</p>
+        </div>
+      </div>
+      <div class="blk blk--pass">
+        <span class="blk__num" aria-hidden="true">2</span>
+        <div>
+          <h2 class="blk__title">Pass check</h2>
+          <p><code>docs/intent.md</code> is committed, and it names
+          who is stuck and what they can do once this exists. Also: you can point at one line you changed in the prompt and say which of Claude's answers caused it.</p>
+          <p class="miss">Missed? Ask Claude who the file is about, and have it
+          say so in the first sentence.</p>
+          <p><b>Passed?</b> The intent file is what step 05 reads.</p>
+        </div>
+      </div>
+    </section>
+
+    <p class="spec-note" style="margin-top:18px">On a build step the pass check
+      IS block 2. It is not an <code class="mono">aside.pass-check</code> and it
+      carries no <code class="mono">.pc-label</code>. The
+      <code class="mono">.pass-check</code> primitive survives for concept steps
+      and is inventoried under <a href="#challenge">Challenge steps</a>.</p>
+
+    <p class="sub-label" style="margin-top:22px">.miss-cases · when more than one thing can go wrong</p>
+    <p class="spec-note">A <code class="mono">.miss</code> with one recovery move
+      stays a sentence, and most of them should. When a step can miss in two or
+      three distinguishable ways, the symptoms have to be findable: a participant
+      reads this under time pressure, scanning for the line that matches what is
+      on their screen, and a symptom buried mid-paragraph is not findable. Symptom
+      in <code class="mono">&lt;b&gt;</code>, fix behind it, one case per row. A
+      <code class="mono">.miss</code> with five cases is a step doing too much;
+      fix the step, not the list. Live use:
+      <code class="mono">step-06.html</code>, block 2.</p>
+    <div class="blk blk--pass">
+      <span class="blk__num" aria-hidden="true">2</span>
+      <div>
+        <h2 class="blk__title">Pass check</h2>
+        <p>In the fresh session, ask whether the project works yet without naming the
+        skill: it reports FAIL and names the criterion that failed.</p>
+        <p class="miss">Missed? Match what you saw:</p>
+        <ul class="miss-cases">
+          <li><b>Nothing ran?</b> The description has to name the moment. Add the words you actually used, then restart.</li>
+          <li><b>Ran the command itself?</b> That is the body asking rather than forcing. Say "use the verifier subagent", watch it comply, then note that you had to say it.</li>
+          <li><b>PASS already?</b> Part of it already works, which is normal outside a workshop.</li>
+        </ul>
+        <p style="margin-top:10px"><b>Passed?</b> Sticker up.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── BRIEF ─── -->
+  <section class="block" id="brief">
+    <header>
+      <h2>Brief</h2>
+      <span class="meta">.brief · what the participant's own prompt has to carry · retired from live pages 2026-09-04, archive/two-route-fork/ only</span>
+    </header>
+
+    <p class="spec-note">The one heavy object on a route A build step since
+      2026-09-01, in the slot the prompt card held. The pages no longer print a
+      prompt to paste: the participant builds the prompt with Claude and holds
+      each proposal against this card, so since 2026-09-03 (evening) it is a
+      CHECKLIST card and looks like one: paper, a 1.5px ink border, a hard
+      offset shadow so it sits on the page like a card on a table, and one dark
+      head band in the terminal palette (the badge reads CHECKLIST). The musts
+      sit on white with an empty checkbox each; the where row and the tips sit
+      on the panel grey, so the must-haves are the brightest thing in the card.
+      It sits inside block 1 and is still the thing an eye moving between the
+      browser and the terminal comes back to. Live use:
+      <code class="mono">step-04.html</code> (canonical) and steps 05 to 08,
+      block 1. The retired prompts sit in
+      <code class="mono">docs/facilitator-prompts.md</code>, unlinked.</p>
+
+    <p class="spec-note"><b>Three rows, in the order the prompt gets written.</b>
+      <code class="mono">.brief__row--where</code> names the playbook stage and
+      play the step interprets, with the link, and ends by printing the address
+      itself as the link text, not the word "playbook": the participant has to
+      type it into the prompt, and a link they can only click is a stall.
+      <code class="mono">.brief a</code> wraps anywhere so the address never
+      widens the card.
+      <code class="mono">.brief__row--must</code> is what has to be in the
+      prompt: the file at its fixed path under <code class="mono">docs/</code>, the commit, and only what the next step
+      reads. The third row, <code class="mono">.brief__row--tips</code>, is the
+      tips and hints: nothing later depends on one, and the row renders in
+      <code class="mono">--ink-2</code> on <code class="mono">--bg-2</code> for that reason. Each row label ends in a
+      <code class="mono">.brief__sub</code> line that prints the test sorting a line
+      into that row: a must is what a later step or the pass check needs.
+      <b>Musts carry an empty
+      ink checkbox, tips a dim dash</b>; never restyle one to look like the
+      other. Since 2026-09-03 every must
+      carries its reason on a second line,
+      <code class="mono">.brief__why</code>: what goes wrong, or which later
+      step reads it, when the must is missing. It renders at 15px in
+      <code class="mono">--ink-2</code>, so the must stays the line the
+      participant checks against and the reason sits under it, read and never
+      copied. A must with no why line is a finding. Tips keep their reason in
+      their own sentence. No accent colour on the paper: the amber dot survives
+      only in the dark head band. The row labels and the
+      stage name are load-bearing and render in
+      <code class="mono">--ink</code>, never <code class="mono">--ink-3</code>;
+      the must label is uppercase and the heaviest mono weight, the heading of
+      the checklist. Body text is 16px Public
+      Sans: this card is read by a person, unlike the 13px mono prompt it
+      replaced. The foot carries the one instruction that is the same on every
+      step: build the prompt with Claude, check it against the list, run it.
+      The prompt round sits directly above the card (under the block's intro
+      paragraph, before the /clear chip): the <a href="#spar">spar</a> figure
+      on step 04, and on steps 05 to 08 a one-line
+      <code class="mono">.hint</code> that links back to it. The pass check
+      asks for one must the first proposal left out.</p>
+
+    <p class="sub-label">Label beside its row above 480px of card width, stacked below it</p>
+    <div class="brief" style="max-width: 660px;">
+      <div class="brief__head">
+        <span class="brief__badge"><i></i>CHECKLIST</span>
+        <span class="brief__stage">stage 1 · plan</span>
+      </div>
+      <div class="brief__row brief__row--where">
+        <span class="brief__lbl">which stage this is</span>
+        <span class="brief__val">Stage 1, Plan, the play <b>Capture as intent.md</b> in the <a href="https://claude.com/blog/the-ai-native-sdlc-playbook#sd-s1" target="_blank" rel="noopener">playbook</a>. Name the stage in your prompt. Say this workshop is a loose version of the playbook. Give Claude the link so it reads the stage itself: <a href="https://claude.com/blog/the-ai-native-sdlc-playbook" target="_blank" rel="noopener">claude.com/blog/the-ai-native-sdlc-playbook</a>.</span>
+      </div>
+      <div class="brief__row brief__row--must">
+        <span class="brief__lbl">must be in your prompt<span class="brief__sub">a later step or the pass check needs it</span></span>
+        <ul class="brief__list">
+          <li>The file at <code>docs/intent.md</code>.<span class="brief__why">Steps 05 to 08 read it from that path.</span></li>
+          <li>What was already fixed and what you decided during the interview are kept apart in the file.<span class="brief__why">Step 05 reopens what you decided and never touches what was fixed.</span></li>
+          <li>Claude shows you the file and commits it only when you say it is right. No code.<span class="brief__why">Your one look at the file before a later step reads it. Code now has no spec behind it.</span></li>
+        </ul>
+      </div>
+      <div class="brief__row brief__row--tips">
+        <span class="brief__lbl">tips and hints<span class="brief__sub">nothing later depends on it</span></span>
+        <ul class="brief__list">
+          <li>One question at a time, with the AskUserQuestion tool, each answer choosing the next question.</li>
+          <li>Facts are Claude's to look up, decisions are yours.</li>
+        </ul>
+      </div>
+      <div class="brief__foot">
+        <span class="arrow">▲</span>
+        <span>Build the prompt with Claude. Check it against this list. Then run it.</span>
+      </div>
+    </div>
+
+    <p class="spec-note" style="margin-top:18px">Not a figure: no figcaption, and
+      the rows are the text alternative in reading order. <b>No
+      <code class="mono">&lt;p&gt;</code> anywhere inside</b>, since
+      <code class="mono">.blk p</code> is 0,1,1 and outranks every rule in the
+      component. Every inline <code class="mono">&lt;code&gt;</code> in it stays
+      under about 35 characters: the card clips, but the page must never scroll
+      sideways at 390. <b>Never put a pasteable prompt in it</b>, and never give
+      a route A build step a <code class="mono">.prompt-card</code> beside it:
+      the whole point of the card is that the prompt is the participant's.
+      One exception since 2026-09-03: step 06 prints its finished prompt in
+      a <code class="mono">.prompt-card</code> under its card, and the card
+      above it explains the prompt row by row.</p>
+  </section>
+
+  <!-- ─── STEP IO ─── -->
+  <section class="block" id="stepio">
+    <header>
+      <h2>Step IO</h2>
+      <span class="meta">.step-io &middot; one per page &middot; last child of .hero on a build step &middot; retired from live pages 2026-09-04, archive/two-route-fork/ only</span>
+    </header>
+
+    <p class="spec-note">The at-a-glance band: what this step reads, the one
+      thing the participant decides, and what they leave with. It sits under the
+      meta-chip and above <a href="#blocks">the blocks</a>, so the page answers
+      "what am I doing here" before any prose runs. Live use:
+      <code class="mono">step-04.html</code> through
+      <code class="mono">step-08.html</code>.</p>
+
+    <p class="spec-note"><b>The middle cell is the reason the component
+      exists.</b> This project's test for a build step is "what does the
+      participant decide here, and does the pass check test that decision?", and
+      before this band that answer only surfaced in block 2, under the prompt.
+      Naming it in the hero is what lets the rest of the page cut its prose: the
+      band states what happens, so block 0 only has to argue why. A step whose
+      middle cell cannot be filled in as a phrase is a step whose decision has
+      not been found yet, and it belongs folded into its neighbour rather than
+      shipped.</p>
+
+    <p class="sub-label">Three cells above 520px of band width, stacked below it</p>
+    <div class="step-io">
+      <div class="step-io__grid">
+        <div class="step-io__cell">
+          <span class="step-io__lbl">you have</span>
+          <span class="step-io__val"><code>intent.md</code></span>
+        </div>
+        <span class="step-io__sep" aria-hidden="true"></span>
+        <div class="step-io__cell step-io__cell--do">
+          <span class="step-io__lbl">you decide</span>
+          <span class="step-io__val">which promise the spec left out</span>
+        </div>
+        <span class="step-io__sep" aria-hidden="true"></span>
+        <div class="step-io__cell">
+          <span class="step-io__lbl">you leave with</span>
+          <span class="step-io__val"><code>spec.md</code></span>
+        </div>
+      </div>
+    </div>
+
+    <p class="sub-label" style="margin-top:22px">First step in the chain, where there is no input file yet</p>
+    <div class="step-io">
+      <div class="step-io__grid">
+        <div class="step-io__cell">
+          <span class="step-io__lbl">you have</span>
+          <span class="step-io__val">an idea, in your head</span>
+        </div>
+        <span class="step-io__sep" aria-hidden="true"></span>
+        <div class="step-io__cell step-io__cell--do">
+          <span class="step-io__lbl">you decide</span>
+          <span class="step-io__val">when the interview knows enough to stop</span>
+        </div>
+        <span class="step-io__sep" aria-hidden="true"></span>
+        <div class="step-io__cell">
+          <span class="step-io__lbl">you leave with</span>
+          <span class="step-io__val"><code>intent.md</code></span>
+        </div>
+      </div>
+    </div>
+
+    <p class="spec-note" style="margin-top:18px">Construction follows
+      <a href="#twoways">two ways</a>, <a href="#ctxpair">context pair</a>,
+      <a href="#runswhen">runs when</a> and <a href="#lands">lands</a>: CSS boxes
+      holding real DOM text so it reflows, zooms and stacks, and <b>no
+      <code class="mono">role="img"</code> and no
+      <code class="mono">aria-label</code></b>, either of which would make the
+      cell text presentational. It parts company with those four in two ways.
+      It is <b>not a <code class="mono">&lt;figure&gt;</code> and has no
+      <code class="mono">figcaption</code></b>, because the six labelled cells
+      already read as the text alternative in order. And it sits in the hero
+      rather than in block 0, so its container query breaks at 520px of band
+      width rather than at the narrower thresholds the in-block figures use.
+      <b>No accent colour</b>, as everywhere: the middle cell is marked white on
+      the band's warm grey, which is the same grammar
+      <code class="mono">.two-ways__side--this</code> uses. The white panel is
+      the live one in this system, and the live one here is the participant's
+      own job.</p>
+  </section>
+
+  <!-- ─── TWO WAYS ─── -->
+  <section class="block" id="twoways">
+    <header>
+      <h2>Two ways</h2>
+      <span class="meta">.two-ways · one per page · block 0 of a build step</span>
+    </header>
+
+    <p class="spec-note">The "instead of what?" figure, and block 0's answer to
+      why a build step exists. Every step from 04 to 08 is a swap: there is a way
+      this normally goes, and the step trades it for a different one. As prose
+      that reads as an assertion the participant has to take on trust, because
+      the alternative it argues against is never on the page. Put both on the
+      page and the reader compares two concrete situations instead of believing
+      one claim. Live use: <code class="mono">step-08.html</code>, block 0 (07 dropped
+      its copy on 2026-09-03, the is/is-not caption carries that argument; 04 and 05 carry
+      <a href="#lands">lands</a> instead).</p>
+
+    <p class="spec-note"><b>The two panels are deliberately not identical
+      chrome</b>, which is where this parts company with
+      <a href="#ctxpair">Context pair</a>: there the two windows are two of the
+      same thing, here they are the default you are leaving behind and the thing
+      you do today. The left panel sits on <code class="mono">--bg-2</code> and
+      the right on <code class="mono">--paper</code>, so the white one is the
+      live one. That tint carries the whole "you are here" job, which is why the
+      component needs no accent colour. <b>Each panel ends in a
+      <code class="mono">.two-ways__then</code> line, and those two lines are the
+      argument</b>: what the usual way costs, and what this step buys. Write them
+      as consequences, never as slogans. If a
+      <code class="mono">__then</code> line could open a landing page, the figure
+      has stopped teaching.</p>
+
+    <p class="sub-label">Two panels above 460px of figure width, stacked below it</p>
+    <figure class="two-ways">
+      <div class="two-ways__grid">
+        <div class="two-ways__side">
+          <span class="two-ways__name">approve the plan</span>
+          <span class="two-ways__do">It reads well, so you say yes.</span>
+          <span class="two-ways__then">The flaw turns up later, in code, with more code sitting on top of it.</span>
+        </div>
+        <div class="two-ways__side two-ways__side--this">
+          <span class="two-ways__name">push back on the plan</span>
+          <span class="two-ways__do">You find one thing that is wrong or missing and put it to the plan.</span>
+          <span class="two-ways__then">The same flaw costs one sentence, because nothing has been built on it yet.</span>
+        </div>
+      </div>
+      <figcaption class="two-ways__cap">A good plan settles its riskiest unknown
+        first, so the thing that could sink it surfaces before anything is built on
+        top of it. <b>intent.md is the yardstick</b>: the steps get measured against
+        what it promised.</figcaption>
+    </figure>
+
+    <p class="sub-label" style="margin-top:22px">With .two-ways__say, for a step whose contrast is in the words you type</p>
+    <figure class="two-ways">
+      <div class="two-ways__grid">
+        <div class="two-ways__side">
+          <span class="two-ways__name">hand over the answer</span>
+          <span class="two-ways__say">build me a search box over my photos</span>
+          <span class="two-ways__then">Everything after this gets built to make a search box work. Nobody ever checks whether a search box was the right idea.</span>
+        </div>
+        <div class="two-ways__side two-ways__side--this">
+          <span class="two-ways__name">hand over the problem</span>
+          <span class="two-ways__say">nobody can find the photos from last year's birthday</span>
+          <span class="two-ways__then">The search box is now a proposal. Step 05 checks the spec against what your intent promised, and you get to see what it left out.</span>
+        </div>
+      </div>
+      <figcaption class="two-ways__cap">Keep the panels concrete: a real sentence
+        someone would type beats a description of the kind of sentence. That is what
+        makes the figure the thing a participant repeats when they explain the step
+        to someone else.</figcaption>
+    </figure>
+
+    <p class="spec-note" style="margin-top:18px">Same construction rules as the
+      other two figures, for the same reasons: CSS boxes holding real DOM text so
+      it reflows, zooms and stacks; <b>no
+      <code class="mono">&lt;p&gt;</code> anywhere inside</b>, since
+      <code class="mono">.blk p</code> is 0,1,1 and outranks every rule in the
+      component; and <b>no <code class="mono">role="img"</code> and no
+      <code class="mono">aria-label</code></b> on the figure, which would make the
+      panel text presentational. The <code class="mono">figcaption</code> is the
+      text alternative. The <code class="mono">__then</code> lines bottom-align
+      through an auto top margin, so uneven panels still land their two
+      consequences on one baseline.</p>
+  </section>
+
+  <!-- ─── CONTEXT PAIR ─── -->
+  <section class="block" id="ctxpair">
+    <header>
+      <h2>Context pair</h2>
+      <span class="meta">.ctx-pair · one per page</span>
+    </header>
+
+    <p class="spec-note">Two context windows side by side, one arrow out and one
+      arrow back. It exists to make <b>a subagent has its own context window</b>
+      visible instead of asserted, so both boxes carry identical chrome (they are
+      two of the same thing) and the asymmetry lives entirely in what each one
+      holds. The argument it draws is <b>the tool split, not the token saving</b>: the
+      side that reports the verdict has no <code class="mono">Edit</code> and no
+      <code class="mono">Write</code>, so it cannot make its own verdict come out
+      differently. That is why each window ends in a
+      <code class="mono">.ctx-pair__because</code> line, and why those two lines
+      are the only sentences in the figure. Live use:
+      <code class="mono">step-06.html</code>, block 0.</p>
+
+    <p class="sub-label">Side by side above 560px of figure width, stacked below it</p>
+    <figure class="ctx-pair">
+      <div class="ctx-pair__grid">
+
+        <div class="ctx-pair__win">
+          <span class="ctx-pair__name">your session</span>
+          <ul class="ctx-pair__list">
+            <li><code>spec.md</code> and your code</li>
+            <li>everything you have said today</li>
+            <li>tools: everything, <code>Edit</code> and <code>Write</code> included</li>
+          </ul>
+          <span class="ctx-pair__because">so this is the side that fixes</span>
+        </div>
+
+        <div class="ctx-pair__flow ctx-pair__flow--out">
+          <span class="ctx-pair__arrow" aria-hidden="true"></span>
+          <span class="ctx-pair__label">the command, and what has to hold</span>
+        </div>
+
+        <div class="ctx-pair__win ctx-pair__win--sub">
+          <span class="ctx-pair__name">verifier subagent</span>
+          <ul class="ctx-pair__list">
+            <li>a fresh window, nothing from your session</li>
+            <li>tools: <code>Read</code>, <code>Grep</code>, <code>Glob</code>, <code>Bash</code></li>
+            <li class="ctx-pair__none">no <code>Edit</code>, no <code>Write</code></li>
+          </ul>
+          <span class="ctx-pair__because">so it cannot make it pass</span>
+          <span class="ctx-pair__keep">the rest of what it printed stays here</span>
+        </div>
+
+        <div class="ctx-pair__flow ctx-pair__flow--back">
+          <span class="ctx-pair__arrow" aria-hidden="true"></span>
+          <span class="ctx-pair__label">
+            <b class="ctx-pair__tag">verdict</b>
+            <span>PASS, FAIL or BLOCKED</span>
+            <span>which criterion</span>
+            <span>the last lines</span>
+          </span>
+        </div>
+
+      </div>
+      <figcaption class="ctx-pair__cap">The command runs in the other window, and only
+        the verdict comes back. <b>Today it says FAIL or BLOCKED</b>, and nothing in that window
+        could have turned it into a PASS.</figcaption>
+    </figure>
+
+    <p class="spec-note" style="margin-top:18px"><b>Never put a count in
+      <code class="mono">.ctx-pair__keep</code>.</b> "1,400 lines of output" is an
+      invented number, it is false on a repo where nothing is built yet, and it
+      invites arithmetic against the 1M window step 03 just showed. Say there is
+      output; never say how much. <b>No accent colour</b>, either: green is PASS and
+      blue is NOW in this system, block 0 sits directly above the blue
+      <code class="mono">.blk--now</code>, and a build step gets one heavy object.
+      Emphasis is weight, so the returning arrow is the darkest line in the figure.
+      The figure carries <b>no <code class="mono">&lt;p&gt;</code></b>: inside a
+      <code class="mono">.blk</code>, <code class="mono">.blk p</code> is 0,1,1 and
+      outranks every rule in the component. And it takes <b>no
+      <code class="mono">role="img"</code> and no
+      <code class="mono">aria-label</code></b>: the panel text is real text in the
+      accessibility tree, either attribute would make the whole subtree
+      presentational, and the <code class="mono">figcaption</code> is the text
+      alternative. Keep the caption free of left and right, which stop being true
+      when it stacks.</p>
+  </section>
+
+  <!-- ─── RUNS WHEN ─── -->
+  <section class="block" id="runswhen">
+    <header>
+      <h2>Runs when</h2>
+      <span class="meta">.runs-when · the companion to the context pair</span>
+    </header>
+
+    <p class="spec-note">What a step leaves in the repo, and what makes each piece
+      actually run. <a href="#ctxpair">Context pair</a> answers "who runs the check
+      and why would you believe it"; this answers the question the reader asks
+      next, which is "and what makes any of it fire?" <b>The second column is the
+      whole figure.</b> Read down it and the answers get stronger without the page
+      claiming they do: nothing calls it, someone has to ask, nobody has to ask,
+      Claude is not asked at all. Live use:
+      <code class="mono">step-06.html</code>, block 0. The retired Conventions page
+      carried it too, until 2026-09-03.</p>
+
+    <p class="spec-note"><b>It is not a ladder and it takes no numbers.</b> The rows
+      are files in a folder. A numbered version of this idea shipped once into a
+      page whose blocks are already numbered 0, 1, 2 and was cut for exactly that
+      collision. The repo boundary is <b>drawn, not described</b>: the skill that
+      belongs to no project sits outside the box in a
+      <code class="mono">.runs-when__away</code> line, which is the whole personal
+      versus project distinction without a sentence spent on it. A file that is
+      real but is not today's work sits inside the box as
+      <code class="mono">.runs-when__row--later</code>, on a dashed rule with a
+      <code class="mono">.runs-when__tag</code>.</p>
+
+    <p class="sub-label">Two columns above 520px of figure width, stacked below it</p>
+    <figure class="runs-when">
+      <span class="runs-when__away">A skill in <code>~/.claude/skills/</code> would follow you to every project. Everything here lives in the repo instead, so whoever clones it gets all of it.</span>
+
+      <div class="runs-when__box">
+        <span class="runs-when__name">this repo, once the prompt is done</span>
+
+        <div class="runs-when__row">
+          <span class="runs-when__path">.claude/agents/verifier.md</span>
+          <span class="runs-when__fire"><b class="runs-when__ans">Nothing calls it by itself.</b> The verifier window from the figure above, written down as a file.</span>
+          <span class="runs-when__note">The acceptance-check skill is what hands it the command and the criteria.</span>
+        </div>
+
+        <div class="runs-when__row">
+          <span class="runs-when__path">.claude/skills/acceptance-check/</span>
+          <span class="runs-when__fire"><b class="runs-when__ans">Someone has to ask.</b> Claude loads it when someone asks to verify, check or test the project.</span>
+          <span class="runs-when__note">Not <code>verify</code>: <code>/verify</code> already owns that name, and writes its own recipe at that path.</span>
+        </div>
+
+        <div class="runs-when__row">
+          <span class="runs-when__path">CLAUDE.md</span>
+          <span class="runs-when__fire"><b class="runs-when__ans">Nobody has to ask.</b> Claude reads it at the start of every session in this repo, whatever you came in to do.</span>
+          <span class="runs-when__note">This is the one that makes done mean the check passed.</span>
+        </div>
+
+        <div class="runs-when__row runs-when__row--later">
+          <span class="runs-when__path">.claude/settings.json<span class="runs-when__tag">not today</span></span>
+          <span class="runs-when__fire"><b class="runs-when__ans">Claude is not asked at all.</b> A hook is a script the harness runs on an event.</span>
+          <span class="runs-when__note">The only one here that is enforced rather than requested. Write it once you know the check is the one you want.</span>
+        </div>
+      </div>
+
+      <figcaption class="runs-when__cap">Read down the second column and the answers get
+        stronger on their own. A skill body can ask, and asking is all a body can do.
+        <b>CLAUDE.md</b> is what makes the check fire when nobody requested it.</figcaption>
+    </figure>
+
+    <p class="spec-note" style="margin-top:18px">Same construction rules as the
+      context pair, for the same reasons. <b>No accent colour</b>: green is PASS,
+      blue is NOW, and block 0 sits above both, so the only emphasis is the
+      <code class="mono">.runs-when__ans</code> lead-in at weight 600. <b>No
+      <code class="mono">&lt;p&gt;</code> anywhere inside</b>, since
+      <code class="mono">.blk p</code> is 0,1,1 and outranks every rule in the
+      component. <b>No <code class="mono">role="img"</code> and no
+      <code class="mono">aria-label</code></b> on the figure, which would make the
+      row text presentational; the <code class="mono">figcaption</code> is the text
+      alternative. And no tree-drawing glyphs: they do not survive a screen reader
+      and do not reflow when the row stacks, so nesting is an indent or nothing.</p>
+  </section>
+
+  <!-- ─── SKILL MODES ─── -->
+  <section class="block" id="skillmodes">
+    <header>
+      <h2>Skill modes</h2>
+      <span class="meta">.skill-modes · the three moments a skill fires</span>
+    </header>
+
+    <p class="spec-note">Three rows on one axis: when a skill fires relative to
+      the work. Conventions load while Claude works, a procedure is the work, a
+      review runs after it. <b>The left column is the axis</b>: read down it and
+      the moment moves later. The <code class="mono">__eg</code> line names real,
+      public skills of that row's kind, so each row is a fact with an address
+      rather than a category. Live use: none in the sequence. The Conventions page carried it in
+      block 0 until 2026-09-02, when the review found it decoration for that
+      step's decision (which pile a convention goes in); that page was retired on
+      2026-09-03 and the specimen stays.</p>
+
+    <p class="spec-note"><b>It is not a ranking and it takes no numbers.</b> No
+      row is better; the rows are moments. The row a step is about is named in
+      the figcaption, never marked with colour: green is PASS, blue is NOW, and
+      block 0 sits directly above both.</p>
+
+    <p class="sub-label">Two columns above 520px of figure width, stacked below it</p>
+    <figure class="skill-modes">
+      <div class="skill-modes__box">
+        <span class="skill-modes__name">three moments a skill fires</span>
+
+        <div class="skill-modes__row">
+          <span class="skill-modes__when">while Claude works</span>
+          <span class="skill-modes__what"><b class="skill-modes__kind">Conventions.</b> The standards the output must follow, loaded before it exists so it comes out right the first time.</span>
+          <span class="skill-modes__eg">brand-guidelines · api-conventions</span>
+        </div>
+
+        <div class="skill-modes__row">
+          <span class="skill-modes__when">as the task itself</span>
+          <span class="skill-modes__what"><b class="skill-modes__kind">Procedures.</b> The steps and scripts of a job the team does the same way every time.</span>
+          <span class="skill-modes__eg">docx · pptx · mcp-builder</span>
+        </div>
+
+        <div class="skill-modes__row">
+          <span class="skill-modes__when">after the work</span>
+          <span class="skill-modes__what"><b class="skill-modes__kind">Reviews.</b> A check the team runs on finished work before it ships.</span>
+          <span class="skill-modes__eg">secure-api-review · security-review</span>
+        </div>
+      </div>
+
+      <figcaption class="skill-modes__cap">One axis: when the skill fires relative
+        to the work. <b>The caption is where a page says which row is today's</b>,
+        so the figure itself stays reusable.</figcaption>
+    </figure>
+
+    <p class="spec-note" style="margin-top:18px">Same construction rules as the
+      context pair and runs-when, for the same reasons. <b>No accent colour</b>:
+      the only emphasis is the <code class="mono">.skill-modes__kind</code>
+      lead-in at weight 600. <b>No <code class="mono">&lt;p&gt;</code> anywhere
+      inside</b>, since <code class="mono">.blk p</code> is 0,1,1 and outranks
+      every rule in the component. <b>No <code class="mono">role="img"</code> and
+      no <code class="mono">aria-label</code></b> on the figure, which would make
+      the row text presentational; the <code class="mono">figcaption</code> is the
+      text alternative.</p>
+  </section>
+
+  <!-- ─── LANDS ─── -->
+  <section class="block" id="lands">
+    <header>
+      <h2>Lands</h2>
+      <span class="meta">.lands · where each line of the input ends up</span>
+    </header>
+
+    <p class="spec-note">One row per kind of line in the file a step reads, and the
+      heading in the file it writes that the line has to arrive under. It replaces a
+      routing rule recited in prose. <b>The last row is the figure.</b> The first
+      rows always land, so they set the pattern; the last one is the one that can
+      land nowhere, and finding it is the step's decision. Live use: <code class="mono">step-04.html</code> and <code class="mono">step-05.html</code>, block 0;
+      <code class="mono">step-07.html</code>, block 0 (the four things to look for in
+      Claude's plan and the heading each sits under, where the gap row is the one found
+      only by reading spec.md against the plan); and <code class="mono">step-08.html</code>,
+      block 1 under the brief (the three kinds of work the plan missed; cut on the morning
+      of 2026-09-03 for a one-line rule, restored the same afternoon when that rule had
+      grown into a four-idea must). On 04 the gap row is the line that is easiest to file
+      under the wrong heading rather than one that can land nowhere.</p>
+
+    <p class="spec-note">The gap row is <b>drawn, not described</b>: it sits on a
+      dashed rule with a <code class="mono">.lands__tag</code>, the same treatment
+      <a href="#runswhen">runs when</a> gives a file that is real but is not today's
+      work. The arrow on <code class="mono">.lands__to</code> is a
+      <code class="mono">::before</code> and therefore decorative, because the grid
+      already says which column is which; when the figure stacks below 500px the
+      arrow is dropped for a left rule, since a sideways arrow above a stacked row
+      points the wrong way.</p>
+
+    <p class="sub-label">Two columns above 500px of figure width, stacked below it</p>
+    <figure class="lands">
+      <div class="lands__box">
+        <span class="lands__name">every line of intent.md lands somewhere</span>
+        <div class="lands__row">
+          <span class="lands__from">a technology someone already chose</span>
+          <span class="lands__to">stays a constraint. Claude is not picking your stack.</span>
+        </div>
+        <div class="lands__row">
+          <span class="lands__from">an open question it can answer</span>
+          <span class="lands__to"><b>Decisions taken</b>, with its reason</span>
+        </div>
+        <div class="lands__row">
+          <span class="lands__from">an open question it cannot</span>
+          <span class="lands__to"><b>Areas of concern</b>, naming who settles it</span>
+        </div>
+        <div class="lands__row lands__row--gap">
+          <span class="lands__from">a promise under Proposed outcome</span>
+          <span class="lands__to"><b>Requirements</b>, with a criterion that decides it<span class="lands__tag">or nowhere</span></span>
+        </div>
+      </div>
+      <figcaption class="lands__cap">The first three always land. <b>Your review is
+        looking for the fourth when it did not</b>: a promise that was never argued
+        down, never listed under Non-goals, just missing while everything around it
+        still reads fine.</figcaption>
+    </figure>
+
+    <p class="spec-note" style="margin-top:18px">Same construction rules as the
+      <a href="#ctxpair">context pair</a> and <a href="#runswhen">runs when</a>, for
+      the same reasons. <b>No accent colour</b>: green is PASS, blue is NOW, and
+      block 0 sits above both, so the only emphasis is the bold destination at
+      weight 600. <b>No <code class="mono">&lt;p&gt;</code> anywhere inside</b>,
+      since <code class="mono">.blk p</code> is 0,1,1 and outranks every rule in the
+      component. <b>No <code class="mono">role="img"</code> and no
+      <code class="mono">aria-label</code></b> on the figure; the
+      <code class="mono">figcaption</code> is the text alternative.</p>
+  </section>
+
+  <!-- ─── IS / IS NOT ─── -->
+  <section class="block" id="isnot">
+    <header>
+      <h2>Is / is not</h2>
+      <span class="meta">.isnot · a thing defined by contrast, one row per pair</span>
+    </header>
+
+    <p class="spec-note">Block 0 of step 04 (added 2026-09-03): intent.md
+      defined by what it is beside what it gets mistaken for, one row per
+      pair, so a participant who has never written one sees the boundary
+      without reading a paragraph about it. The head names the two columns;
+      the not column reads in <code class="mono">--ink-2</code> with a cross
+      marker that is decorative (the head says which column is which). The
+      figcaption carries the why, who reads the file later, and is the text
+      alternative. Live use: block 0 of every build step, 04 to 08, under
+      the title that names the phase and above the figure that carries the
+      step's own decision.</p>
+
+    <p class="spec-note">Same construction rules as the rest of the family:
+      CSS boxes holding real DOM text; no accent colour; no
+      <code class="mono">&lt;p&gt;</code> inside; no
+      <code class="mono">role="img"</code>. Below 440px of figure width the
+      head goes and each cell prints its own small label, so the pair still
+      reads stacked.</p>
+
+    <p class="sub-label">Two columns above 440px of figure width, stacked below it</p>
+    <figure class="isnot">
+      <div class="isnot__box">
+        <div class="isnot__head">
+          <span class="isnot__name">intent.md is</span>
+          <span class="isnot__name isnot__name--not">it is not</span>
+        </div>
+        <div class="isnot__row">
+          <span class="isnot__is">the problem, in the words of the person who has it</span>
+          <span class="isnot__not">a solution, or a list of features</span>
+        </div>
+        <div class="isnot__row">
+          <span class="isnot__is">what someone can do once this exists, one line each</span>
+          <span class="isnot__not">how it gets built, or with what</span>
+        </div>
+        <div class="isnot__row">
+          <span class="isnot__is">what you picked just now, marked as still open</span>
+          <span class="isnot__not">a choice of yours written down as a fact</span>
+        </div>
+      </div>
+      <figcaption class="isnot__cap"><b>Why it exists</b>: step 05 decides each outcome line, step 07 checks the plan against it, step 08 builds what it says.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ─── SPAR ─── -->
+  <section class="block" id="spar">
+    <header>
+      <h2>Spar</h2>
+      <span class="meta">.spar · a round with Claude, turn by turn · retired from live pages 2026-09-04, archive/two-route-fork/ only</span>
+    </header>
+
+    <p class="spec-note">The build steps stopped printing prompts on 2026-09-01,
+      and since 2026-09-03 the participant does not draft alone either. What a
+      participant takes home is this round: set the scene for Claude (workshop,
+      own idea, a loose version of the playbook with the link, the stage the
+      card names), ask Claude to help write the prompt, answer its questions,
+      hold each proposal against the card's must list, go round until every
+      must is covered, then clear and paste the finished prompt. That is a
+      sequence of who acts on what, which is what a figure is for. <b>The prompt
+      round is drawn once</b>, in block 1 of <code class="mono">step-04.html</code>
+      directly under the block's intro paragraph and above the /clear chip and
+      the brief (the brief is taller than a screen, and a first-timer needs the
+      shape of the round before the contents of the card), with
+      <code class="mono">id="spar"</code>. The class name and the id are from
+      the sparring round this replaced; they stay so the CSS and the links from
+      steps 05 to 08 stay put. Those steps carry a one-line
+      <code class="mono">.hint</code> that links back here and adds one thing
+      to check before the run; they never carry a second copy of the prompt
+      round. Step 07 uses the primitive once more for a different
+      conversation, its round two (since 2026-09-03): Claude shows the plan
+      and offers to leave plan mode, the participant asks the playbook's
+      three questions, pushes back, and approves only once the push-back
+      is in the plan. Five turns again, Claude's two on
+      <code class="mono">--bg-2</code>, the approval as the run turn.</p>
+
+    <p class="spec-note">Two columns: who, and what they do. Five turns: you
+      set the scene, Claude asks and proposes, you hold it against the card,
+      you go round again, you run. Claude's one turn sits on
+      <code class="mono">--bg-2</code> so it reads as the other voice. The last
+      turn is the run and sits under a heavier rule: everything above that
+      line is conversation and nothing has run yet. The things to tell Claude
+      are a <code class="mono">.spar__asks</code> list in the first turn, with
+      plain dash markers and no numbers, because the page's blocks are already
+      0, 1, 2. Claude's turn carries the worked example,
+      <code class="mono">.spar__eg</code>: the first proposal's line, the must
+      it left out, the line added, in the same mono box
+      <a href="#twoways">two ways</a> uses for a thing someone typed. On step
+      04 the example is the must block 0's figure warns about and the pass
+      check tests, so blocks 0, 1 and 2 point at the same line. The card is
+      the checklist and is never pasted to Claude: that is what makes the
+      round a round.</p>
+
+    <p class="sub-label">Who beside what above 440px of figure width, stacked below it</p>
+    <figure class="spar">
+      <div class="spar__box">
+        <span class="spar__name">build the prompt with Claude: a few rounds, then the run</span>
+        <div class="spar__turn">
+          <span class="spar__who">you</span>
+          <div class="spar__what"><b>Set the scene.</b> Keep the card to yourself for now: it is how you judge what comes back. Tell Claude, in your own words:
+            <ul class="spar__asks">
+              <li>you are in a workshop, building your own idea</li>
+              <li>the day follows a loose version of Anthropic's AI-native SDLC playbook, and here is the link (paste it from the card)</li>
+              <li>this step is the stage the card names</li>
+              <li>help me write a good prompt for that stage</li>
+            </ul>
+          </div>
+        </div>
+        <div class="spar__turn spar__turn--claude">
+          <span class="spar__who">Claude</span>
+          <div class="spar__what"><b>Asks, then proposes a prompt.</b> Answer its questions in a sentence or two each. The first proposal reads well and misses things. On this step, for example:
+            <div class="spar__eg">
+              <span><b>first</b> Interview me about my idea, then write docs/intent.md</span>
+              <span><b>missed</b> my picks in the interview go under Open questions</span>
+              <span><b>added</b> Put each answer I picked just now under Open questions</span>
+            </div>
+          </div>
+        </div>
+        <div class="spar__turn">
+          <span class="spar__who">you</span>
+          <div class="spar__what"><b>Hold it against the card.</b> Go down the must list. For each must the proposal does not cover, tell Claude what is missing and ask it to add that line. Ask about any line you do not understand: what does this line make you do?</div>
+        </div>
+        <div class="spar__turn">
+          <span class="spar__who">you</span>
+          <div class="spar__what"><b>Go round again.</b> Claude rewrites, you check the list again. Two or three rounds is normal. Stop when no must is missing and you can say what every line is for. If Claude offers to leave plan mode before then, pick <code>No, keep planning</code>: you are still writing the prompt.</div>
+        </div>
+        <div class="spar__turn spar__turn--run">
+          <span class="spar__who">you</span>
+          <div class="spar__what"><b>Run it.</b> Copy the finished prompt. Clear the session, unless the step says to stay in it, so the prompt has to work on its own [1]. Paste it and press Return. Claude now does what the prompt says.</div>
+        </div>
+      </div>
+      <figcaption class="spar__cap">Claude knows the shape of a good prompt. Only you know what it has to cover [2], and the card is how you check that it does.</figcaption>
+    </figure>
+
+    <p class="spec-note" style="margin-top:18px">Same construction rules as the
+      <a href="#lands">lands</a> figure and the rest of the family, for the same
+      reasons. <b>No accent colour</b>: this figure sits inside the blue block,
+      so any hue here would fight the block's own; the only emphasis is the bold
+      verb of each turn. <b>No <code class="mono">&lt;p&gt;</code> anywhere
+      inside</b>, since <code class="mono">.blk p</code> is 0,1,1 and outranks
+      every rule in the component. <b>No <code class="mono">role="img"</code> and
+      no <code class="mono">aria-label</code></b> on the figure; the
+      <code class="mono">figcaption</code> is the text alternative. The four
+      questions are the substance of the round and are worded on the page, not
+      as a pasteable prompt: the participant asks them in their own words.</p>
+  </section>
+
+  <!-- ─── ROUTE MAP ─── -->
+  <section class="block" id="routemap">
+    <header>
+      <h2>Route map</h2>
+      <span class="meta">.route-map · one per page · last child of .hero on a route page</span>
+    </header>
+
+    <p class="spec-note">The at-a-glance band a <b>route</b> page carries where a build
+      step carries <a href="#stepio">step IO</a>. A route is not a step, so it has no
+      "you have / you decide / you leave with" to state; what it has instead is an
+      <b>order</b>, and where the order is the argument the order is what belongs above
+      the fold. Three stages, each naming who acts and what exists once they are done.
+      No live use at present: the prototype-first route that carried it was
+      archived on 2026-09-01, and the primitive stays for the next route page.</p>
+
+    <p class="spec-note">The three artboard tiles are the only drawn thing in this
+      system, and they carry <b>three different internal layouts on purpose</b>: a header
+      over rows, a rail beside a body, a grid of blocks. Three identical tiles would say
+      the opposite of what that stage is for. They are decorative and
+      <code class="mono">aria-hidden</code>; the sentence beside them is the real text.</p>
+
+    <p class="sub-label">Three across above 600px of figure width, stacked below it</p>
+    <figure class="route-map">
+      <div class="route-map__grid">
+
+        <div class="route-map__stage">
+          <span class="route-map__lbl">you say it</span>
+          <span class="route-map__val"><code>prd.md</code></span>
+          <span class="route-map__sub">your idea, interviewed out of you, with the shape of the screen left open</span>
+        </div>
+
+        <div class="route-map__sep">
+          <span class="route-map__arrow" aria-hidden="true"></span>
+        </div>
+
+        <div class="route-map__stage">
+          <span class="route-map__lbl">Claude draws it</span>
+          <span class="route-map__val">three clickable prototypes</span>
+          <span class="route-map__protos" aria-hidden="true">
+            <span class="route-map__proto route-map__proto--top"><i></i><i></i><i></i></span>
+            <span class="route-map__proto route-map__proto--rail"><i></i><i></i><i></i></span>
+            <span class="route-map__proto route-map__proto--grid"><i></i><i></i><i></i><i></i></span>
+          </span>
+          <span class="route-map__sub">one brief, three answers you can click through</span>
+        </div>
+
+        <div class="route-map__sep route-map__sep--pick">
+          <span class="route-map__arrow" aria-hidden="true"></span>
+          <span class="route-map__pick">your pick</span>
+        </div>
+
+        <div class="route-map__stage">
+          <span class="route-map__lbl">you pick one</span>
+          <span class="route-map__val">and that one gets built</span>
+          <span class="route-map__sub">the plan comes from the one that won</span>
+        </div>
+
+      </div>
+      <figcaption class="route-map__cap">All three exist before anything is planned, and
+        only one of them becomes the product. You click your way through each one, then
+        tell Claude which to build. <b>The plan is written after that answer, not before
+        it</b>, which is the order this route is for.</figcaption>
+    </figure>
+
+    <p class="spec-note" style="margin-top:18px">Same construction rules as
+      <a href="#twoways">two ways</a>, <a href="#ctxpair">context pair</a>,
+      <a href="#runswhen">runs when</a> and <a href="#lands">lands</a>. <b>No accent
+      colour</b>: green is PASS and blue is NOW, so the emphasis is weight, and the
+      second arrow is the darkest line in the figure because the pick is the one
+      decision the route exists for. That is the grammar
+      <a href="#ctxpair">context pair</a> uses for its returning arrow. <b>No
+      <code class="mono">&lt;p&gt;</code> anywhere inside</b>, and <b>no
+      <code class="mono">role="img"</code> and no
+      <code class="mono">aria-label</code></b> on the figure; the
+      <code class="mono">figcaption</code> is the text alternative. All three stages
+      are white panels, unlike <a href="#stepio">step IO</a>, which marks one: every
+      stage here is a real hand-off, and marking one would claim a hierarchy the
+      route does not have. <b>No numbers on the stages</b>, since the blocks below
+      are already 0, 1, 2.</p>
+  </section>
+
+  <!-- ─── SPINE ─── -->
+  <section class="block" id="spine">
+    <header>
+      <h2>Spine</h2>
+      <span class="meta">.spine · one per page · directly under .hero on step 04</span>
+    </header>
+
+    <p class="spec-note">The first figure on the afternoon page. Since 2026-09-04 the
+      afternoon is one route for everyone and <code class="mono">step-04.html</code>
+      carries no build-step chrome. What the page has to carry is an <b>order</b>:
+      interview first, the plan persisted in the repo, a critique of that plan,
+      then Claude verifying its own work against a finish line set with
+      <code class="mono">/goal</code>. Three moves are points on one hairline;
+      the fourth is a ring on that line, because it is a loop: build, run it,
+      look, fix, round again until it works. The names sit above the line in
+      Archivo and one plain sentence sits below it.</p>
+
+    <p class="spec-note">The ring is the one bold element. The line enters it at
+      "build" and leaves it after "look", to a tick in <code class="mono">--accent</code>
+      green, the system's own DONE colour and the only hue in the figure.
+      Nothing else is heavier than a hairline. The ring is a border-radius box;
+      its four steps are positioned spans whose paper ground knocks the ring
+      line out behind them; the arrowheads are border triangles rotated onto
+      the circumference. The dots, the line, the heads and the tick are
+      decorative and <code class="mono">aria-hidden</code>; the
+      <code class="mono">figcaption</code> is the text alternative.</p>
+
+    <p class="sub-label">One line across above 620px of figure width, downward below it</p>
+    <figure class="spine">
+      <ol class="spine__track">
+
+        <li class="spine__node">
+          <span class="spine__dot" aria-hidden="true"></span>
+          <span class="spine__name">Interview</span>
+          <span class="spine__text">Claude interviews you first, before it writes anything.</span>
+        </li>
+
+        <li class="spine__node">
+          <span class="spine__dot" aria-hidden="true"></span>
+          <span class="spine__name">Plan in the repo</span>
+          <span class="spine__text">The plan is a file, committed to the repo. Not a chat message.</span>
+        </li>
+
+        <li class="spine__node">
+          <span class="spine__dot" aria-hidden="true"></span>
+          <span class="spine__name">Critique</span>
+          <span class="spine__text">Read the plan critically and fix it before anything is built.</span>
+        </li>
+
+        <li class="spine__node spine__node--loop">
+          <span class="spine__dot" aria-hidden="true"></span>
+          <span class="spine__ring">
+            <span class="spine__verb">Verify</span>
+            <span class="spine__step spine__step--build">build</span>
+            <span class="spine__step spine__step--run">run it</span>
+            <span class="spine__step spine__step--look">look</span>
+            <span class="spine__step spine__step--fix">fix</span>
+            <i aria-hidden="true"></i><i aria-hidden="true"></i><i aria-hidden="true"></i><i aria-hidden="true"></i>
+          </span>
+          <span class="spine__text">You set the finish line with <code>/goal</code>, then Claude runs what it built and fixes what it sees until that check is met: in a browser through the <code>playwright-cli</code> skill, or in the Xcode simulator.</span>
+        </li>
+
+        <li class="spine__node spine__node--end">
+          <span class="spine__tick" aria-hidden="true"></span>
+          <span class="spine__name">works</span>
+        </li>
+
+      </ol>
+      <figcaption class="spine__cap"><b>Nothing is built before there is a plan: interviewed, written to the repo, critiqued.</b> Then the checking is Claude's own: you state the finish line with <code>/goal</code>, and Claude runs the result in a browser or a simulator and fixes it until a separate check says it is met.</figcaption>
+    </figure>
+
+    <p class="spec-note" style="margin-top:18px">Same construction rules as the
+      rest of the family: CSS boxes holding real DOM text so it reflows, zooms and
+      stacks; a container query keyed to the figure's own width; <b>no
+      <code class="mono">&lt;p&gt;</code> anywhere inside</b>; <b>no
+      <code class="mono">role="img"</code> and no <code class="mono">aria-label</code></b>
+      on the figure. Two deliberate departures: the four names take
+      <b>Archivo</b>, the page's heading face, because they are the figure's
+      headings; and the tick takes <b>green</b>, because green is DONE in this
+      system and the tick is the loop's exit. No other hue. <b>No numbers on the
+      moves</b>: the line carries the order. The figure has no 660px cap: the
+      line needs the whole reading column and there is no card to line up with.</p>
+  </section>
+
+  <!-- ─── CIRCUIT ─── -->
+  <section class="block" id="circuit">
+    <header>
+      <h2>Circuit</h2>
+      <span class="meta">.circuit · one per page · under the spine on step 04</span>
+    </header>
+
+    <p class="spec-note">The second figure on the afternoon page. The <a href="#spine">spine</a>
+      says what the afternoon is; the circuit says how to run it: four moves, once
+      per work item of the plan, then commit, clear and go round again. It is drawn the way a
+      transit map draws a line: one closed 2px ink path runs down the gutter
+      through four station rings and back up to the top, so the loop is visible
+      as a loop. The one-sentence shortcut is a dashed inner branch that leaves
+      the line beside its rule and rejoins above 3. Each station carries the
+      title in Archivo, one plain sentence, and at the far edge exactly what the
+      participant presses or types: real key caps (<code class="mono">kbd</code>)
+      and command chips (<code class="mono">.circuit__cmd</code>, caret in the
+      system's "inside Claude" blue). Moves 1 and 3 carry their prompts in a
+      <code class="mono">.prompt-card</code> each, the two dark objects on the page,
+      copy buttons wired by <code class="mono">workshop-nav.js</code>.</p>
+
+    <p class="spec-note">Built on subgrid: the track is the grid and every move is a
+      row that inherits its columns, so the hairlines, the stations and the key
+      caps line up down the page without a shared fixed height. The loop, the
+      branch and the heads are absolutely positioned children placed by grid
+      line, so they follow the rows whatever the text does. The hairline between
+      moves is carried by the title and the keys together and never crosses the
+      gutter. <b>No cards, no tinted bands, no numbers beyond the stations</b>,
+      which are the sequence itself.</p>
+
+    <p class="sub-label">Keys at the edge above 600px of figure width, under the title below it</p>
+    <figure class="circuit">
+      <div class="circuit__track" role="list">
+        <span class="circuit__loop" aria-hidden="true"><span class="circuit__back">next work item</span></span>
+        <span class="circuit__branch" aria-hidden="true"></span>
+        <span class="circuit__in" aria-hidden="true"></span>
+        <span class="circuit__up" aria-hidden="true"></span>
+
+        <span class="circuit__rule"><b>Can you describe the change in one sentence?</b> Then skip 1 and 2 and start at 3, in auto mode.</span>
+
+        <div class="circuit__move circuit__move--prompt" role="listitem">
+          <span class="circuit__n">1</span>
+          <span class="circuit__head">Interview in plan mode</span>
+          <span class="circuit__mech">
+            <span class="circuit__keys"><kbd>Shift</kbd><span class="plus">+</span><kbd>Tab</kbd></span>
+            <span class="circuit__note">plan mode, then this one prompt</span>
+          </span>
+          <div class="prompt-card circuit__card">
+            <div class="pc-head">
+              <div class="meta">
+                <span class="badge"><i></i>THE ONE PROMPT</span>
+                <span data-count>… lines · … chars</span>
+              </div>
+              <button class="copy-btn" aria-label="Copy prompt">
+                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <rect x="4.5" y="4.5" width="8" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="M2.5 11V3.5A1.5 1.5 0 0 1 4 2h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <span class="label">Copy prompt</span>
+              </button>
+            </div>
+            <pre class="pc-body" data-prompt aria-label="Interview prompt">I want to build &lt;your idea&gt;. Interview me one question at a time
+with the AskUserQuestion tool until you could write an implementation
+plan for a coding agent without guessing. Split the work into work
+items, called WI- and a number, starting at WI-1. Make each work item a
+thin vertical slice, small enough for a subagent to execute.
+Then write docs/plan.md with the files, the order, and how each work
+item is proven. No code.</pre>
+            <div class="pc-foot">
+              <span class="arrow">▲</span>
+              <span>Replace <code>&lt;your idea&gt;</code> with what you are building, then paste.</span>
+            </div>
+          </div>
+          <span class="circuit__body">Answer with letters and numbers. "You decide" is allowed only on things you would not mind being surprised by.</span>
+        </div>
+
+        <div class="circuit__move" role="listitem">
+          <span class="circuit__n">2</span>
+          <span class="circuit__head">Critique the plan yourself</span>
+          <span class="circuit__mech">
+            <span class="circuit__keys"><kbd>Ctrl</kbd><span class="plus">+</span><kbd>G</kbd></span>
+            <span class="circuit__note">opens the plan in your editor</span>
+          </span>
+          <span class="circuit__body">Read it. Send it back once with what is wrong. You are the critic here, not a subagent: plan-review subagents were measured and found no gain. Approve with <b>Yes, and use auto mode</b>. That approval does not start the build: the prompt in move 1 asked for no code, so Claude writes <code>docs/plan.md</code> and stops. Auto mode is the edit mode for the rest of the session.</span>
+        </div>
+
+        <div class="circuit__move circuit__move--prompt" role="listitem">
+          <span class="circuit__n">3</span>
+          <span class="circuit__head">Set the finish line, then look</span>
+          <span class="circuit__mech">
+            <span class="circuit__cmd"><i>›</i>/goal</span>
+            <span class="circuit__note">one work item of the plan, then this prompt</span>
+          </span>
+          <div class="prompt-card circuit__card">
+            <div class="pc-head">
+              <div class="meta">
+                <span class="badge"><i></i>THE GOAL</span>
+                <span data-count>… lines · … chars</span>
+              </div>
+              <button class="copy-btn" aria-label="Copy goal">
+                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <rect x="4.5" y="4.5" width="8" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="M2.5 11V3.5A1.5 1.5 0 0 1 4 2h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <span class="label">Copy prompt</span>
+              </button>
+            </div>
+            <pre class="pc-body" data-prompt aria-label="Goal prompt">/goal WI-1 of docs/plan.md is built and its proof passed: run the
+check the plan names for this work item and show the output, for example the
+test command exiting 0 or a playwright-cli screenshot of the screen.
+No file under tests/ changes. Stop after 15 turns.</pre>
+            <div class="pc-foot">
+              <span class="arrow">▲</span>
+              <span>Paste it as it is for work item 1. Next time round, change the work item number.</span>
+            </div>
+          </div>
+          <span class="circuit__body">The plan ends every work item with how it is proven. This move hands that proof to Claude as the goal. Claude builds, runs the check and fixes until a second, smaller model reading the session agrees the goal is met, or the turn cap stops it. When it stops, look at the proof yourself: the command and its output, or the screenshot. "Tests pass" without the output is not evidence.</span>
+        </div>
+
+        <div class="circuit__move" role="listitem">
+          <span class="circuit__n">4</span>
+          <span class="circuit__head">Commit, clear, then the next work item</span>
+          <span class="circuit__mech">
+            <span class="circuit__cmd"><i>›</i>/clear</span>
+            <span class="circuit__note">next work item, back to 3</span>
+          </span>
+          <span class="circuit__body">Commit the work yourself, with a message that starts with the work item number. Then <code>/clear</code>: work item 2 starts with an empty context window, and a new session begins with the last commits in view. That log is the record of what was built. <code>CLAUDE.md</code> is for what to do differently: when Claude gets the same thing wrong twice, one line there, nothing else today. Paste the move 3 prompt again with the work item number changed, and keep going until the plan is done.</span>
+        </div>
+      </div>
+      <figcaption class="circuit__cap">One work item of the plan per loop: build it, look at the proof, commit it with the work item number, then clear and paste move 3 again with the next work item number. Back to 1 only for a different piece of work. A change you can describe in one sentence starts at 3.</figcaption>
+    </figure>
+
+    <p class="spec-note" style="margin-top:18px">Same construction rules as the
+      rest of the family: CSS boxes holding real DOM text; a container query
+      keyed to the figure's own width; <b>no <code class="mono">&lt;p&gt;</code>
+      anywhere inside</b>; <b>no <code class="mono">role="img"</code> and no
+      <code class="mono">aria-label</code></b> on the figure. The drawn pieces
+      (<code class="mono">.circuit__loop</code>, <code class="mono">.circuit__branch</code>,
+      the two heads) are <code class="mono">aria-hidden</code>; the track is a
+      list and the <code class="mono">figcaption</code> is the text alternative.
+      The prompt inside keeps the prompt-card rules: 72-column wrap, one
+      angle-bracket placeholder named in the foot. Requires subgrid (Chrome 117,
+      Safari 16, Firefox 71).</p>
+  </section>
+
+  <!-- ─── AGENDA ─── -->
+  <section class="block" id="agenda">
+    <header>
+      <h2>Agenda rows</h2>
+      <span class="meta">.agenda · .agenda__rows</span>
+    </header>
+
+    <p class="spec-note">The index has no rail: its agenda is the rail's content
+      laid out wide. One part per <code class="mono">.agenda</code> block, with a
+      2px ink rule on top, and one row per step. Each row is a
+      <code class="mono">.d</code> duration, an <code class="mono">.n</code>
+      number, a <code class="mono">.t</code> title, an
+      <code class="mono">.o</code> outcome line and an
+      <code class="mono">.s</code> state cell, on a two-line grid.
+      <code class="mono">index.html</code> owns the canonical CSS; the rules that
+      render this specimen are duplicated in this page's
+      <code class="mono">&lt;style&gt;</code> block under the same class names.</p>
+
+    <p class="sub-label">Three row states: normal · <code class="mono">is-current</code> · <code class="mono">is-done</code></p>
+    <section class="agenda">
+      <h2>Before the break</h2>
+      <p class="agenda__sub">Everyone. Three steps, about 15 minutes.</p>
+      <ol class="lab-toc agenda__rows">
+        <li><a href="#agenda" data-slug="step-01.html" class="is-done">
+          <span class="d">5 min</span>
+          <span class="n">01</span><span class="t">How Claude works</span>
+          <span class="o">You leave with: how the loop runs</span>
+          <span class="s"></span></a></li>
+        <li><a href="#agenda" data-slug="step-02.html" class="is-current">
+          <span class="d">5 min</span>
+          <span class="n">02</span><span class="t">Setup</span>
+          <span class="o">You leave with: a live session in ~/workshop</span>
+          <span class="s"></span></a></li>
+        <li><a href="#agenda" data-slug="step-03.html">
+          <span class="d">5 min</span>
+          <span class="n">03</span><span class="t">Context window</span>
+          <span class="o">You leave with: your context gauge</span>
+          <span class="s"></span></a></li>
+      </ol>
+    </section>
+
+    <p class="spec-note" style="margin-top:18px">On the index the wrapper also
+      carries <code class="mono">class="lab-card agenda"</code> and
+      <code class="mono">data-lab="01"</code>, and every row href is the real
+      step file, because <code class="mono">workshop-nav.js</code> reads
+      <code class="mono">.lab-toc a[data-slug]</code> to paint progress and to
+      aim the resume button. The state classes are written by the script, not by
+      hand. Below 560px the duration drops to its own line under the title.</p>
+  </section>
+
+  <!-- ─── CARDS ─── -->
+  <section class="block" id="cards">
+    <header>
+      <h2>Cards</h2>
+      <span class="meta">.card · --active · --done</span>
+    </header>
+
+    <p class="sub-label">Three states (only one .card--active per page)</p>
+    <div class="grid-3">
+      <article class="card step-demo">
+        <div class="num">01</div>
+        <div>
+          <p class="kicker">Open the app</p>
+          <h3>Launch Terminal</h3>
+          <p class="hint">Press ⌘ + Space, type "Terminal", hit return.</p>
+        </div>
+      </article>
+      <article class="card card--active step-demo">
+        <div class="num">02</div>
+        <div>
+          <p class="kicker">Move into the project</p>
+          <h3>Change into the workshop folder</h3>
+          <p class="hint">Type the command exactly as shown, then press Return.</p>
+        </div>
+      </article>
+      <article class="card card--done step-demo">
+        <div class="num">03</div>
+        <div>
+          <p class="kicker">Initialise the repo</p>
+          <h3>Start a fresh Git repository</h3>
+          <p class="hint">Done. The .git folder is in place.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ─── BADGES ─── -->
+  <section class="block" id="badges">
+    <header>
+      <h2>Badges</h2>
+      <span class="meta">.badge · --active · --done</span>
+    </header>
+    <div class="row-inline">
+      <span class="badge">Optional</span>
+      <span class="badge badge--active">Active</span>
+      <span class="badge badge--done">Done</span>
+    </div>
+  </section>
+
+  <!-- ─── BUTTONS ─── -->
+  <section class="block" id="buttons">
+    <header>
+      <h2>Buttons</h2>
+      <span class="meta">.btn · default · disabled</span>
+    </header>
+    <div class="row-inline">
+      <a class="btn" href="#">
+        <span>Continue to Step 02</span>
+        <span>→</span>
+      </a>
+      <button class="btn" disabled>
+        <span>Continue (disabled)</span>
+        <span>→</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ─── KBD ─── -->
+  <section class="block" id="kbd">
+    <header>
+      <h2>Keyboard</h2>
+      <span class="meta">&lt;kbd&gt; · auto-styled</span>
+    </header>
+    <div class="row-inline">
+      <span>Press <kbd>⌘</kbd> + <kbd>Space</kbd></span>
+      <span>then <kbd>Return ↵</kbd></span>
+      <span><kbd>Shift</kbd> + <kbd>Tab</kbd> for plan mode</span>
+    </div>
+  </section>
+
+  <!-- ─── INSTRUCTIONS ─── -->
+  <section class="block" id="instructions">
+    <header>
+      <h2>Instruction chips</h2>
+      <span class="meta">.input-chip · .verify-pill · .cmd-out</span>
+    </header>
+
+    <p class="sub-label">Shell command: <code class="mono">.input-chip</code> with <code class="mono">$</code> caret</p>
+    <div>
+      <div class="input-chip">
+        <span class="caret">$</span>
+        <span class="cmd">cd ~/workshop</span>
+        <span class="kbd">then <kbd>Return ↵</kbd></span>
+      </div>
+      <div class="cmd-out">Initialized empty Git repository in /Users/workshop/workshop/.git/</div>
+    </div>
+
+    <p class="sub-label">In-Claude command: <code class="mono">.input-chip--claude</code> with <code class="mono">›</code> caret</p>
+    <div class="input-chip input-chip--claude">
+      <span class="caret">›</span>
+      <span class="cmd">/model</span>
+      <span class="kbd">then <kbd>Return ↵</kbd></span>
+    </div>
+
+    <p class="sub-label">Keyboard shortcut: same chip, <code class="mono">&lt;kbd&gt;</code> in place of cmd</p>
+    <div class="input-chip">
+      <kbd>⌘</kbd>
+      <span class="plus">+</span>
+      <kbd>Space</kbd>
+      <span class="kbd">then <kbd>Return ↵</kbd></span>
+    </div>
+
+    <p class="sub-label">Verify pills: <code class="mono">.verify-pill</code> inside <code class="mono">.pills-row</code></p>
+    <div class="pills-row">
+      <div class="verify-pill">
+        <span class="label">Model</span>
+        <span class="value">1 Default</span>
+      </div>
+      <div class="verify-pill">
+        <span class="label">Reasoning</span>
+        <span class="value">xHigh effort</span>
+      </div>
+    </div>
+
+    <p style="margin-top: 28px; font-size: 15px; color: var(--ink-2); line-height: 1.55; max-width: 60ch;">
+      These three patterns are the <b style="color:var(--ink); font-weight: 500;">only</b> approved
+      ways to render an instruction on a step page. If a new variant feels needed,
+      extend <span class="mono" style="color:var(--ink);">workshop.css</span> first.
+    </p>
+  </section>
+
+  <!-- ─── CALLOUT ─── -->
+  <section class="block" id="callout">
+    <header>
+      <h2>Callout</h2>
+      <span class="meta">.callout--key · max one per page</span>
+    </header>
+
+    <p style="margin: 0 0 4px; font-size: 15px; color: var(--ink-2); line-height: 1.55; max-width: 62ch;">
+      The one moment on a page where the participant must look up and
+      pay attention. Placed at the top of the page it is a
+      <b style="color:var(--ink); font-weight:500;">frame</b> (a mental
+      model everything below derives from, e.g. step-02); at the end of
+      a section it is a <b style="color:var(--ink); font-weight:500;">verdict</b>
+      (a recommendation that depends on the reasoning above it).
+      Inline mono tokens inside the body use
+      <span class="mono" style="color:var(--ink);">.mono-accent</span>.
+    </p>
+
+    <p class="sub-label">The key variant: <code class="mono">.callout--key</code> with the optional <code class="mono">.callout__action</code></p>
+    <aside class="callout callout--key" style="max-width: 760px;">
+      <div class="callout__body">
+        <p class="callout__label"><i></i>Recommendation</p>
+        <h4>For this workshop</h4>
+        <p>One paragraph. The takeaway, in ink-1 copy. Mention a command
+        like <span class="mono-accent">/model</span> with the accent
+        treatment.</p>
+      </div>
+      <div class="callout__action">
+        <span class="callout__arrow" aria-hidden="true">→</span>
+        <div class="input-chip input-chip--claude">
+          <span class="caret">›</span>
+          <span class="cmd">/model</span>
+          <span class="kbd">then <kbd>Return ↵</kbd></span>
+        </div>
+      </div>
+    </aside>
+
+    <p class="sub-label">Action column as a link: <code class="mono">.callout__go</code></p>
+    <aside class="callout callout--key" style="max-width: 760px;">
+      <div class="callout__body">
+        <p class="callout__label"><i></i>Background reading</p>
+        <h4>Read it tonight, not now</h4>
+        <p>For a callout whose next step is a page to open rather than a
+        command to type. Paper, a hairline and the callout's own magenta;
+        never <code class="mono">.btn</code>, whose ink fill is the dark
+        object a build step keeps for its prompt card. Live on
+        <code class="mono">step-04.html</code>.</p>
+      </div>
+      <div class="callout__action">
+        <a class="callout__go" href="#callout">The playbook <span aria-hidden="true">↗</span></a>
+      </div>
+    </aside>
+  </section>
+
+  <!-- ─── GLOSSARY ─── -->
+  <section class="block" id="glossary">
+    <header>
+      <h2>Glossary</h2>
+      <span class="meta">.glossary · once per page</span>
+    </header>
+
+    <p style="margin: 0 0 4px; font-size: 15px; color: var(--ink-2); line-height: 1.55; max-width: 62ch;">
+      One-time inline definition for a key term the page assumes,
+      placed near the first use. Quieter than a callout.
+    </p>
+
+    <p class="sub-label">The definition block: <code class="mono">.glossary</code> with the <code class="mono">.term</code> span</p>
+    <aside class="glossary" style="max-width: 760px;">
+      <p class="glossary__label">Term</p>
+      <p class="glossary__body"><span class="term">Walking skeleton</span>: the
+      thinnest version of a project that runs end to end. Every step of
+      the core loop exists, every real behavior is a stub.</p>
+    </aside>
+  </section>
+
+  <!-- ─── CHALLENGE STEPS ─── -->
+  <section class="block" id="challenge">
+    <header>
+      <h2>Challenge steps</h2>
+      <span class="meta">.challenge · .nudge · .pass-check</span>
+    </header>
+
+    <p style="margin: 0 0 4px; font-size: 15px; color: var(--ink-2); line-height: 1.55; max-width: 62ch;">
+      A challenge-based step page runs in a fixed order: a short tool brief,
+      one open challenge (a starter prompt in a
+      <span class="mono" style="color:var(--ink);">.prompt-card</span> is
+      sanctioned), and a pass check the participant can test. Hints are
+      retired; a <span class="mono" style="color:var(--ink);">.nudge</span>
+      holds only a worked example or a reference table. One
+      <span class="mono" style="color:var(--ink);">.challenge</span> per page.
+      Use <span class="mono" style="color:var(--ink);">.callout--key</span>
+      for asides; the challenge block holds the task itself.
+    </p>
+
+    <p class="sub-label">The open task: <code class="mono">.challenge</code> with the optional <code class="mono">.challenge__split</code></p>
+    <section class="challenge" style="max-width: 760px;">
+      <p class="challenge__label"><i></i>Challenge</p>
+      <h3>Get the failing test green</h3>
+      <p>The repo has one failing test. Get it passing without editing the
+      test file. How you steer Claude is up to you.</p>
+      <div class="challenge__split">
+        <div class="challenge__fixed">
+          <h4>Fixed</h4>
+          <ul>
+            <li>Work in <code>~/workshop</code></li>
+            <li>The test file stays untouched</li>
+            <li>5 minutes, then we compare</li>
+          </ul>
+        </div>
+        <div class="challenge__free">
+          <h4>Your call</h4>
+          <ul>
+            <li>The prompt you open with</li>
+            <li>Plan first, or dive straight in</li>
+            <li>When to interrupt and redirect</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <p class="sub-label">Worked example or reference table: <code class="mono">.nudge</code>, closed by default</p>
+    <details class="nudge">
+      <summary>See a worked example</summary>
+      <div class="nudge__body">
+        <ul>
+          <li>Only for a worked example or a reference table that would otherwise bloat the column.</li>
+          <li>Never for hints, extras or discussion prompts, and never shipped <code>open</code>.</li>
+        </ul>
+      </div>
+    </details>
+
+    <p class="sub-label">Success criterion: <code class="mono">.pass-check</code></p>
+    <aside class="pass-check" style="max-width: 720px;">
+      <p class="pc-label">Pass check</p>
+      <p><code>npm test</code> exits green and <code>git diff</code> shows no edits to the test file.</p>
+      <p class="miss">Missed? Revert with <code>git checkout .</code> and retry with a narrower prompt.</p>
+      <p><b>Passed?</b> The close names what the new artifact unlocks next (build steps add "Sticker up").</p>
+    </aside>
+
+    <p style="margin-top: 28px; font-size: 15px; color: var(--ink-2); line-height: 1.55; max-width: 62ch;">
+      Write the pass check as one sentence the participant can test and fail.
+      If "did it work?" has no yes-or-no answer, rewrite the sentence. The
+      recovery move goes in <span class="mono" style="color:var(--ink);">.miss</span>,
+      as a concrete action rather than encouragement.
+    </p>
+  </section>
+
+  <!-- ─── RETIRED BUILD-PAGE COMPONENTS ─── -->
+  <section class="block" id="lab02">
+    <header>
+      <h2>Retired build-page components</h2>
+      <span class="meta">workshop.css + lab02.css</span>
+    </header>
+
+    <p style="margin: 0 0 4px; font-size: 15px; color: var(--ink-2); line-height: 1.55; max-width: 62ch;">
+      The build-page chrome. <span class="mono" style="color:var(--ink);">.prompt-card</span>
+      (concept pages only since 2026-09-01; a route A build step carries the
+      <a href="#brief">brief</a> instead, except step 06, which prints its
+      prompt under the brief since 2026-09-03),
+      <span class="mono" style="color:var(--ink);">.meta-chip</span> and
+      <span class="mono" style="color:var(--ink);">.sources</span> live in
+      <span class="mono">workshop.css</span> (any page may use them); the rest
+      ships in <span class="mono">lab02.css</span>. Copy markup from here, never
+      from memory.
+    </p>
+
+    <p class="sub-label">Phase strip: <code class="mono">.sdlc-strip</code>, inert here; on the retired build pages each phase linked its first step</p>
+    <nav class="sdlc-strip" aria-label="AI-native SDLC phases">
+      <span class="sdlc-strip__tag">AI-native SDLC</span>
+      <ol class="sdlc-strip__phases">
+        <li><a href="#lab02"><span class="n">1</span>Plan</a></li>
+        <li><a href="#lab02"><span class="n">2</span>Design</a></li>
+        <li><a class="is-current" aria-current="true" href="#lab02"><span class="n">3</span>Build</a></li>
+        <li><a href="#lab02"><span class="n">4</span>Test</a></li>
+        <li><a href="#lab02"><span class="n">5</span>Deploy</a></li>
+        <li><a href="#lab02"><span class="n">6</span>Maintain</a></li>
+      </ol>
+      <span class="sdlc-strip__loop" aria-hidden="true">↺</span>
+    </nav>
+
+    <p class="sub-label">Hero meta: <code class="mono">.meta-chip</code>, honest time</p>
+    <div class="meta-chip" style="margin-top: 0;">
+      <span>~10 min</span>
+    </div>
+
+    <p class="sub-label">Copyable block: <code class="mono">.prompt-card</code> (copy button wired by workshop-nav.js via <code class="mono">[data-prompt]</code>)</p>
+    <div class="prompt-card" style="max-width: 720px;">
+      <div class="pc-head">
+        <div class="meta">
+          <span class="badge"><i></i>STARTER PROMPT</span>
+          <span data-count>… lines · … chars</span>
+        </div>
+        <button class="copy-btn" aria-label="Copy prompt">
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <rect x="4.5" y="4.5" width="8" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M2.5 11V3.5A1.5 1.5 0 0 1 4 2h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <span class="label">Copy prompt</span>
+        </button>
+      </div>
+      <pre class="pc-body" data-prompt aria-label="Specimen prompt">One prompt, written as a spec. The foot below carries
+instructions, so it renders in term-fg, never dim.</pre>
+      <div class="pc-foot">
+        <span class="arrow">▲</span>
+        <span>Paste into Claude. File paths render as <code>inline tokens</code>.</span>
+      </div>
+    </div>
+
+    <p class="sub-label">Read-only terminal figure: <code class="mono">.term-card</code> with <code class="mono">.t-green</code> / <code class="mono">.t-amber</code> highlights</p>
+    <div class="term-card" style="max-width: 720px;">
+      <pre>a worked file, shown not copied
+<span class="t-amber">exit 2</span>   <span class="t-green">Report only. Do not fix anything.</span></pre>
+    </div>
+    <p class="fig-cite">The <b>.fig-cite</b> caption: 11.5px decorative attribution only, never an instruction.</p>
+
+    <p class="sub-label">Numbered bar: <code class="mono">.checks</code></p>
+    <ol class="checks" style="max-width: 720px;">
+      <li><span class="ck">01</span><span><b>Files that change.</b> Named paths, including new ones.</span></li>
+      <li><span class="ck">02</span><span><b>Proof.</b> What will show that it worked.</span></li>
+    </ol>
+
+    <p class="sub-label">Quoted source: <code class="mono">.source-quote</code></p>
+    <blockquote class="source-quote" style="max-width: 720px;">
+      <p>"A short verbatim quote that carries the load."</p>
+      <footer class="source-quote__attr"><span class="lbl">Source</span>
+      <a href="https://claude.com/blog/the-ai-native-sdlc-playbook">The AI-native SDLC playbook</a>
+      · context</footer>
+    </blockquote>
+
+    <p class="sub-label">Copilot mapping: <code class="mono">.crosswalk</code></p>
+    <aside class="crosswalk" style="margin-top: 0;">
+      <p class="crosswalk__label"><span class="crosswalk__mark">⇄</span>In GitHub Copilot</p>
+      <div class="crosswalk__map">
+        <div class="crosswalk__row">
+          <span class="crosswalk__from">.claude/skills/*/SKILL.md</span>
+          <span class="crosswalk__arrow" aria-hidden="true">→</span>
+          <span class="crosswalk__to">.claude/skills/*/SKILL.md <em>(read as-is)</em></span>
+        </div>
+      </div>
+      <p class="crosswalk__note">One honest verdict per crosswalk; claims cite a checked source.</p>
+      <p class="crosswalk__verdict"><b>✓ Skills transfer as-is</b></p>
+    </aside>
+
+    <p class="sub-label">Page-foot citations: <code class="mono">.sources</code>, numbered with checked dates</p>
+    <aside class="sources" aria-label="Sources" style="margin-top: 0; max-width: 720px;">
+      <p class="sources-label">Sources</p>
+      <ol>
+        <li><span class="n">[1]</span><span><a href="https://claude.com/blog/the-ai-native-sdlc-playbook">claude.com · The AI-native SDLC playbook</a> · Anthropic <span class="when">· checked 2026-08-23</span></span></li>
+      </ol>
+    </aside>
+  </section>
+
+  <!-- ─── TERMINAL ─── -->
+  <section class="block" id="terminal">
+    <header>
+      <h2>Terminal palette</h2>
+      <span class="meta">dark surface · 6 colors</span>
+    </header>
+    <pre class="term-demo">
+<span class="green">workshop@mac-mini</span> <span class="blue">~/workshop</span> <span class="fg">git init</span>
+<span class="dim">Initialized empty Git repository in /Users/workshop/workshop/.git/</span>
+<span class="green">workshop@mac-mini</span> <span class="blue">~/workshop</span> <span class="fg">claude</span>
+<span class="amber">▲ Claude Code · v2.1</span>  <span class="dim">welcome banner</span>
+<span class="green">●</span> <span class="fg">Ready.</span>
+<span class="amber">»</span> <span class="fg">auto mode on</span> <span class="dim">(shift+tab to switch modes)</span></pre>
+  </section>
+
+  <!-- ─── SPACING ─── -->
+  <section class="block" id="spacing">
+    <header>
+      <h2>Spacing scale</h2>
+      <span class="meta">8 steps</span>
+    </header>
+    <div>
+      <div class="scale-row"><span class="lbl">--space-1</span><span class="bar" style="width: 4px;"></span><span class="val">4 px</span></div>
+      <div class="scale-row"><span class="lbl">--space-2</span><span class="bar" style="width: 8px;"></span><span class="val">8 px</span></div>
+      <div class="scale-row"><span class="lbl">--space-3</span><span class="bar" style="width: 12px;"></span><span class="val">12 px</span></div>
+      <div class="scale-row"><span class="lbl">--space-4</span><span class="bar" style="width: 18px;"></span><span class="val">18 px</span></div>
+      <div class="scale-row"><span class="lbl">--space-5</span><span class="bar" style="width: 24px;"></span><span class="val">24 px</span></div>
+      <div class="scale-row"><span class="lbl">--space-6</span><span class="bar" style="width: 32px;"></span><span class="val">32 px</span></div>
+      <div class="scale-row"><span class="lbl">--space-7</span><span class="bar" style="width: 48px;"></span><span class="val">48 px</span></div>
+      <div class="scale-row"><span class="lbl">--space-8</span><span class="bar" style="width: 64px;"></span><span class="val">64 px</span></div>
+    </div>
+  </section>
+
+  <!-- ─── RADIUS ─── -->
+  <section class="block" id="radius">
+    <header>
+      <h2>Radius scale</h2>
+      <span class="meta">3 steps</span>
+    </header>
+    <div class="radius-demo">
+      <div class="r" style="border-radius: var(--radius-sm);">
+        <span class="k">--radius-sm</span>
+        <span class="k" style="color:var(--ink);">5 px</span>
+      </div>
+      <div class="r" style="border-radius: var(--radius);">
+        <span class="k">--radius</span>
+        <span class="k" style="color:var(--ink);">8 px</span>
+      </div>
+      <div class="r" style="border-radius: var(--radius-lg);">
+        <span class="k">--radius-lg</span>
+        <span class="k" style="color:var(--ink);">10 px</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <p class="help">
+      Anything off here? Edit <span class="mono" style="color:var(--ink); font-weight: 500;">workshop.css</span>. Every page picks up the change.
+    </p>
+    <a class="btn" href="step-01.html">
+      <span>Back to Step 01</span>
+      <span>→</span>
+    </a>
+  </div>
+
+</div>
+
+<!-- Wires the prompt-card specimen's copy button and line count;
+     on a page with no data-step the nav init is a no-op. -->
+<script src="assets/js/workshop-nav.js"></script>
+</body>
+</html>

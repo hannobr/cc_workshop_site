@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Working with Claude Code · 2026</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Public+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<!-- Shared design system. -->
+<link rel="stylesheet" href="assets/css/workshop.css" />
+<!-- Shared nav components (topbar, step bar, step sheet). -->
+<link rel="stylesheet" href="assets/css/workshop-nav.css" />
+<link rel="stylesheet" href="assets/css/mobile-overrides.css" />
+
+<style>
+  /* Page-local LAYOUT only. Tokens live in workshop.css; the topbar,
+     the brand and .topbar .meta are the shared nav component and are
+     not restyled here.
+
+     Structure: three doors. The page answers "what did you come for"
+     once, in three bands that share one heading treatment: the
+     workshop, the harness, the reference shelf. Every band opens with
+     the same 2px ink rule, so nothing on the page outranks anything
+     else by accident. Inside the first band the two parts are
+     subheads, not competing cards. */
+
+  /* ─────────── reading column ───────────
+     No rail on the index: the agenda is the rail's content, laid out
+     wide. 868 - 24 - 24 = one 820px column, centred. */
+  body[data-page="index"] .frame{ max-width: 868px; }
+  @media (min-width: 900px){
+    body[data-page="index"] .frame{ padding-left: 24px; padding-right: 24px; }
+  }
+
+  /* ─────────── hero ───────────
+     No rule under it: the first door's 2px ink rule is the line the
+     design puts here, and two stacked rules read as a mistake. */
+  .hero{ padding: 40px 0 30px; }
+  .hero .lede{
+    margin: 18px 0 0;
+    max-width: 60ch;
+    font-size: 18px;
+    line-height: 1.55;
+    color: var(--ink-2);
+  }
+  .hero .lede b{ color: var(--ink); font-weight: 600; }
+
+  /* ─────────── a door ───────────
+     One band, one rule, one heading treatment, used three times. */
+  .door{
+    border-top: 2px solid var(--ink);
+    padding: 18px 0 8px;
+    /* clears the heading from the top of the viewport when a jump
+       link lands on it */
+    scroll-margin-top: 16px;
+  }
+  .door__title{
+    margin: 0 0 4px;
+    font: 800 22px/1.2 "Archivo", "Public Sans", Arial, sans-serif;
+    letter-spacing: -0.01em;
+  }
+  .door__sub{
+    margin: 0 0 14px;
+    max-width: 66ch;
+    color: var(--ink-2);
+    font-size: 15.5px;
+    line-height: 1.5;
+  }
+
+  /* ─────────── the run sheet ───────────
+     One list: the morning, 01 to 03, the break as a row of its own,
+     then the afternoon build. workshop-nav.css draws .lab-card as a
+     bordered card and .labs in two columns; both are undone here,
+     because this is a list under a subhead and there is only one of
+     it. The .lab-card and .lab-toc class names stay because
+     workshop-nav.js reads progress through them. */
+  .labs-section{ padding: 0; }
+  .runsheet{
+    display: block;
+    background: none;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+  }
+  .rows{ margin: 14px 0 0; border-top: 0; border-bottom: 0; }
+  .rows a{
+    display: grid;
+    grid-template-columns: 70px 34px 1fr 22px;
+    grid-template-areas:
+      "d n t s"
+      "d n o s";
+    gap: 0 10px;
+    align-items: start;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--rule);
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .rows .d{
+    grid-area: d;
+    font: 600 13px/1.5 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--ink-2);
+    padding-top: 2px;
+  }
+  .rows .n{
+    grid-area: n;
+    font: 600 13px/1.5 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--ink-2);
+    padding-top: 2px;
+  }
+  .rows .t{ grid-area: t; font-size: 16.5px; font-weight: 700; line-height: 1.35; }
+  .rows .o{ grid-area: o; color: var(--ink-2); font-size: 15px; line-height: 1.4; }
+  .rows .s{ grid-area: s; }
+  .rows a.is-current{
+    background: var(--accent-2-soft);
+    margin: 0 -12px;
+    padding-left: 12px;
+    padding-right: 12px;
+    border-radius: var(--radius-sm);
+  }
+  .rows a.is-done .t{ color: var(--ink-2); }
+  .rows a.is-done .s::after{ content: "✓"; color: var(--accent); }
+
+  /* the part label: a hairline caption inside the list, not a card
+     heading. It says who the part is for and whether it is a choice,
+     which is the only axis the two parts differ on. */
+  .rows__group{
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 0 7px;
+    border-bottom: 1px solid var(--ink);
+    font: 700 13px/1.3 "Archivo", "Public Sans", "Segoe UI", Arial, sans-serif;
+    letter-spacing: -0.005em;
+    color: var(--ink);
+  }
+  .rows li:first-child .rows__group{ padding-top: 0; }
+  .rows__group .who{
+    font: 400 12.5px/1.3 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--ink-2);
+    white-space: nowrap;
+  }
+
+  /* the break: still amber, still the stop, but now a row the day
+     reads straight through instead of a band between two cards */
+  .rows__break a{
+    grid-template-columns: 70px 34px 1fr 22px;
+    background: var(--warn-soft);
+    border-bottom-color: var(--warn-line);
+    margin: 0 -12px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .rows__break .d, .rows__break .n{ color: var(--warn); }
+  .rows__break .t{ color: var(--warn); }
+  .rows__break .o{ color: var(--ink-2); }
+
+  /* ─────────── the harness door ───────────
+     Six tiles, three across in the 820px column, which gives each one
+     259px: enough for a two-word name, a path and a one-line
+     what-it-is, and no more, on purpose. */
+  .harness{
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  @media (max-width: 899.98px){ .harness{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 520px){ .harness{ grid-template-columns: 1fr; } }
+  a.harness-card{
+    display: grid;
+    gap: 5px;
+    align-content: start;
+    padding: 14px 16px;
+    background: var(--bg-2);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: inherit;
+  }
+  a.harness-card:hover{ border-color: var(--rule-strong); }
+  .harness-card .name{
+    font: 700 16.5px/1.25 "Public Sans", "Segoe UI", Arial, sans-serif;
+    letter-spacing: -0.005em;
+    color: var(--ink);
+  }
+  .harness-card .where{
+    font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    color: var(--ink-3);
+    /* a path that wraps mid-token reads as two files */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .harness-card .what{
+    margin: 2px 0 0;
+    font-size: 14.5px;
+    line-height: 1.45;
+    color: var(--ink-2);
+  }
+
+  /* ─────────── the opening slide link ───────────
+     The one thing on this page that is not for the participant. It
+     stays a mono line in the action blue, well under the run sheet
+     it sits above, because nobody in the room needs to find it. */
+  .present{ margin: 0 0 14px; }
+  .present a{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font: 500 12.5px/1.4 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--accent-2);
+    text-decoration: none;
+  }
+  .present a:hover{ text-decoration: underline; text-underline-offset: 3px; }
+  .present .arrow{ transition: transform .15s ease; }
+  .present a:hover .arrow{ transform: translateX(3px); }
+
+  /* the only thing the day's list cannot say itself: a way to wipe
+     the progress it is painted from. Hidden until there is some. */
+  .reset{
+    margin: 14px 0 0;
+    text-align: right;
+  }
+  .reset[hidden]{ display: none; }
+  .reset button{
+    background: none;
+    border: 0;
+    padding: 0;
+    font: 400 12.5px/1 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--ink-2);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .reset button:hover{ color: var(--ink); }
+
+  /* ─────────── the cheat sheet card ───────────
+     Same daylight system as everything around it: paper, a hairline
+     and ink. It separates itself from the warm-grey run bar above by
+     being white against it with a stronger hairline, not by changing
+     palette.
+
+     What makes it recognisable is its content, not a colour: four
+     real rows from the page it opens, with the key caps drawn by
+     workshop.css's own kbd primitive (2px bottom border, so a key
+     looks like a key) and the slash commands in the system's mono
+     chip. Reading them is the argument for opening it. */
+  a.cheat{
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    align-items: center;
+    gap: 12px 22px;
+    margin-top: 16px;
+    padding: 13px 16px;
+    background: var(--paper);
+    border: 1px solid var(--rule-strong);
+    border-radius: var(--radius-lg);
+    color: var(--ink);
+    text-decoration: none;
+    transition: border-color .15s ease;
+  }
+  a.cheat:hover{ border-color: var(--ink-3); }
+  a.cheat:focus-visible{ outline: 2px solid var(--accent-2); outline-offset: 3px; }
+  .cheat__intro{ display: grid; gap: 5px; }
+  .cheat__title{
+    font: 700 17px/1.2 "Archivo", "Public Sans", "Segoe UI", Arial, sans-serif;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .cheat__sub{
+    font-size: 14.5px;
+    line-height: 1.45;
+    color: var(--ink-2);
+    max-width: 48ch;
+  }
+  .cheat__go{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 2px;
+    font: 700 13.5px/1 "Public Sans", "Segoe UI", Arial, sans-serif;
+    color: var(--accent-2);
+  }
+  .cheat__go .arrow{ transition: transform .15s ease; }
+  a.cheat:hover .cheat__go .arrow{ transform: translateX(3px); }
+
+  .cheat__keys{
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 22px;
+    border-left: 1px solid var(--rule);
+    display: grid;
+    gap: 8px;
+  }
+  .cheat__keys li{
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    min-width: 0;
+  }
+  .cheat__keys .what{
+    font-size: 13.5px;
+    line-height: 1.4;
+    color: var(--ink-2);
+    min-width: 0;
+  }
+  /* kbd is workshop.css's own key cap; the slash command is the mono
+     chip the pass check uses, so both already exist in the system */
+  .cheat__keys kbd{ flex: none; font-size: 12px; padding: 2px 6px; }
+  .cheat__keys .slash{
+    flex: none;
+    font: 500 12px/1.35 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--ink);
+    background: var(--bg-2);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 2px 6px;
+  }
+  @media (max-width: 700px){
+    a.cheat{ grid-template-columns: 1fr; gap: 16px; }
+    .cheat__keys{
+      padding: 16px 0 0;
+      border-left: 0;
+      border-top: 1px solid var(--rule);
+    }
+  }
+
+  /* ─────────── footer ─────────── */
+  .footer{
+    margin-top: 46px;
+    padding-top: 26px;
+    border-top: 1px solid var(--rule);
+    display:flex; align-items:center; justify-content:space-between; gap: 24px;
+    flex-wrap: wrap;
+  }
+  .footer .meta{
+    font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+    color: var(--ink-2);
+  }
+
+  /* ─────────── narrow ─────────── */
+  @media (max-width: 720px){
+    /* mobile-overrides.css pads .lab-card as a card; the run sheet is
+       a list under a subhead, so it stays flush */
+    .runsheet{ padding: 0 !important; }
+  }
+  @media (max-width: 560px){
+    .rows a{
+      grid-template-columns: 34px 1fr 22px;
+      grid-template-areas:
+        "n t s"
+        "n o s"
+        "d d d";
+    }
+    .rows__break a{ grid-template-columns: 34px 1fr 22px; }
+    .rows .d{ padding-top: 4px; }
+  }
+</style>
+</head>
+<body data-page="index">
+
+<div class="frame">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <a class="brand" href="index.html">
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3 11 L12 3 L21 11 V21 H3 Z"/><path d="M9 21 V14 H15 V21"/></svg>
+      <span>Working with Claude Code</span>
+      <span style="color: var(--ink-3); margin: 0 4px;">·</span>
+      <b>2026</b>
+    </a>
+    <div class="meta">Workshop index</div>
+  </div>
+
+  <!-- HERO -->
+  <header class="hero">
+    <p class="eyebrow">Workshop</p>
+    <h1>Working with Claude Code.</h1>
+    <p class="lede">
+      Hands-on with a frontier coding agent
+    </p>
+
+    <!-- The cheat sheet. It is the one page people look for mid-step,
+         so it sits above the fold here and is pinned to the rail on
+         every step page. The three entries on the right are real rows
+         from it, not decoration. -->
+    <a class="cheat" href="cheat-sheet.html">
+      <span class="cheat__intro">
+        <span class="cheat__title">Cheat sheet.</span>
+        <span class="cheat__sub">Every escape hatch, mode and slash command from today. Keep it open in a second tab.</span>
+        <span class="cheat__go">Open <span class="arrow" aria-hidden="true">&rarr;</span></span>
+      </span>
+      <ul class="cheat__keys">
+        <li><kbd>Esc</kbd><span class="what">stop Claude mid-answer</span></li>
+        <li><kbd>Esc</kbd><kbd>Esc</kbd><span class="what">rewind to an earlier point</span></li>
+        <li><span class="slash">/btw</span><span class="what">ask Claude a question mid-turn</span></li>
+      </ul>
+    </a>
+
+  </header>
+
+  <!-- ═══════════════ THE WORKSHOP ═══════════════
+       One list: 01 to 03, the break as a row, then 04. The break row
+       carries no data-slug on purpose: workshop-nav.js counts progress
+       from a[data-slug] alone, and the break is not a step. -->
+  <section class="door labs-section" id="workshop" aria-labelledby="door-workshop">
+    <h2 class="door__title" id="door-workshop">The workshop</h2>
+    <p class="door__sub">
+      Three steps everyone does, then a break. After it the afternoon
+      is one build on an idea of your own.
+    </p>
+
+    <!-- The opening slide. Facilitator's, not a step: it is the three
+         words the room is talked through before step 01. -->
+    <p class="present"><a href="opening.html">Opening slide: context, goal, scope <span class="arrow" aria-hidden="true">&rarr;</span></a></p>
+
+    <section class="lab-card runsheet" data-lab="01" aria-labelledby="door-workshop">
+      <ol class="lab-toc rows" aria-label="The morning, the break and the afternoon build">
+
+        <li><p class="rows__group">The basics<span class="who">Everyone · 15 min</span></p></li>
+
+        <li><a href="step-01.html" data-slug="step-01.html" data-min="5">
+          <span class="d">5 min</span>
+          <span class="n">01</span><span class="t">How Claude works</span>
+          <span class="o">You leave with: how the loop runs</span>
+          <span class="s"></span></a></li>
+        <li><a href="step-02.html" data-slug="step-02.html" data-min="5">
+          <span class="d">5 min</span>
+          <span class="n">02</span><span class="t">Setup</span>
+          <span class="o">You leave with: a live session in ~/workshop</span>
+          <span class="s"></span></a></li>
+        <li><a href="step-03.html" data-slug="step-03.html" data-min="5">
+          <span class="d">5 min</span>
+          <span class="n">03</span><span class="t">Context window</span>
+          <span class="o">You leave with: your context gauge</span>
+          <span class="s"></span></a></li>
+
+        <li class="rows__break"><a href="break.html">
+          <span class="d">5 min</span>
+          <span class="n" aria-hidden="true"></span><span class="t">Break</span>
+          <span class="o">A group break to discuss the next steps.</span>
+          <span class="s"></span></a></li>
+
+        <li><p class="rows__group">The afternoon<span class="who">Everyone · your own idea</span></p></li>
+
+        <li><a href="step-04.html" data-slug="step-04.html" data-min="">
+          <span class="d"></span>
+          <span class="n">04</span><span class="t">Build</span>
+          <span class="o">You leave with: your own idea, built and verified by Claude</span>
+          <span class="s"></span></a></li>
+
+      </ol>
+
+      <p class="reset" data-reset hidden>
+        <button type="button" data-run-clear>Start over</button>
+      </p>
+    </section>
+  </section>
+
+  <!-- ═══════════════ HARNESS CUSTOMISATION ═══════════════
+       Six surfaces, as cards: the name, where it lives on disk, and
+       one line on what it is. None of them is part of the ten steps,
+       which is why this sits under the day rather than beside it. The
+       cheat sheet follows as a single chip. -->
+  <section class="door" id="harness" aria-labelledby="door-harness">
+    <h2 class="door__title" id="door-harness">Harness customisation</h2>
+    <p class="door__sub">
+      Six surfaces you can shape yourself. Each card is a page: what it
+      is, when to use it, a real example, and the official docs.
+    </p>
+
+    <div class="harness">
+      <a class="harness-card" href="harness-skills.html">
+        <span class="name">Skills</span>
+        <span class="where">.claude/skills/</span>
+        <p class="what">A folder of instructions Claude loads by itself when the work matches.</p>
+      </a>
+      <a class="harness-card" href="harness-subagents.html">
+        <span class="name">Subagents</span>
+        <span class="where">.claude/agents/</span>
+        <p class="what">A second Claude with its own context window and its own tool list.</p>
+      </a>
+      <a class="harness-card" href="harness-hooks.html">
+        <span class="name">Hooks</span>
+        <span class="where">.claude/settings.json</span>
+        <p class="what">Your own commands, run by the harness at fixed points in the loop.</p>
+      </a>
+      <a class="harness-card" href="harness-rules.html">
+        <span class="name">Path-based rules</span>
+        <span class="where">.claude/rules/</span>
+        <p class="what">Guidance that loads only when the files it covers are touched.</p>
+      </a>
+      <a class="harness-card" href="harness-memory.html">
+        <span class="name">CLAUDE.md &amp; AGENTS.md</span>
+        <span class="where">./CLAUDE.md</span>
+        <p class="what">The project brief every session reads before it does anything.</p>
+      </a>
+      <a class="harness-card" href="harness-mcp.html">
+        <span class="name">MCP</span>
+        <span class="where">.mcp.json</span>
+        <p class="what">Tools and data from outside Claude Code, plugged into the session.</p>
+      </a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <p class="help"><b>Stuck?</b> Raise a hand, a facilitator will help.</p>
+    <span class="meta">Tip: on a step page, use <kbd>←</kbd> / <kbd>→</kbd> to navigate.</span>
+  </div>
+
+</div>
+
+<script src="assets/js/workshop-nav.js"></script>
+</body>
+</html>

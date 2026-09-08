@@ -1,0 +1,13 @@
+# JetBrains IDE state. Carries the local path (and so the macOS
+# username), the JDK name and a project UUID. Local only.
+.idea/
+.playwright-cli/
+# macOS Finder metadata: records filenames, including deleted ones.
+.DS_Store
+
+# playwright-cli session state, screenshots and traces from a verify run.
+# Local only, and it grows without bound.
+.playwright-cli/
+
+# Python bytecode from the hooks.
+__pycache__/

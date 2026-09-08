@@ -1,0 +1,422 @@
+/* ──────────────────────────────────────────────────────────────
+   mobile-overrides.css - narrow-viewport fixes
+
+   Page-internal layout tightening for narrow viewports. Targets
+   the common class names used across step pages without touching
+   their per-page stylesheets.
+
+   Mobile-first: rules are scoped to (max-width: 720px) so they
+   only apply on narrow screens; desktop layouts stay intact.
+
+   Run sheet notes:
+   - the type scale moved. Body is 17px Public Sans, h1 is
+     clamp(34px, 4vw, 50px), h2 is a flat 22px, h3 is 18px, the
+     eyebrow is plain Public Sans 14px (no tracked mono uppercase
+     any more). Every size below is derived from those, not from
+     the old 16px body and clamp(48px, 6.4vw, 84px) headline.
+   - below 900px there is no docked rail. The step sheet is the
+     bottom-sheet dialog it has always been, workshop-nav.css owns
+     it, and nothing in this file touches it.
+   - the .blk blocks stack at 560px in workshop.css. That rule is
+     not repeated here.
+   - breakpoints are 720 and 480. 900 belongs to workshop-nav.css
+     (the rail) and 560 to workshop.css (the blocks). No others.
+   ────────────────────────────────────────────────────────────── */
+
+@media (max-width: 720px){
+
+  /* frame tightening - workshop.css sets 28px / 40px and already
+     drops to 20px here; there is no rail below 900px, so the
+     reading column can have the rest. 16px on phones. */
+  .frame{
+    padding: 16px 16px 32px !important;
+  }
+
+  /* hero: the page-local rule is 30px / 26px (design spec 4.3) */
+  .hero{
+    padding: 24px 0 18px !important;
+  }
+  /* the h1 role is clamp(34px, 4vw, 50px), so it already sits at
+     its 34px floor everywhere under 850px. This taper only does
+     the last stretch, down to 28px on a phone; it must never
+     enlarge the heading the way the old clamp(28px, 7vw, 40px)
+     now would. The -0.02em of the role is right at this size, so
+     there is no letter-spacing override any more. */
+  .hero h1{
+    font-size: clamp(28px, 6.5vw, 34px) !important;
+    line-height: 1.15 !important;
+  }
+  /* instructional copy sits at the 17px body floor on mobile; the
+     desktop lede is 18px */
+  .hero .lede,
+  .hero .sub{
+    font-size: 17px !important;
+    line-height: 1.55 !important;
+  }
+
+  /* section heads: the h2 role is a flat 22px now, so the old
+     clamp(22px, 5.5vw, 28px) would have blown it up to 28px here.
+     One step down for the narrow column instead. */
+  .section{ padding: 28px 0 0 !important; }
+  .section-head h2,
+  .section h2{
+    font-size: 20px !important;
+    line-height: 1.25 !important;
+  }
+  /* instructional copy keeps the 17px body floor on mobile; only
+     the heading scales down */
+  .section-head .sub{
+    font-size: 17px !important;
+  }
+
+  /* sources block - tighten padding, smaller mono type. 12px is
+     the floor the rail minutes use; do not go under it. */
+  .sources{
+    padding: 12px 14px !important;
+  }
+  .sources li{
+    font-size: 12px !important;
+    grid-template-columns: 16px 1fr !important;
+  }
+
+  /* ─── force common multi-column grids to single column ─── */
+  /* These class names appear across multiple step pages.
+     .labs is deliberately not in this list: the index agenda
+     stacks its parts with gap 0 and lets the break band carry the
+     spacing, so a forced 12px gap would double it. */
+  .split,
+  .branches,
+  .cards,
+  .flow,
+  .ba-table,
+  .pos-grid,
+  .blocks,
+  .matrix,
+  .matrix-row,
+  .rvc,
+  .spec-pairs,
+  .spec-pair,
+  .howto,
+  .anatomy-bar,
+  .triggers,
+  .rot-legend,
+  .plan-mech,
+  .u-chart,
+  .compact-fig .cf-row,
+  .sub-stage,
+  .term-col,
+  .steps{
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* .anatomy-bar is a horizontal proportion bar (each segment's width
+     represents its share of the 1M token budget). Keep it horizontal
+     on mobile so the proportions still read. The narrowest segment is
+     5fr (~17px at 348px wide) so labels can't fit inside the segments;
+     hide them and rely on the figure caption + the colour key. */
+  .anatomy-bar{
+    height: 36px !important;
+    gap: 2px !important;
+    padding: 3px !important;
+  }
+  .anatomy-seg span{ display: none; }
+  /* render a small legend after the bar listing the segments left→right */
+  .anatomy-bar::after{
+    content: none; /* legend rendered by the next sibling below */
+  }
+  .anatomy::after{
+    content: "system prompt · CLAUDE.md · conversation · tool calls + outputs · files read · free";
+    display: block;
+    margin: 10px 2px 0;
+    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--ink-2);
+  }
+
+  /* When grids collapse to a single column on mobile, switch to
+     minmax(0, 1fr) so children with long content (terminal blocks,
+     mono URLs, code samples) can't blow the track wider than the
+     viewport. The unqualified `1fr` resolves to `minmax(auto, 1fr)`
+     and lets `min-width: auto` flex/grid children overflow. */
+  .split,
+  .labs,
+  .branches,
+  .cards,
+  .flow,
+  .pos-grid,
+  .blocks,
+  .matrix,
+  .matrix-row,
+  .rvc,
+  .spec-pairs,
+  .spec-pair,
+  .howto,
+  .anatomy-bar,
+  .triggers,
+  .rot-legend,
+  .plan-mech,
+  .u-chart,
+  .compact-fig .cf-row,
+  .sub-stage,
+  .term-col,
+  .steps{
+    grid-template-columns: minmax(0, 1fr) !important;
+    min-width: 0;
+  }
+  /* override: .anatomy-bar stays horizontal - its segments are a
+     to-scale stacked bar, not a list. Keep the six original tracks. */
+  .anatomy-bar{
+    grid-template-columns: 7fr 5fr 14fr 18fr 9fr 30fr !important;
+  }
+  .split > *,
+  .steps > *,
+  .term-col > *{ min-width: 0; }
+
+  /* the "matrix" decision table has its own narrow-mode rules
+     already in some files; for the ones that don't, force a
+     stacked layout */
+  .matrix-row{
+    border-radius: var(--radius) !important;
+    margin: 0 0 8px !important;
+    padding: 12px 14px !important;
+  }
+  .matrix-row > div{
+    border-left: 0 !important;
+    border-top: 1px dashed var(--rule) !important;
+    padding: 8px 0 !important;
+  }
+  .matrix-row > div:first-child{ border-top: 0 !important; padding-top: 0 !important; }
+  .matrix-row.head{ display: none !important; }
+
+  /* card-style containers: keep them readable, cut padding.
+     Three names left this list in the Run sheet migration:
+     .prompt-card is now a clipped shell whose head, body and foot
+     carry their own padding (padding here would draw a dark band
+     round it and eat 28px of prompt width), and .lab-card /
+     .lab-card__cta are the index agenda, which is a list under a
+     rule, not a padded card. */
+  .anatomy,
+  .compact-fig,
+  .sub-fig,
+  .budget,
+  .rot,
+  .branch,
+  .pos,
+  .ba-row,
+  .ba-cell,
+  .spec-cell,
+  .cmd-card,
+  .ht-step{
+    padding: 14px 14px !important;
+  }
+  /* the prompt body keeps its 13px mono; the 12px padding is the
+     960px width budget, and on a phone the 72-character lines wrap
+     whatever we do, so buy a little width back rather than adding
+     to it */
+  .prompt-card .pc-body{
+    padding: 12px 10px !important;
+  }
+  .term-card pre{
+    padding: 16px 14px !important;
+  }
+  /* meta-chip: it is a plain wrapping row of Public Sans 15px spans
+     now (duration, a "·" span, description). Keep the duration whole
+     and drop the dot, which has nothing to separate once the rows
+     split. */
+  .meta-chip{
+    flex-wrap: wrap !important;
+  }
+  .meta-chip > span:first-child{
+    white-space: nowrap;
+  }
+  /* the "·" stays. Hiding it left the short meta rows (step-02's
+     "~5 min · 6 steps", step-03's "~5 min · One task, one spec")
+     reading as two fragments jammed together, which is worse than a
+     separator at the end of a wrapped line. */
+  /* prompt-card header: the head is one flex row of meta and button,
+     and at 390 a long filename badge (the harness pages name a full
+     path, "~/.claude/skills/summarize-changes/SKILL.md") left the meta
+     no width to shrink into, so the line count rendered on top of the
+     copy button. Give the meta the whole first row and let the badge
+     break inside itself; the button drops to its own row and keeps its
+     width. Above 720px the head stays the single row it was. */
+  .pc-head{
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 8px 12px;
+  }
+  .pc-head .meta{
+    min-width: 0;
+    margin-right: 0;
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+  .pc-head .meta .badge{
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  /* a button never squashes to fit a neighbour */
+  .copy-btn{
+    flex-shrink: 0;
+  }
+
+  /* arrows between paired cells (specificity pairs, before/after)
+     hide on mobile; the stacking already implies the relationship */
+  .spec-pair .ar,
+  .ba-row .ar,
+  .phase + .phase::after{
+    display: none !important;
+  }
+
+  /* terminal blocks and code samples - shrink one step under the
+     13px mono role.
+     (.term-window, never bare .term: that class name belongs to
+     the glossary term span in workshop.css) */
+  .term-window{
+    font-size: 12px !important;
+  }
+  /* .sample used to be listed here too. It now names the type
+     specimens on design-system.html, which have to render at their
+     real size or the inventory lies; leave it alone. */
+  .cf-bar.full{
+    font-size: 12.5px !important;
+  }
+
+  /* badges / chips wrap nicely. The chip role is 12.5px mono, so
+     12px is one step down and the floor. */
+  .memo{ gap: 6px !important; }
+  .memo .chip{ font-size: 12px !important; padding: 5px 8px !important; }
+
+  /* source citation chip: parent steps render this as a long mono
+     URL inside an inline-flex. On narrow screens it must wrap. */
+  .source{
+    display: flex !important;
+    flex-wrap: wrap;
+    align-items: flex-start !important;
+    gap: 8px 12px !important;
+    padding: 10px 12px !important;
+  }
+  .source a{
+    flex: 1 1 auto;
+    min-width: 0;
+    word-break: break-all;
+  }
+
+  /* step cards: narrower number gutter, allow body to shrink */
+  .step{
+    grid-template-columns: 32px 1fr !important;
+    gap: 12px !important;
+    padding: 16px !important;
+  }
+  .step > *,
+  .xp-step > *{ min-width: 0; }
+  .step-body{ min-width: 0; }
+  .step-num{
+    width: 30px !important; height: 30px !important;
+    font-size: 13px !important;
+  }
+  /* input chips and verify pills wrap inside any container. Chips
+     are non-wrapping inline-flex with a wide min-content; scoping
+     this to one card class is how step-03's .xp-step cards ended up
+     overflowing a 390px viewport. workshop.css now keeps them on
+     one line with white-space: nowrap and a sideways scroll, which
+     hides half a command on a phone, so release the line here. */
+  .input-chip,
+  .pills-row{ flex-wrap: wrap; max-width: 100%; white-space: normal; }
+  .input-chip .cmd{
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  /* step-03 "states" rows (.st.g/.a/.r): let the row wrap if it must,
+     but keep label, bar and percent on one line when they fit (the
+     10-char bar never overflows a 390px column) */
+  .states .st{
+    flex-wrap: wrap;
+    gap: 8px 12px !important;
+  }
+  .states .st .lbl{ width: auto !important; min-width: 70px; }
+  .states .st .bar{
+    flex: 0 1 auto;
+    overflow-x: auto;
+  }
+
+  /* retired Conventions page, sub-stage diagram: drop the 18% indents that overhang
+     the viewport, narrow the gutter, allow children to wrap */
+  .sub-child-wrap,
+  .sub-back{
+    margin-left: 12% !important;
+  }
+  .sub-main,
+  .sub-child,
+  .sub-back{ max-width: 100%; }
+  /* the dotted filler span inside .sub-main has no class; clip it
+     so it doesn't push the parent past viewport */
+  .sub-main{
+    overflow: hidden;
+    padding: 0 14px !important;
+  }
+  .sub-main > span:not(.tag){
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: clip;
+    font-size: 12px !important;
+  }
+
+  /* retired Conventions page, spectrum labels: shrink type so 5 columns fit at 348px,
+     but not under the 12px floor */
+  .sp-labels{ gap: 4px !important; }
+  .sp-label{ padding: 0 2px !important; }
+  .sp-label .name{ font-size: 12.5px !important; }
+  .sp-label .what{ font-size: 12px !important; line-height: 1.35 !important; }
+
+  /* glossary / callouts - tighten padding */
+  .glossary,
+  .callout,
+  .keep-out,
+  .skip-note,
+  .note{
+    padding: 12px 14px !important;
+  }
+  /* the callout title is Archivo 22px now; step it down to the h3
+     role rather than under it */
+  .callout__body h4,
+  .callout h4{ font-size: 18px !important; }
+
+  /* tables full-bleed */
+  table{ width: 100%; }
+
+  /* step page footer prev/next from nav-preview (.step-nav) -
+     replaced by .step-bar on mobile-preview; hide the old one
+     just in case it lingers somewhere */
+  .step-nav{ display: none !important; }
+
+  /* the step-bar covers prev/next, so the footer help line only has
+     to stay legible: one step under its 15px role */
+  .footer-help{
+    font-size: 14px !important;
+    text-align: center;
+    margin: 16px 0 0 !important;
+  }
+}
+
+/* ─────────── 480px floor: bare essentials only ─────────── */
+/* 480 is where workshop-nav.css drops the brand text on step
+   pages, so the two phone tiers fire together. */
+@media (max-width: 480px){
+  /* the taper above bottoms out at 28px; state it flat so a page
+     with its own .hero h1 rule lands in the same place */
+  .hero h1{ font-size: 28px !important; }
+  .section-head h2,
+  .section h2,
+  .lab-card h3{ font-size: 19px !important; }
+
+  /* very narrow: hide non-essential meta (the cheat sheet's
+     "Reference" label crowds the brand at 390px) */
+  .topbar .meta{ display: none; }
+}

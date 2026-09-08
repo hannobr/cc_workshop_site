@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CLAUDE.md &amp; AGENTS.md · Working with Claude Code</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Public+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="assets/css/workshop.css" />
+<link rel="stylesheet" href="assets/css/workshop-nav.css" />
+<link rel="stylesheet" href="assets/css/harness.css" />
+<link rel="stylesheet" href="assets/css/mobile-overrides.css" />
+</head>
+<body data-page="harness" data-screen-label="CLAUDE.md &amp; AGENTS.md">
+
+<div class="frame">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <a class="brand" href="index.html">
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3 11 L12 3 L21 11 V21 H3 Z"/><path d="M9 21 V14 H15 V21"/></svg>
+      <span>Working with Claude Code</span>
+      <span style="color: var(--ink-3); margin: 0 4px;">·</span>
+      <b>2026</b>
+    </a>
+    <div class="meta">Harness</div>
+  </div>
+
+  <!-- HERO -->
+  <header class="hero">
+    <a class="hx-back" href="index.html"><span aria-hidden="true">←</span> Back to the index</a>
+    <p class="eyebrow">Customise the harness &nbsp;·&nbsp; CLAUDE.md &amp; AGENTS.md</p>
+    <h1>CLAUDE.md and AGENTS.md.</h1>
+    <p class="lede">
+      The project brief every session reads before it does anything. Every
+      session starts with an empty context window; CLAUDE.md is what is
+      already in it when you type your first word.
+    </p>
+    <div class="meta-chip">
+      <span>~4 min</span>
+      <span>·</span>
+      <span>Reference; lives in <code>./CLAUDE.md</code></span>
+    </div>
+  </header>
+
+  <!-- WHAT -->
+  <section class="hx-section" aria-labelledby="what">
+    <div class="hx-head">
+      <p class="hx-eye">A &middot; What they are</p>
+      <h2 id="what">What is in the window before you type.</h2>
+    </div>
+    <div class="hx-body">
+      <p>
+        Every session starts with an empty context window. CLAUDE.md is what is
+        already in it when you send your first word. Claude Code reads one from
+        the current directory and from every directory above it, and
+        concatenates what it finds rather than letting one file override
+        another.
+      </p>
+    </div>
+
+    <figure class="dx">
+      <div class="dx__box">
+        <span class="dx__name">read at launch, in this order</span>
+
+        <div class="dx-stack__layer">
+          <span class="dx-stack__scope">managed policy</span>
+          <span class="dx-stack__file">Set by your organisation. <b>Cannot be excluded.</b></span>
+        </div>
+
+        <div class="dx-stack__layer">
+          <span class="dx-stack__scope">you</span>
+          <span class="dx-stack__file"><b>~/.claude/CLAUDE.md</b>, on every project on this machine.</span>
+        </div>
+
+        <div class="dx-stack__layer">
+          <span class="dx-stack__scope">this project</span>
+          <span class="dx-stack__file">
+            <b>./CLAUDE.md</b>, committed with the repo.
+            <span class="dx-stack__import">@AGENTS.md &middot; imported live from the first line, so there is no second copy to keep in step</span>
+          </span>
+        </div>
+
+        <div class="dx-stack__layer">
+          <span class="dx-stack__scope">just you, here</span>
+          <span class="dx-stack__file"><b>./CLAUDE.local.md</b>, gitignored.</span>
+        </div>
+
+        <span class="dx__foot">Concatenated, <b>not overridden</b>. The most specific file is read last, so the project has the final word over your personal one.</span>
+      </div>
+      <figcaption class="dx__cap">
+        <b>Claude Code reads CLAUDE.md, not AGENTS.md.</b> If your repo already
+        carries an AGENTS.md for other coding agents, the import on the third
+        layer is the bridge: one source, two kinds of agent, nothing
+        duplicated.
+      </figcaption>
+    </figure>
+
+    <figure class="dx">
+      <div class="dx__box">
+        <span class="dx__name">the three commands, and the one number</span>
+        <div class="dx-rows__row">
+          <span class="dx-rows__k">/init</span>
+          <span class="dx-rows__v">Writes a starting file by reading the repo.</span>
+        </div>
+        <div class="dx-rows__row">
+          <span class="dx-rows__k">/memory</span>
+          <span class="dx-rows__v">Lists and opens what exists.</span>
+        </div>
+        <div class="dx-rows__row">
+          <span class="dx-rows__k">/context</span>
+          <span class="dx-rows__v">Shows what <b>actually loaded</b> this session, memory files included. The one to check when an instruction is being ignored.</span>
+        </div>
+        <div class="dx-rows__row">
+          <span class="dx-rows__k">under 200 lines</span>
+          <span class="dx-rows__v">Splitting a long file with imports does not help: <b>imports load at launch too</b>. What helps is moving the entry somewhere that loads on demand.</span>
+        </div>
+      </div>
+      <figcaption class="dx__cap">
+        And remember what this file is: context Claude may or may not follow.
+        To block something regardless of what it decides, use a
+        <a href="harness-hooks.html">hook</a>.
+      </figcaption>
+    </figure>
+  </section>
+
+  <!-- WHEN -->
+  <section class="hx-section" aria-labelledby="when">
+    <div class="hx-head">
+      <p class="hx-eye">B · When to use them</p>
+      <h2 id="when">When every session needs to know it.</h2>
+      <p class="hx-sub">Four honest triggers: Claude made the same mistake twice, a review caught something it should have known, you typed the same correction again, or a new teammate would need the same context.</p>
+    </div>
+    <div class="hx-when">
+      <div class="hx-when__col hx-when__col--yes">
+        <p class="hx-when__lbl">Put it in CLAUDE.md</p>
+        <ul class="hx-list">
+          <li><span><b>Build, test and run commands</b> for this repo, in the form that actually works here.</span></li>
+          <li><span><b>Where things live</b>: the layout a newcomer would otherwise have to reverse engineer.</span></li>
+          <li><span><b>Conventions that hold everywhere</b> in the project.</span></li>
+          <li><span><b>An <code>@AGENTS.md</code> import</b>, so one file serves every agent your team uses.</span></li>
+          <li><span><b>Standing workflow decisions</b>: what to do without asking, what never to do unasked.</span></li>
+        </ul>
+      </div>
+      <div class="hx-when__col hx-when__col--no">
+        <p class="hx-when__lbl">Reach for something else</p>
+        <ul class="hx-list">
+          <li><span>Guidance for one folder. That is a <a href="harness-rules.html">path-based rule</a>.</span></li>
+          <li><span>A multi-step procedure. That is a <a href="harness-skills.html">skill</a>.</span></li>
+          <li><span>Something that must run at a fixed point. That is a <a href="harness-hooks.html">hook</a>.</span></li>
+          <li><span>Anything you would not want in every single session. It is loaded whether it is relevant or not.</span></li>
+          <li><span>A secret. It is committed, and it is read out loud into the model's context.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXAMPLE -->
+  <section class="hx-section" aria-labelledby="example">
+    <div class="hx-head">
+      <p class="hx-eye">C · A real example</p>
+      <h2 id="example">One brief, two kinds of agent.</h2>
+      <p class="hx-sub">A repo whose team already keeps an AGENTS.md for other tools, plus the few things Claude Code needs on top.</p>
+    </div>
+
+    <figure class="hx-file">
+      <div class="prompt-card">
+        <div class="pc-head">
+          <div class="meta">
+            <span class="badge"><i></i>CLAUDE.md</span>
+            <span data-count>… lines · … chars</span>
+          </div>
+          <button class="copy-btn" aria-label="Copy this file">
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <rect x="4.5" y="4.5" width="8" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M2.5 11V3.5A1.5 1.5 0 0 1 4 2h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span class="label">Copy file</span>
+          </button>
+        </div>
+        <pre class="pc-body" data-prompt>@AGENTS.md
+
+## Claude Code
+
+- Run `npm test` before committing.
+- API handlers live in `src/api/handlers/`.
+- Use plan mode for changes under `src/billing/`.
+- Never commit unless I ask. Verified work stays in the working tree.</pre>
+        <div class="pc-foot">
+          <span class="arrow">→</span>
+          <span>Committed at the repo root, beside the AGENTS.md it imports.</span>
+        </div>
+      </div>
+      <figcaption class="hx-file__cap">The import is one line and there is no second copy to keep in step.
+        Detail that only matters in one folder stays out of here and goes into
+        <code>.claude/rules/</code> instead.</figcaption>
+    </figure>
+
+    <ol class="hx-flow">
+      <li><span class="hx-flow__n">01</span><span>A teammate on another tool edits AGENTS.md. Nothing here has to change.</span></li>
+      <li><span class="hx-flow__n">02</span><span><b>You start a session</b>, and both files load before your first prompt.</span></li>
+      <li><span class="hx-flow__n">03</span><span>You ask for a change under <code>src/billing/</code> and Claude opens plan mode without being reminded.</span></li>
+      <li><span class="hx-flow__n">04</span><span>You check <code>/context</code> and see exactly which memory files are loaded.</span></li>
+    </ol>
+
+    <div class="hx-body" style="margin-top: 18px;">
+      <p>
+        Two commands are worth knowing beside these files.
+        <code>/init</code> can read existing Cursor and Copilot instruction
+        files when it generates a CLAUDE.md, and <code>/import</code> appends a
+        one-time copy of a file like AGENTS.md instead of importing it live.
+        Both are generation steps; neither changes what is read at runtime.
+      </p>
+    </div>
+  </section>
+
+  <!-- SOURCES -->
+  <aside class="sources" aria-label="Sources">
+    <p class="sources-label">Official documentation</p>
+    <ol>
+      <li><span class="n">[1]</span><span><a href="https://code.claude.com/docs/en/memory" target="_blank" rel="noopener">code.claude.com &middot; Memory and CLAUDE.md</a> &middot; Anthropic <span class="when">&middot; checked 2026-08-26</span></span></li>
+      <li><span class="n">[2]</span><span><a href="https://code.claude.com/docs/en/skills" target="_blank" rel="noopener">code.claude.com &middot; Skills, where procedures go instead</a> &middot; Anthropic <span class="when">&middot; checked 2026-08-26</span></span></li>
+      <li><span class="n">[3]</span><span><a href="https://code.claude.com/docs/en/settings" target="_blank" rel="noopener">code.claude.com &middot; Settings</a> &middot; Anthropic <span class="when">&middot; checked 2026-08-26</span></span></li>
+    </ol>
+  </aside>
+
+  <!-- THE OTHER FIVE -->
+  <nav class="hx-siblings" aria-label="The other customisation surfaces">
+    <p class="hx-siblings__lbl">The other five</p>
+    <div class="hx-siblings__grid">
+      <a class="hx-sibling" href="harness-skills.html">Skills<span class="hx-sibling__what">Instructions Claude loads by itself</span></a>
+      <a class="hx-sibling" href="harness-subagents.html">Subagents<span class="hx-sibling__what">A second Claude, own context</span></a>
+      <a class="hx-sibling" href="harness-hooks.html">Hooks<span class="hx-sibling__what">Your commands, run by the harness</span></a>
+      <a class="hx-sibling" href="harness-rules.html">Path-based rules<span class="hx-sibling__what">Guidance scoped to a folder</span></a>
+      <a class="hx-sibling" href="harness-mcp.html">MCP<span class="hx-sibling__what">Outside tools and data</span></a>
+      <a class="hx-sibling" href="cheat-sheet.html">Cheat sheet<span class="hx-sibling__what">Commands and shortcuts</span></a>
+    </div>
+  </nav>
+
+  <!-- FOOTER -->
+  <p class="footer-help"><b>Stuck?</b> Raise a hand, a facilitator will help.</p>
+
+</div>
+
+<script src="assets/js/workshop-nav.js"></script>
+</body>
+</html>

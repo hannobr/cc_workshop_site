@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MCP · Working with Claude Code</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Public+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="assets/css/workshop.css" />
+<link rel="stylesheet" href="assets/css/workshop-nav.css" />
+<link rel="stylesheet" href="assets/css/harness.css" />
+<link rel="stylesheet" href="assets/css/mobile-overrides.css" />
+</head>
+<body data-page="harness" data-screen-label="MCP">
+
+<div class="frame">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <a class="brand" href="index.html">
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3 11 L12 3 L21 11 V21 H3 Z"/><path d="M9 21 V14 H15 V21"/></svg>
+      <span>Working with Claude Code</span>
+      <span style="color: var(--ink-3); margin: 0 4px;">·</span>
+      <b>2026</b>
+    </a>
+    <div class="meta">Harness</div>
+  </div>
+
+  <!-- HERO -->
+  <header class="hero">
+    <a class="hx-back" href="index.html"><span aria-hidden="true">←</span> Back to the index</a>
+    <p class="eyebrow">Customise the harness &nbsp;·&nbsp; MCP</p>
+    <h1>MCP.</h1>
+    <p class="lede">
+      Tools and data from outside Claude Code, plugged into the session.
+      The rule of thumb: if you keep copying things into the chat from
+      another system, connect that system instead.
+    </p>
+    <div class="meta-chip">
+      <span>~4 min</span>
+      <span>·</span>
+      <span>Reference; lives in <code>.mcp.json</code></span>
+    </div>
+  </header>
+
+  <!-- WHAT -->
+  <section class="hx-section" aria-labelledby="what">
+    <div class="hx-head">
+      <p class="hx-eye">A &middot; What it is</p>
+      <h2 id="what">A socket board for your other systems.</h2>
+    </div>
+    <div class="hx-body">
+      <p>
+        MCP, the Model Context Protocol, is an open standard for connecting AI
+        applications to external systems. Its own documentation calls it
+        <a href="https://modelcontextprotocol.io/docs/getting-started/intro" target="_blank" rel="noopener">&ldquo;a USB-C port for AI applications&rdquo;</a>.
+        A server exposes tools; you plug it into the session; Claude reads and
+        acts on that system directly instead of on what you pasted.
+      </p>
+    </div>
+
+    <figure class="dx">
+      <div class="dx__box">
+        <span class="dx__name">your session, with three things plugged in</span>
+
+        <div class="dx-port">
+          <span class="dx-port__plug" aria-hidden="true"></span>
+          <span class="dx-port__srv">notion</span>
+          <span class="dx-port__tx">http</span>
+          <span class="dx-port__gives">Reads <b>the ticket itself</b>, instead of your paraphrase of it.</span>
+        </div>
+
+        <div class="dx-port">
+          <span class="dx-port__plug" aria-hidden="true"></span>
+          <span class="dx-port__srv">db</span>
+          <span class="dx-port__tx">stdio</span>
+          <span class="dx-port__gives">Answers questions about <b>the real schema</b>, over a read-only user.</span>
+        </div>
+
+        <div class="dx-port">
+          <span class="dx-port__plug" aria-hidden="true"></span>
+          <span class="dx-port__srv">sentry</span>
+          <span class="dx-port__tx">http</span>
+          <span class="dx-port__gives">Hands over <b>the actual trace</b> behind the error you are chasing.</span>
+        </div>
+
+        <span class="dx__foot">Tool search is on by default, so only the tool names load at startup. Plugging in a large server does not flood the window.</span>
+      </div>
+      <figcaption class="dx__cap">
+        <b>HTTP</b> is the recommended transport for hosted services,
+        <b>stdio</b> runs a server as a local process, and SSE is deprecated.
+        <code>/mcp</code> shows what is connected and re-authenticates anything
+        that has expired.
+      </figcaption>
+    </figure>
+
+    <figure class="dx">
+      <div class="dx__box">
+        <span class="dx__name">who gets the server, and what it brings</span>
+        <div class="dx-rows__row">
+          <span class="dx-rows__k">local (default)</span>
+          <span class="dx-rows__v">This project, <b>you alone</b>.</span>
+        </div>
+        <div class="dx-rows__row">
+          <span class="dx-rows__k">project</span>
+          <span class="dx-rows__v">A committed <code>.mcp.json</code>. <b>The team shares it</b>, and each person approves it once.</span>
+        </div>
+        <div class="dx-rows__row">
+          <span class="dx-rows__k">user</span>
+          <span class="dx-rows__v">All your projects, on this machine.</span>
+        </div>
+        <div class="dx-rows__row">
+          <span class="dx-rows__k">resources</span>
+          <span class="dx-rows__v">Mention one the way you mention a file: <code>@github:issue://123</code>.</span>
+        </div>
+        <div class="dx-rows__row">
+          <span class="dx-rows__k">prompts</span>
+          <span class="dx-rows__v">A server's own prompts arrive as slash commands, <code>/mcp__server__prompt</code>.</span>
+        </div>
+      </div>
+      <figcaption class="dx__cap">
+        Add one from the shell with <code>claude mcp add</code>. Remote servers
+        authenticate over OAuth, so no token has to live in the file you
+        commit.
+      </figcaption>
+    </figure>
+  </section>
+
+  <!-- WHEN -->
+  <section class="hx-section" aria-labelledby="when">
+    <div class="hx-head">
+      <p class="hx-eye">B · When to use it</p>
+      <h2 id="when">When the answer lives in another system.</h2>
+      <p class="hx-sub">Connect a server when you find yourself copying data into the chat from a tracker, a dashboard or a database.</p>
+    </div>
+    <div class="hx-when">
+      <div class="hx-when__col hx-when__col--yes">
+        <p class="hx-when__lbl">Reach for MCP</p>
+        <ul class="hx-list">
+          <li><span><b>Implementing from tickets</b>: let Claude read the issue rather than your paraphrase of it.</span></li>
+          <li><span><b>Querying a database</b> in plain English, against a read-only user.</span></li>
+          <li><span><b>Monitoring and error data</b>, so a fix starts from the real trace.</span></li>
+          <li><span><b>Designs and documents</b> held in a tool that is not the repo.</span></li>
+          <li><span><b>Cross-tool workflows</b> that would otherwise be you, moving text between tabs.</span></li>
+        </ul>
+      </div>
+      <div class="hx-when__col hx-when__col--no">
+        <p class="hx-when__lbl">Reach for something else</p>
+        <ul class="hx-list">
+          <li><span>A job a CLI already does. For GitHub, <code>gh</code> is usually simpler than a server.</span></li>
+          <li><span>A server you have not read. Its tools run with your session's reach.</span></li>
+          <li><span>Credentials in a committed <code>.mcp.json</code>. Use environment expansion instead.</span></li>
+          <li><span>A write-capable database user, when read-only would do.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXAMPLE -->
+  <section class="hx-section" aria-labelledby="example">
+    <div class="hx-head">
+      <p class="hx-eye">C · A real example</p>
+      <h2 id="example">Ask your analytics database a question.</h2>
+      <p class="hx-sub">A committed project config that carries the shape and none of the secrets.</p>
+    </div>
+
+    <figure class="hx-file">
+      <div class="prompt-card">
+        <div class="pc-head">
+          <div class="meta">
+            <span class="badge"><i></i>.mcp.json</span>
+            <span data-count>… lines · … chars</span>
+          </div>
+          <button class="copy-btn" aria-label="Copy this file">
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <rect x="4.5" y="4.5" width="8" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M2.5 11V3.5A1.5 1.5 0 0 1 4 2h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span class="label">Copy file</span>
+          </button>
+        </div>
+        <pre class="pc-body" data-prompt>{
+  "mcpServers": {
+    "db": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@bytebase/dbhub", "--dsn", "${ANALYTICS_DSN}"]
+    }
+  }
+}</pre>
+        <div class="pc-foot">
+          <span class="arrow">→</span>
+          <span>Project scope: committed at the repo root, approved once per teammate.</span>
+        </div>
+      </div>
+      <figcaption class="hx-file__cap"><code>${ANALYTICS_DSN}</code> is expanded from each developer's own
+        environment, pointing at a <b>read-only</b> database user. The repo
+        carries the shape; nobody's credentials are in git.</figcaption>
+    </figure>
+
+    <ol class="hx-flow">
+      <li><span class="hx-flow__n">01</span><span>You export <code>ANALYTICS_DSN</code> in your shell, pointing at the read-only user.</span></li>
+      <li><span class="hx-flow__n">02</span><span><b>First session in the repo</b>, Claude Code asks you to approve the project server. You say yes once.</span></li>
+      <li><span class="hx-flow__n">03</span><span><code>/mcp</code> shows <code>db</code> as connected.</span></li>
+      <li><span class="hx-flow__n">04</span><span>You ask &ldquo;show me the schema for the orders table&rdquo; and get an answer from the database, not from a guess.</span></li>
+    </ol>
+
+    <div class="hx-body" style="margin-top: 18px;">
+      <p>
+        Two limits worth knowing before you wire up something chatty. Tool output
+        over roughly 10,000 tokens warns, and 25,000 is the default ceiling.
+        And tool search is on by default, so connecting a big server no longer
+        floods your context: only the tool names load until one is used.
+      </p>
+    </div>
+  </section>
+
+  <!-- SOURCES -->
+  <aside class="sources" aria-label="Sources">
+    <p class="sources-label">Official documentation</p>
+    <ol>
+      <li><span class="n">[1]</span><span><a href="https://code.claude.com/docs/en/mcp" target="_blank" rel="noopener">code.claude.com &middot; Connect Claude Code to tools via MCP</a> &middot; Anthropic <span class="when">&middot; checked 2026-08-26</span></span></li>
+      <li><span class="n">[2]</span><span><a href="https://code.claude.com/docs/en/mcp-quickstart" target="_blank" rel="noopener">code.claude.com &middot; MCP quickstart</a> &middot; Anthropic <span class="when">&middot; checked 2026-08-26</span></span></li>
+      <li><span class="n">[3]</span><span><a href="https://modelcontextprotocol.io/docs/getting-started/intro" target="_blank" rel="noopener">modelcontextprotocol.io &middot; Introduction to MCP</a> &middot; Anthropic <span class="when">&middot; checked 2026-08-26</span></span></li>
+    </ol>
+  </aside>
+
+  <!-- THE OTHER FIVE -->
+  <nav class="hx-siblings" aria-label="The other customisation surfaces">
+    <p class="hx-siblings__lbl">The other five</p>
+    <div class="hx-siblings__grid">
+      <a class="hx-sibling" href="harness-skills.html">Skills<span class="hx-sibling__what">Instructions Claude loads by itself</span></a>
+      <a class="hx-sibling" href="harness-subagents.html">Subagents<span class="hx-sibling__what">A second Claude, own context</span></a>
+      <a class="hx-sibling" href="harness-hooks.html">Hooks<span class="hx-sibling__what">Your commands, run by the harness</span></a>
+      <a class="hx-sibling" href="harness-rules.html">Path-based rules<span class="hx-sibling__what">Guidance scoped to a folder</span></a>
+      <a class="hx-sibling" href="harness-memory.html">CLAUDE.md &amp; AGENTS.md<span class="hx-sibling__what">The always-loaded brief</span></a>
+      <a class="hx-sibling" href="cheat-sheet.html">Cheat sheet<span class="hx-sibling__what">Commands and shortcuts</span></a>
+    </div>
+  </nav>
+
+  <!-- FOOTER -->
+  <p class="footer-help"><b>Stuck?</b> Raise a hand, a facilitator will help.</p>
+
+</div>
+
+<script src="assets/js/workshop-nav.js"></script>
+</body>
+</html>

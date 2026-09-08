@@ -1,0 +1,1070 @@
+/* ──────────────────────────────────────────────────────────────
+   workshop-nav.css - "Run sheet" build (mobile-first)
+
+   Components, all sized for a 360px floor and scaling up:
+     1. .topbar        - brand, sheet-trigger, position label
+     2. .step-sheet    - the step list as a bottom-sheet dialog
+    2b. docked rail    - the same step list as the schedule rail,
+                         940px and up. One markup, two presentations
+     3. .step-bar      - sticky bottom nav (prev / progress / next)
+     4. .resume-bar    - index resume banner
+     5. .lab-toc       - index table of contents
+
+   Mobile-first means: every rule below is the SMALL-SCREEN default.
+   Widening breakpoints (@media min-width) progressively enhance.
+   ────────────────────────────────────────────────────────────── */
+
+/* ─────────── tokens (build on workshop.css) ─────────── */
+:root{
+  /* nav-only tokens */
+  --nav-touch: 44px;          /* min touch target */
+  --nav-radius: 8px;          /* quieter than the old 10px */
+  --nav-bar-h: 64px;          /* sticky bottom bar height */
+  --nav-safe: env(safe-area-inset-bottom, 0px);
+}
+
+/* ─────────── body padding for sticky bar ─────────── */
+/* Any step page gets enough bottom space for the .step-bar.
+   Index doesn't have the bar so no padding. */
+body[data-step]{
+  padding-bottom: calc(var(--nav-bar-h) + var(--nav-safe) + 8px);
+}
+
+/* ─────────── 1. topbar ─────────── */
+.topbar{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.brand{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  letter-spacing: .02em;
+  color: var(--ink-2);
+  text-decoration: none;
+  min-height: var(--nav-touch);
+  /* trim long labels on phone */
+  max-width: 50%;
+}
+.brand b{ font-weight: 600; color: var(--ink); letter-spacing: 0; }
+.brand span:not(.brand-icon){
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.brand-icon{
+  width: 22px; height: 22px;
+  flex-shrink: 0;
+  color: var(--ink);
+  transition: color .15s ease, transform .25s ease;
+}
+a.brand:hover{ color: var(--ink); }
+a.brand:hover .brand-icon{ color: var(--accent-2); }
+
+/* step trigger - opens the bottom sheet on step pages */
+.sheet-trigger{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  height: var(--nav-touch);
+  min-width: 0;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--nav-radius);
+  background: var(--bg-2);
+  color: var(--ink);
+  font: 500 13px/1.2 "Public Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease;
+}
+.sheet-trigger:hover{ background: var(--bg); }
+.sheet-trigger:focus-visible{
+  outline: 2px solid var(--accent-2);
+  outline-offset: 2px;
+}
+.sheet-trigger__count{
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  letter-spacing: .04em;
+  color: var(--ink-2);
+}
+.sheet-trigger__count b{
+  color: var(--accent-2);
+  font-weight: 600;
+}
+.sheet-trigger__divider{
+  width: 1px; height: 14px;
+  background: var(--rule);
+}
+.sheet-trigger__title{
+  max-width: 14ch;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sheet-trigger__chev{
+  color: var(--ink-3);
+  font-size: 11px;
+  margin-left: 2px;
+}
+
+/* on narrow screens, hide the title - counter + chev is enough */
+@media (max-width: 480px){
+  .sheet-trigger__title,
+  .sheet-trigger__divider{ display: none; }
+  /* and tighten the brand on step pages only (they carry data-step and
+     a sheet-trigger that competes for the width); the index and the
+     reference pages keep their name, since nothing else identifies
+     them there */
+  body[data-step] .brand span:not(.brand-icon){ display: none; }
+  body:not([data-step]) .brand{ max-width: none; }
+}
+
+/* topbar / index marker (right side) - quiet meta label */
+.topbar .meta{
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+/* Position label on step pages, last child of the topbar. Hidden by
+   default; section 2b shows it at exactly the widths where the rail
+   is docked and the .sheet-trigger is hidden. */
+.topbar__pos{
+  display: none;
+  font: 500 12.5px/1.2 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+/* desktop: keep the brand label visible, allow a wider trigger */
+@media (min-width: 720px){
+  .topbar{ padding: 14px 0 16px; }
+  .brand{ font-size: 14px; max-width: none; }
+  .sheet-trigger{ padding: 0 16px; }
+  .sheet-trigger__title{ max-width: 28ch; }
+}
+
+/* ─────────── 2. bottom sheet step menu ─────────── */
+
+.step-sheet{
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.step-sheet[hidden]{ display: none !important; }
+
+.step-sheet__backdrop{
+  position: absolute;
+  inset: 0;
+  background: oklch(0 0 0 / 0.45);
+  backdrop-filter: blur(2px);
+  animation: sheet-bg-in .2s ease;
+}
+@keyframes sheet-bg-in{
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.step-sheet__panel{
+  position: relative;
+  width: 100%;
+  /* 92vh, not 86: the schedule is ten rows now (eight steps, the
+     break, one closing bookend) and 86vh cut the closing bookend in half on a
+     390 x 844 phone. */
+  max-height: 92vh;
+  background: var(--bg);
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+  box-shadow: 0 -10px 40px -8px oklch(0 0 0 / 0.25);
+  display: flex;
+  flex-direction: column;
+  animation: sheet-in .26s cubic-bezier(0.16, 1, 0.3, 1);
+  padding-bottom: var(--nav-safe);
+}
+@keyframes sheet-in{
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.step-sheet__handle{
+  appearance: none;
+  background: transparent;
+  border: 0;
+  width: 100%;
+  padding: 8px 0 4px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.step-sheet__handle::before{
+  content: "";
+  width: 38px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--rule-strong);
+}
+
+.step-sheet__head{
+  padding: 0 20px 12px;
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+.step-sheet__title{
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.step-sheet__sub{
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: .04em;
+  color: var(--ink-2);
+}
+
+.step-sheet__list{
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: grid;
+  gap: 1px;
+}
+/* Row geometry, colour and type are shared by both presentations and
+   live in section 2b, after every rule in this section. */
+.step-sheet__item{ transition: background .1s ease; }
+.step-sheet__item:active{ background: var(--bg-2); }
+@media (hover: hover){
+  .step-sheet__item:hover{ background: var(--bg-2); }
+}
+.step-sheet__item:focus-visible{
+  outline: 2px solid var(--accent-2);
+  outline-offset: -2px;
+}
+.step-sheet__close{
+  appearance: none;
+  background: var(--bg-2);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--nav-radius);
+  margin: 10px 16px 12px;
+  padding: 14px;
+  min-height: var(--nav-touch);
+  font: 500 15px/1 "Public Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: center;
+}
+.step-sheet__close:active{ background: var(--bg); }
+
+/* desktop: sheet becomes a centered card */
+@media (min-width: 720px){
+  .step-sheet{ align-items: center; }
+  .step-sheet__panel{
+    max-width: 460px;
+    max-height: 80vh;
+    border-radius: 16px;
+    animation: sheet-in-desk .22s ease;
+  }
+  @keyframes sheet-in-desk{
+    from { transform: translateY(10px) scale(0.98); opacity: 0; }
+    to   { transform: translateY(0) scale(1); opacity: 1; }
+  }
+  .step-sheet__close{ display: none; }
+}
+
+/* ─────────── 2b. docked rail (940px and up) ─────────── */
+
+/* The rail IS the step sheet. Same markup, two presentations: the
+   dialog above, the schedule rail here. Everything that turns the
+   sheet into a rail is scoped to body[data-step], because index.html
+   and cheat-sheet.html link this file too and have no sheet inside
+   their .frame; an unscoped .frame{ display: grid } would hand them
+   an empty 200px column. The row rules further down are shared by
+   both presentations, so they stay unscoped. This section sits after
+   every rule in section 2 on purpose: several of them win on a
+   specificity tie otherwise. */
+
+@media (min-width: 940px){
+
+  /* The rail's grey ground is painted on .frame (see below), and the
+     frame's box stops exactly body's padding-bottom above the document
+     bottom. The base 72px against a 65px step bar left a 7px white band
+     under the grey column at maximum scroll, so docked pages reserve
+     60px here and take the clearance back as frame padding instead: the
+     column then runs 5px under the bar and content still sits 148px
+     above the document bottom. */
+  body[data-step]{ padding-bottom: 60px; }
+
+  /* 940, not 900. The reading column has to hold a 72-character prompt
+     line at 13px JetBrains Mono, which needs 562px. Work backwards:
+     .pc-body sits 102px inside the reading column (block border 2,
+     block padding 32, numeral column 32, its gap 12, pc-body padding
+     24), so the column needs 664px, so the content box needs 888px
+     with the 224px rail, so the viewport needs 936px. Below that the
+     sheet is the dialog and the prompt gets the full width.
+
+     Width budget at 960px, half of a 1920 x 1080 screen and the
+     primary width: 960 - 48 frame padding = 912 content, - 200 rail
+     - 24 gap = 688 reading column. The 1092px cap makes the reading
+     column stop at exactly 820 on a wide screen. These numbers decide
+     whether a 72-character prompt line wraps, so measure after any
+     change to them, do not eyeball. */
+  body[data-step] .frame{
+    max-width: 1092px;
+    padding-left: 24px;
+    padding-right: 24px;
+    padding-bottom: 88px;
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    column-gap: 24px;
+    /* The rail's grey ground and its hairline are painted here, on the
+       frame, not on the sticky rail itself. A sticky element can only
+       travel inside its own grid area, and that area stops above the
+       page bottom, so stretching the rail to 100vh made it scroll out
+       of view at the end of a long page and took the blue "you are
+       here" row with it. 224px = the 200px column plus its 24px bleed. */
+    background: linear-gradient(to right,
+      var(--bg-2) 0 223px,
+      var(--rule) 223px 224px,
+      transparent 224px);
+  }
+  body[data-step] .frame > *{
+    grid-column: 2;
+    max-width: 820px;
+  }
+  /* the topbar spans the whole reading column; the step-bar belongs
+     outside .frame, but it is fixed, so an 820px cap on it would cut
+     the bottom nav off mid-viewport. Guard it here too. */
+  body[data-step] .frame > .topbar{ max-width: none; }
+  body[data-step] .frame > .step-bar{ max-width: none; }
+
+  body[data-step] .frame > .step-sheet{
+    grid-column: 1;
+    /* "1 / -1" would resolve to a single row: .frame declares no
+       grid-template-rows, so line -1 is line 1. The rail needs a grid
+       area as tall as the page, because that area is what bounds its
+       sticky travel, hence a generous span. Empty rows are 0 tall and
+       row-gap is 0, so the span costs nothing. */
+    grid-row: 1 / span 60;
+    max-width: none;
+    position: sticky;
+    inset: auto;
+    top: 0;
+    z-index: auto;
+    align-self: start;
+    display: block !important;   /* beats .step-sheet[hidden] */
+    /* content height, never taller: see the gradient on .frame above.
+       The cap plus overflow keeps a schedule longer than the screen
+       scrolling inside the rail instead of past the viewport. */
+    max-height: 100vh;
+    overflow-y: auto;
+    background: none;
+    border-right: 0;
+    margin-left: -24px;          /* bleeds to the frame edge */
+    padding: 20px 16px 24px 24px;
+  }
+  /* the hidden attribute belongs to the dialog, not to the rail */
+  body[data-step] .frame > .step-sheet[hidden]{ display: block !important; }
+
+  /* dialog furniture, off */
+  body[data-step] .frame > .step-sheet .step-sheet__backdrop,
+  body[data-step] .frame > .step-sheet .step-sheet__handle,
+  body[data-step] .frame > .step-sheet .step-sheet__close,
+  body[data-step] .frame > .step-sheet .step-sheet__head{ display: none; }
+  body[data-step] .frame > .step-sheet .step-sheet__panel{
+    position: static;
+    display: block;
+    width: auto;
+    max-height: none;
+    padding: 0;
+    background: none;
+    border-radius: 0;
+    box-shadow: none;
+    transform: none;
+    animation: none;             /* no slide-in for a static sidebar */
+  }
+  body[data-step] .frame > .step-sheet .step-sheet__list{
+    padding: 0;
+    overflow: visible;
+  }
+  /* --bg-2 is the rail's own ground, so hover lifts to white instead */
+  @media (hover: hover){
+    body[data-step] .frame > .step-sheet .step-sheet__item:not(.is-current):hover{
+      background: var(--bg);
+    }
+  }
+
+  /* the trigger is the dialog's door; docked, the rail replaces it and
+     the position label takes its place on the right of the topbar */
+  body[data-step] .frame > .step-sheet .step-sheet__item:focus-visible{
+    outline-offset: 2px;
+  }
+
+  /* 12.5px, not 13: the aligned row track leaves the title 86px, and
+     "Break · we talk it through" needs three line boxes at 13px and two
+     at 12.5. Two keeps the amber row in proportion with the step rows. */
+  body[data-step] .frame > .step-sheet .step-sheet__break .step-sheet__t{
+    font-size: 12.5px;
+  }
+
+  body[data-step] .sheet-trigger{ display: none; }
+  body[data-step] .topbar__pos{ display: inline-block; }
+}
+
+/* ─── rows: shared by the rail and the dialog ─── */
+
+.step-sheet__item,
+.step-sheet__mark{
+  display: grid;
+  /* 36px keeps titles aligned across numbered items and blank bookend
+     rows. 30px, not auto: the done tick
+     lives in .step-sheet__d, so an auto column would shrink the title
+     by 15px the moment a row is ticked and reflow the whole rail. */
+  grid-template-columns: 36px 1fr 30px;
+  gap: 8px;
+  align-items: baseline;
+  min-height: 0;               /* the 44px target returns below 940px */
+  padding: 7px 8px;
+  border-radius: var(--radius-sm);
+  color: var(--ink-2);
+  text-decoration: none;
+  font: 400 14px/1.35 "Public Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+/* The closing bookend row (Demos and wrap-up) is not a step: no link, no
+   hover, nothing that reads as clickable */
+.step-sheet__mark{ cursor: default; }
+.step-sheet__mark .step-sheet__t{ color: var(--ink-2); }
+
+.step-sheet__n{
+  font: 600 12px/1.35 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0;
+  color: var(--ink-2);
+}
+.step-sheet__t{
+  font-size: 14px;
+  line-height: 1.3;
+  font-weight: 600;
+  color: var(--ink);
+}
+/* minutes. 12px on --ink-2: --ink-3 fails AA at this size */
+.step-sheet__d{
+  font: 500 12px/1.35 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink-2);
+  text-align: right;
+  white-space: nowrap;
+}
+.step-sheet__state{ display: none; }   /* the tick moved into __d */
+
+.step-sheet__item.is-done{ color: var(--ink-2); }
+/* Done is dimmer type and the tick in the minutes column. No rule
+   through the title: on a schedule a struck-out line reads as
+   cancelled, not finished. */
+.step-sheet__item.is-done .step-sheet__t{ color: var(--ink-2); }
+.step-sheet__item.is-done .step-sheet__d::after{
+  content: " ✓";
+  color: var(--accent);
+}
+
+.step-sheet__item.is-current{
+  background: var(--accent-2-soft);
+  box-shadow: inset 3px 0 0 var(--accent-2);
+}
+.step-sheet__item.is-current .step-sheet__n,
+.step-sheet__item.is-current .step-sheet__t{ color: var(--accent-2); }
+
+/* One non-link row between steps 03 and 04: the workshop break, where
+   the approach is discussed before anyone builds. workshop-nav.js only
+   reads .step-sheet__item rows, so this one is inert. */
+.step-sheet__break{
+  display: grid;
+  grid-template-columns: 36px 1fr 30px;   /* same track as the item rows */
+  gap: 8px;
+  align-items: baseline;
+  margin: 6px 0;
+  padding: 7px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--warn-soft);
+  color: var(--warn);
+  font: 700 13px/1.35 "Public Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.step-sheet__break .step-sheet__n,
+.step-sheet__break .step-sheet__t,
+.step-sheet__break .step-sheet__d{ color: var(--warn); }
+.step-sheet__break .step-sheet__t{ font-size: 13px; font-weight: 700; }
+
+/* The break row is a link: it points at break.html, the stop where the
+   participant chooses how they build. Same amber row, plus the two
+   affordances a link needs. Hover excludes the current row so it does
+   not out-specify the is-current rail below it. */
+a.step-sheet__break{ text-decoration: none; }
+@media (hover: hover){
+  a.step-sheet__break:not(.is-current):hover{ box-shadow: inset 0 0 0 1px var(--warn-line); }
+}
+.step-sheet__break.is-current{ box-shadow: inset 3px 0 0 var(--warn); }
+
+/* The two afternoon routes: A above step 04, B under step 08.
+   They are the rail's copy of the fork index.html carries, so both
+   sit on the row track the steps use and their letters line up in one
+   column: A reads as the head of the numbered rows beneath it,
+   B as the one-page route under those. Neither is a
+   .step-sheet__item, so the script ignores them exactly like the break
+   row and the closing bookend: a route writes no progress. */
+.step-sheet__group,
+.step-sheet__alt{
+  display: grid;
+  grid-template-columns: 36px 1fr 30px;   /* same track as the item rows */
+  gap: 8px;
+  align-items: baseline;
+  margin: 8px 0 0;
+  padding: 9px 8px 7px;
+  border-top: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  color: var(--ink-2);
+  text-decoration: none;
+  font: 400 14px/1.35 "Public Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+.step-sheet__group .step-sheet__n,
+.step-sheet__group .step-sheet__d,
+.step-sheet__alt .step-sheet__n,
+.step-sheet__alt .step-sheet__d{ color: var(--ink-2); }
+
+/* Route A is the only route with steps inside it, so its row is the
+   door to them: a <button> stripped back to the row, and the six
+   .step-sheet__fold rows fold behind it. B stays a plain link,
+   because a one-page route has nothing to open. */
+.step-sheet__group{
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--rule);   /* the shorthand above reset it */
+  margin: 10px 0 0;
+  text-align: left;
+  cursor: pointer;
+}
+@media (hover: hover){
+  .step-sheet__group:hover{ box-shadow: inset 0 0 0 1px var(--rule-strong); }
+}
+.step-sheet__group:focus-visible{
+  outline: 2px solid var(--accent-2);
+  outline-offset: -2px;
+}
+
+/* The fold marker sits in the column the minutes and the done tick
+   use, so the rail keeps one right-hand column of state. */
+.step-sheet__group .step-sheet__d::after{ content: "\25B8"; }              /* closed */
+[data-route-a="open"] .step-sheet__group .step-sheet__d::after{ content: "\25BE"; }
+
+/* Folded away until the route is taken: picked on the index fork, or
+   opened here by hand. */
+[data-route-a="closed"] .step-sheet__fold{ display: none; }
+
+/* "here": the current step is one of the six. The fold stops being a
+   control, because folding away the row you are reading is never what
+   was meant, and the A takes the current colour to say which route the
+   step belongs to. */
+[data-route-a="here"] .step-sheet__group{ cursor: default; }
+[data-route-a="here"] .step-sheet__group .step-sheet__d::after{ content: ""; }
+[data-route-a="here"] .step-sheet__group .step-sheet__n{ color: var(--accent-2); }
+@media (hover: hover){
+  [data-route-a="here"] .step-sheet__group:hover{ box-shadow: none; }
+}
+@media (hover: hover){
+  .step-sheet__alt:not(.is-current):hover{ box-shadow: inset 0 0 0 1px var(--rule-strong); }
+}
+.step-sheet__alt.is-current{
+  background: var(--accent-2-soft);
+  box-shadow: inset 3px 0 0 var(--accent-2);
+}
+.step-sheet__alt.is-current .step-sheet__n,
+.step-sheet__alt.is-current .step-sheet__t{ color: var(--accent-2); }
+
+/* "you are here" foot of the rail. workshop-nav.js writes two lines
+   into it separated by a newline, hence pre-line. */
+.step-sheet__sum{
+  margin: 16px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--rule);
+  font: 500 12px/1.6 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink-2);
+  white-space: pre-line;
+}
+.step-sheet__sum:empty{ display: none; }
+
+/* The two reference rows, pinned under the schedule: the cheat sheet,
+   and the harness customisation section on the index. Neither is a
+   step, both get looked up mid-step, so they live where the eye
+   already is: the rail on desktop, the bottom sheet below 940px.
+   Links and never .step-sheet__item, so workshop-nav.js does not count
+   them as further steps. */
+.step-sheet__ref{
+  display: grid;
+  gap: 2px;
+  margin-top: 12px;
+  padding: 9px 10px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  background: var(--bg-2);
+  text-decoration: none;
+}
+.step-sheet__ref:hover{ border-color: var(--rule-strong); }
+/* stacked, the two read as one shelf rather than two loose cards */
+.step-sheet__ref + .step-sheet__ref{ margin-top: 6px; }
+.step-sheet__ref-t{
+  font-size: 13.5px;
+  line-height: 1.3;
+  font-weight: 700;
+  color: var(--ink);
+}
+.step-sheet__ref-d{
+  font: 400 11px/1.35 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink-2);
+}
+@media (max-width: 939.98px){
+  .step-sheet__ref{
+    min-height: var(--nav-touch);
+    align-content: center;
+    padding: 10px 12px;
+  }
+}
+
+/* Below 940px the same rows sit in the bottom sheet, where they are
+   tap targets rather than a schedule column. */
+@media (max-width: 939.98px){
+  .step-sheet__item,
+  .step-sheet__mark{
+    align-items: center;
+    gap: 12px;
+    min-height: var(--nav-touch);
+    padding: 10px 12px;
+  }
+  .step-sheet__t{ font-size: 16px; }
+  .step-sheet__break{ margin: 8px 6px; padding: 10px 12px; min-height: var(--nav-touch); align-items: center; }
+  .step-sheet__alt{ margin: 8px 6px 0; padding: 10px 12px; min-height: var(--nav-touch); align-items: center; }
+  .step-sheet__group{ margin: 10px 6px 0; padding: 10px 12px; min-height: var(--nav-touch); align-items: center; }
+  .step-sheet__sum{ margin: 12px 20px 4px; }
+}
+
+/* ─────────── 3. sticky bottom step-bar ─────────── */
+
+.step-bar{
+  position: fixed;
+  left: 0; right: 0;
+  bottom: 0;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 4px;
+  padding: 8px 10px;
+  padding-bottom: calc(8px + var(--nav-safe));
+  background: oklch(1 0 0 / 0.86);
+  -webkit-backdrop-filter: saturate(150%) blur(14px);
+  backdrop-filter: saturate(150%) blur(14px);
+  border-top: 1px solid var(--rule);
+  align-items: center;
+  /* fade up on load for a calm appearance */
+  animation: bar-in .25s ease;
+}
+@keyframes bar-in{
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.step-bar__btn{
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 8px;
+  align-items: center;
+  min-height: var(--nav-touch);
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--nav-radius);
+  text-decoration: none;
+  color: var(--ink);
+  background: transparent;
+  transition: background .15s ease, border-color .15s ease;
+}
+.step-bar__btn:active{ background: var(--bg-2); }
+@media (hover: hover){
+  .step-bar__btn:hover{ background: var(--bg-2); border-color: var(--rule); }
+}
+.step-bar__btn:focus-visible{
+  outline: 2px solid var(--accent-2);
+  outline-offset: 1px;
+}
+
+.step-bar__btn--prev{ text-align: left; }
+.step-bar__btn--next{ text-align: right; grid-template-columns: 1fr 28px; }
+
+.step-bar__icon{
+  display: grid;
+  place-items: center;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--bg-2);
+  font-size: 14px;
+  color: var(--ink);
+}
+.step-bar__btn--next .step-bar__icon{
+  background: var(--accent-2);
+  color: oklch(1 0 0);
+}
+
+.step-bar__label{
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+/* Public Sans, sentence case: the markup already says "Previous" and
+   "Next", so the label reads as a word, not as a tracked mono tag. */
+.step-bar__dir{
+  font: 600 12px/1 "Public Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-2);
+}
+.step-bar__btn--next .step-bar__dir{ color: var(--accent-2); }
+
+.step-bar__where{
+  font-size: 13px;
+  line-height: 1.2;
+  color: var(--ink);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.step-bar__where .n{
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  color: var(--ink-2);
+  font-weight: 600;
+  margin-right: 4px;
+}
+.step-bar__btn--next .step-bar__where .n{ color: var(--accent-2); }
+
+/* on very narrow screens, drop the destination title */
+@media (max-width: 420px){
+  .step-bar__where{ display: none; }
+  .step-bar__btn{ grid-template-columns: auto; }
+  .step-bar__btn--next{ grid-template-columns: auto; }
+  .step-bar__btn .step-bar__label{ display: none; }
+  .step-bar__btn{ justify-content: center; }
+}
+
+.step-bar__progress{
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  padding: 4px 8px;
+  min-width: 92px;
+}
+.step-bar__count{
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11.5px;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.step-bar__count b{ color: var(--accent-2); font-weight: 600; }
+/* track on --rule, fill in blue */
+.step-bar__bar{
+  width: 84px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--rule);
+  overflow: hidden;
+}
+.step-bar__bar span{
+  display: block;
+  height: 100%;
+  background: var(--accent-2);
+  border-radius: 999px;
+  transition: width .25s ease;
+}
+
+/* "end" variant - back-to-index or lab-complete */
+.step-bar__btn--end{ font-style: italic; }
+.step-bar__btn--end .step-bar__icon{
+  background: transparent;
+  border: 1px dashed var(--rule-strong);
+  color: var(--ink-2);
+}
+
+/* desktop: widen, reveal more */
+@media (min-width: 720px){
+  .step-bar{
+    padding: 10px 18px;
+    padding-bottom: calc(10px + var(--nav-safe));
+  }
+  .step-bar__where{ font-size: 14px; }
+  .step-bar__bar{ width: 120px; }
+}
+
+/* ─────────── 4. resume banner ─────────── */
+.resume-bar{
+  margin: 16px 0 0;
+  padding: 14px;
+  background: var(--accent-2-soft);
+  border: 1px solid var(--accent-2);
+  border-radius: var(--radius-lg);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: center;
+}
+.resume-bar[hidden]{ display: none !important; }
+.resume-bar__icon{
+  width: 36px; height: 36px;
+  grid-row: span 2;
+  border-radius: 50%;
+  background: var(--accent-2);
+  color: oklch(1 0 0);
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.resume-bar__text{
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--accent-2);
+  font-weight: 600;
+  line-height: 1;
+}
+.resume-bar__link{
+  grid-column: 2;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--ink);
+  text-decoration: none;
+}
+.resume-bar__link .n{
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-2);
+}
+.resume-bar__link .arrow{
+  margin-left: auto;
+  color: var(--accent-2);
+  transition: transform .15s ease;
+}
+.resume-bar__link:active .arrow,
+.resume-bar__link:hover .arrow{ transform: translateX(3px); }
+.resume-bar__clear{
+  grid-column: 1 / -1;
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  font: 400 13px/1 "Public Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  color: var(--ink-2);
+  cursor: pointer;
+  min-height: var(--nav-touch);
+}
+.resume-bar__clear:active,
+.resume-bar__clear:hover{
+  border-color: var(--ink-2);
+  color: var(--ink);
+}
+
+@media (min-width: 600px){
+  .resume-bar{
+    grid-template-columns: auto auto 1fr auto;
+    gap: 14px;
+  }
+  .resume-bar__icon{ grid-row: auto; }
+  .resume-bar__text{ grid-column: 2; }
+  .resume-bar__link{ grid-column: 3; }
+  .resume-bar__clear{ grid-column: 4; }
+}
+
+/* ─────────── 5. lab-card + TOC (index) ─────────── */
+
+.labs{
+  display: grid;
+  gap: 16px;
+}
+@media (min-width: 900px){
+  .labs{ grid-template-columns: 1fr 1fr; gap: 22px; }
+}
+
+.lab-card{
+  padding: 20px 18px 18px;
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  background: var(--bg);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+.lab-card .head{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.lab-card h3{
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+.lab-card .desc{
+  margin: 0 0 4px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+
+.lab-toc{
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 1px;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+.lab-toc li{ margin: 0; }
+.lab-toc a{
+  display: grid;
+  grid-template-columns: 32px 1fr 22px;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 0;
+  min-height: var(--nav-touch);
+  text-decoration: none;
+  color: var(--ink);
+  border-bottom: 1px solid var(--rule);
+}
+.lab-toc li:last-child a{ border-bottom: 0; }
+.lab-toc a:active{ background: var(--bg-2); margin: 0 -10px; padding-left: 10px; padding-right: 10px; }
+.lab-toc a:focus-visible{
+  outline: 2px solid var(--accent-2);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.lab-toc .n{
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.lab-toc .t{
+  font-size: 15.5px;
+  line-height: 1.3;
+}
+.lab-toc .s{
+  text-align: right;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+/* optional-step tag: rendered after .t on steps that can be skipped
+   when the room runs behind ("if ahead" track) */
+.lab-toc .opt{
+  margin-left: 8px;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10.5px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  border: 1px solid var(--rule-strong);
+  border-radius: 4px;
+  padding: 1px 6px;
+  vertical-align: 1px;
+}
+
+.lab-toc a.is-done .n{ color: var(--ink-2); }
+.lab-toc a.is-done .s::after{ content: "✓"; color: var(--accent); }
+.lab-toc a.is-current{
+  background: var(--accent-2-soft);
+  margin: 0 -12px;
+  padding-left: 12px;
+  padding-right: 12px;
+  border-radius: var(--radius-sm);
+  border-bottom-color: transparent;
+}
+.lab-toc a.is-current .n{ color: var(--accent-2); }
+.lab-toc a.is-current .t{ font-weight: 600; color: var(--accent-2); }
+.lab-toc a.is-current .s::after{ content: "●"; color: var(--accent-2); }
+
+.lab-card__cta{
+  display: grid;
+  gap: 12px;
+  margin-top: 6px;
+  padding-top: 4px;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.lab-card__cta-btn{
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 14px 18px;
+  background: var(--ink);
+  color: var(--bg);
+  border-radius: var(--radius-sm);
+  font: 700 16px/1 "Public Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  text-decoration: none;
+  min-height: var(--nav-touch);
+}
+.lab-card__cta-btn:active{ background: var(--accent-2); }
+@media (hover: hover){
+  .lab-card__cta-btn:hover{ background: var(--accent-2); }
+}
+.lab-card__cta-btn.is-resume{ background: var(--accent-2); }
+
+@media (min-width: 600px){
+  .lab-card__cta{
+    grid-template-columns: 1fr auto;
+    align-items: center;
+  }
+  .lab-card__cta-btn{ padding: 12px 18px; }
+}
+
+.lab-card.card--soon{ opacity: 0.7; background: var(--bg-2); }
+.lab-card.card--soon .lab-toc,
+.lab-card.card--soon .lab-card__cta-btn{ display: none; }
+
+/* ─────────── reduced motion ─────────── */
+@media (prefers-reduced-motion: reduce){
+  .step-sheet__backdrop,
+  .step-sheet__panel,
+  .step-bar,
+  .lab-card__cta-btn,
+  .resume-bar__link .arrow{
+    animation: none !important;
+    transition: none !important;
+  }
+}

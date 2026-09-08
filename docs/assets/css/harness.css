@@ -1,0 +1,542 @@
+/* ────────────────────────────────────────────────────────────────
+   harness.css · layout for the six harness reference pages
+   (harness-skills, harness-subagents, harness-hooks,
+   harness-rules, harness-memory, harness-mcp).
+
+   These pages sit outside the step sequence, like cheat-sheet.html:
+   no rail, no step bar, one reading column. Tokens, type, .card,
+   .callout, .sources, .prompt-card and the topbar all come from
+   workshop.css / workshop-nav.css and are never redefined here.
+   Every class below is namespaced .hx-* so it cannot collide with a
+   name the design system already owns.
+   ──────────────────────────────────────────────────────────────── */
+
+/* the reading column: same 868px measure the index uses */
+body[data-page="harness"] .frame{ max-width: 868px; }
+@media (min-width: 900px){
+  body[data-page="harness"] .frame{ padding-left: 24px; padding-right: 24px; }
+}
+
+/* ─────────── hero ─────────── */
+body[data-page="harness"] .hero{
+  padding: 30px 0 26px;
+  border-bottom: 1px solid var(--rule);
+}
+body[data-page="harness"] .hero .lede{
+  margin: 16px 0 0;
+  max-width: 62ch;
+  font-size: 18px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+body[data-page="harness"] .hero .lede b{ color: var(--ink); font-weight: 600; }
+
+/* the back link over the eyebrow: these pages are reached from the
+   index and have no prev/next of their own */
+.hx-back{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  color: var(--ink-2);
+  text-decoration: none;
+}
+.hx-back:hover{ color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ─────────── section ─────────── */
+.hx-section{ padding: 40px 0 0; }
+.hx-head{ display: grid; gap: 4px; margin-bottom: 18px; max-width: 72ch; }
+.hx-head .hx-eye{
+  font-family:"Public Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+/* size and weight come from h2 in workshop.css; only spacing here */
+.hx-head h2{ margin: 4px 0 0; }
+.hx-head .hx-sub{
+  margin: 6px 0 0;
+  max-width: 66ch;
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+
+/* ─────────── prose inside a section ─────────── */
+.hx-body{ display: grid; gap: 14px; max-width: 68ch; }
+.hx-body p{
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+.hx-body p b{ color: var(--ink); font-weight: 600; }
+.hx-body code,
+.hx-list code{
+  font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+  background: var(--bg-2);
+  border: 1px solid var(--rule);
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  /* a path that breaks mid-token reads as two unrelated files */
+  white-space: nowrap;
+}
+
+/* ─────────── the when-to-use list ───────────
+   Two columns of rows: use it when / reach for something else. The
+   ✓ and ✕ are decorative; the column heading carries the meaning. */
+.hx-when{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+@media (max-width: 720px){ .hx-when{ grid-template-columns: 1fr; } }
+.hx-when__col{
+  background: var(--bg-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+.hx-when__lbl{
+  margin: 0;
+  font: 800 12px/1.6 "Archivo", "Public Sans", Arial, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--ink-2);
+}
+.hx-when__col--yes .hx-when__lbl{ color: var(--accent); }
+.hx-when__col--no .hx-when__lbl{ color: var(--ink-2); }
+.hx-list{ margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.hx-list li{
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 8px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.hx-list li b{ color: var(--ink); font-weight: 600; }
+.hx-when__col--yes .hx-list li::before{ content: "\2713"; color: var(--accent); }
+.hx-when__col--no .hx-list li::before{ content: "\2715"; color: var(--ink-3); }
+
+/* ─────────── the example ───────────
+   A file listing reuses .prompt-card chrome from workshop.css (the
+   copy button in workshop-nav.js binds to any .prompt-card with a
+   [data-prompt] body). Only the caption under it is new. */
+.hx-file{ margin: 0 0 16px; }
+.hx-file__cap{
+  margin: 10px 0 0;
+  max-width: 66ch;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.hx-file__cap b{ color: var(--ink); font-weight: 600; }
+
+/* the run of the example, told as steps: what the participant does,
+   what the harness does back */
+.hx-flow{ margin: 18px 0 0; padding: 0; list-style: none; display: grid; gap: 0; max-width: 68ch; }
+.hx-flow li{
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--rule);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.hx-flow li:last-child{ border-bottom: 1px solid var(--rule); }
+.hx-flow li b{ color: var(--ink); font-weight: 600; }
+.hx-flow .hx-flow__n{
+  font: 600 13px/1.6 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink-3);
+}
+
+/* ─────────── the other five, at the foot of every page ─────────── */
+.hx-siblings{
+  margin-top: 44px;
+  padding-top: 22px;
+  border-top: 2px solid var(--ink);
+}
+.hx-siblings__lbl{
+  margin: 0 0 12px;
+  font: 800 12px/1.6 "Archivo", "Public Sans", Arial, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--ink-2);
+}
+.hx-siblings__grid{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+@media (max-width: 720px){ .hx-siblings__grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 460px){ .hx-siblings__grid{ grid-template-columns: 1fr; } }
+a.hx-sibling{
+  display: block;
+  padding: 12px 14px;
+  background: var(--bg-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 15.5px;
+}
+a.hx-sibling:hover{ border-color: var(--rule-strong); }
+a.hx-sibling .hx-sibling__what{
+  display: block;
+  margin-top: 3px;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+
+/* inline path inside the hero's meta-chip: bare mono, no pill. The
+   chip is a quiet line and a bordered pill in it reads as a button. */
+body[data-page="harness"] .meta-chip code{
+  font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   Section A diagrams (.dx-*)
+   Section A of every harness page is the explanation, and it is
+   carried by a figure rather than by paragraphs. These components
+   share the chrome of the step-page figure family in workshop.css
+   (.ctx-pair, .runs-when, .lands): a paper box, a mono title strip
+   on --bg-2, rows split by hairlines, emphasis by weight and never
+   by an accent hue, real DOM text in CSS boxes and never SVG text,
+   and a container query keyed to the figure's own width so the
+   stacked form is decided by the box and not the viewport. The
+   figcaption is the text alternative, so no role="img" and no
+   aria-label on the <figure>.
+   Motion is decoration on top of a figure that already reads: the
+   global prefers-reduced-motion block in workshop.css switches all
+   of it off.
+   ════════════════════════════════════════════════════════════════ */
+
+.dx{
+  margin: 18px 0 6px;
+  max-width: 660px;
+  container-type: inline-size;
+}
+.dx__box{
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow: hidden;                 /* clips the title strip's corners */
+}
+.dx__name{
+  display: block;
+  padding: 7px 11px;
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--rule);
+  font: 600 13px/1.45 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink);
+}
+.dx__foot{
+  display: block;
+  padding: 9px 11px;
+  border-top: 1px solid var(--rule);
+  background: var(--bg-2);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.dx__foot b{ color: var(--ink); font-weight: 600; }
+.dx__cap{
+  margin: 12px 0 0;
+  max-width: 62ch;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.dx__cap b{ color: var(--ink); font-weight: 600; }
+.dx code{
+  font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92em;
+  color: var(--ink);
+  white-space: nowrap;               /* a path never breaks mid-token */
+}
+
+/* ── generic fact rows: a key and what it means ── */
+.dx-rows__row{
+  display: grid;
+  grid-template-columns: minmax(0, 186px) minmax(0, 1fr);
+  gap: 4px 14px;
+  padding: 10px 11px;
+  border-top: 1px solid var(--rule);
+}
+.dx-rows__row:first-child{ border-top: 0; }
+.dx-rows__k{
+  font: 600 12.5px/1.5 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink-2);
+}
+.dx-rows__v{ font-size: 14px; line-height: 1.5; color: var(--ink-2); }
+.dx-rows__v b{ color: var(--ink); font-weight: 600; }
+@container (max-width: 500px){
+  .dx-rows__row{ grid-template-columns: minmax(0, 1fr); gap: 5px; }
+  .dx-rows__v{ padding-left: 12px; border-left: 2px solid var(--rule); }
+}
+
+/* ── the ladder: what is loaded, when, and what it costs ──
+   Three rows, each with a bar whose width is the share of the skill
+   that is in context at that moment. The bars are the argument:
+   almost nothing, then the body, then everything. */
+.dx-ladder__row{
+  display: grid;
+  grid-template-columns: minmax(0, 128px) minmax(0, 1fr) 118px;
+  gap: 6px 14px;
+  align-items: center;
+  padding: 11px;
+  border-top: 1px solid var(--rule);
+}
+.dx-ladder__row:first-child{ border-top: 0; }
+.dx-ladder__when{
+  font: 600 12.5px/1.45 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink-2);
+}
+.dx-ladder__what{ font-size: 14px; line-height: 1.5; color: var(--ink-2); }
+.dx-ladder__what b{ color: var(--ink); font-weight: 600; }
+.dx-ladder__bar{
+  height: 11px;
+  background: var(--bg-2);
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.dx-ladder__fill{
+  display: block;
+  height: 100%;
+  background: var(--ink-3);
+  transform-origin: left center;
+  animation: dx-grow .8s cubic-bezier(.2,.7,.3,1) both;
+}
+/* the three widths are the argument, so they are far enough apart to
+   read at a glance, and each step darkens as more of the skill lands
+   in the window */
+.dx-ladder__fill--a{ width: 9%;  }
+.dx-ladder__fill--b{ width: 52%; background: var(--ink-2); animation-delay: .18s; }
+.dx-ladder__fill--c{ width: 100%; background: var(--ink); animation-delay: .36s; }
+@keyframes dx-grow{ from{ transform: scaleX(0); } to{ transform: scaleX(1); } }
+@container (max-width: 500px){
+  .dx-ladder__row{ grid-template-columns: minmax(0, 1fr) 74px; }
+  .dx-ladder__when{ grid-column: 1 / -1; }
+}
+
+/* ── the wire: the loop, with the points a hook can fire at ──
+   A run of nodes on one track. The track is decorative; the node
+   labels carry the sequence. */
+.dx-wire{ padding: 18px 12px 14px; }
+.dx-wire__track{
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.dx-wire__track::before{
+  content: "";
+  position: absolute;
+  left: 12%; right: 12%; top: 6px;
+  height: 2px;
+  background: var(--rule-strong);
+}
+/* the token travelling the loop. Decoration on a figure that already
+   reads without it; reduced motion parks it at the start. */
+.dx-wire__track::after{
+  content: "";
+  position: absolute;
+  top: 2px; left: 12%;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--ink);
+  animation: dx-run 5.2s cubic-bezier(.6,0,.4,1) infinite;
+}
+@keyframes dx-run{
+  0%   { transform: translateX(0); opacity: 0; }
+  8%   { opacity: 1; }
+  92%  { opacity: 1; }
+  /* cqi is the figure's own inline size, so the token lands on the
+     last node at any width instead of overshooting a narrow box */
+  100% { transform: translateX(calc(76cqi - 28px)); opacity: 0; }
+}
+.dx-wire__node{
+  position: relative;
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  text-align: center;
+}
+.dx-wire__dot{
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--paper);
+  border: 2px solid var(--ink-3);
+  z-index: 1;
+}
+.dx-wire__node--fire .dx-wire__dot{ background: var(--ink); border-color: var(--ink); }
+.dx-wire__ev{
+  font: 600 11.5px/1.4 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+.dx-wire__node--fire .dx-wire__ev{ color: var(--ink); }
+.dx-wire__what{ font-size: 13px; line-height: 1.45; color: var(--ink-2); }
+.dx-wire__yours{
+  margin-top: 2px;
+  padding: 3px 8px;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg-2);
+  font: 600 11.5px/1.5 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink);
+}
+@container (max-width: 560px){
+  .dx-wire__track{ grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .dx-wire__track::before,
+  .dx-wire__track::after{ display: none; }
+  .dx-wire__node{
+    grid-template-columns: 16px minmax(0, 1fr);
+    justify-items: start;
+    text-align: left;
+    gap: 4px 10px;
+    padding: 9px 0;
+    border-top: 1px solid var(--rule);
+  }
+  .dx-wire__node:first-child{ border-top: 0; }
+  .dx-wire__dot{ grid-row: 1 / span 3; align-self: start; margin-top: 3px; }
+}
+
+/* ── the gate: a path-scoped rule deciding on the file just read ── */
+.dx-gate__glob{
+  display: block;
+  padding: 9px 11px;
+  border-bottom: 1px solid var(--rule);
+  font: 400 13px/1.6 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink-2);
+}
+.dx-gate__glob b{ color: var(--ink); font-weight: 600; }
+.dx-gate__row{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20px minmax(0, 1fr);
+  align-items: center;
+  gap: 6px 12px;
+  padding: 11px;
+  border-top: 1px solid var(--rule);
+}
+.dx-gate__row:first-of-type{ border-top: 0; }
+.dx-gate__file{
+  font: 400 13px/1.5 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.dx-gate__mark{
+  justify-self: center;
+  font-size: 15px;
+  color: var(--ink-3);
+}
+.dx-gate__row--hit{ background: var(--bg-2); }
+.dx-gate__row--hit .dx-gate__mark{ color: var(--ink); }
+.dx-gate__row--hit .dx-gate__file{ font-weight: 600; }
+.dx-gate__out{ font-size: 14px; line-height: 1.5; color: var(--ink-2); }
+.dx-gate__out b{ color: var(--ink); font-weight: 600; }
+@container (max-width: 500px){
+  .dx-gate__row{ grid-template-columns: 20px minmax(0, 1fr); }
+  .dx-gate__file{ grid-column: 1 / -1; }
+}
+
+/* ── the stack: every file that is read before your first word ── */
+.dx-stack__layer{
+  display: grid;
+  grid-template-columns: minmax(0, 150px) minmax(0, 1fr);
+  gap: 4px 14px;
+  padding: 10px 11px 10px 14px;
+  border-top: 1px solid var(--rule);
+  /* the spine darkens layer by layer: later is read later, and where
+     two files disagree the later one has the final word. A staircase
+     of indents was the other option and was cut for implying nesting,
+     which is not what these four files do. */
+  border-left: 3px solid var(--rule);
+}
+.dx-stack__layer:first-child{ border-top: 0; }
+.dx-stack__layer:nth-child(2){ border-left-color: var(--rule-strong); }
+.dx-stack__layer:nth-child(3){ border-left-color: var(--ink-2); }
+.dx-stack__layer:nth-child(4){ border-left-color: var(--ink); }
+.dx-stack__scope{
+  font: 600 12.5px/1.5 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink-2);
+}
+.dx-stack__file{ font-size: 14px; line-height: 1.5; color: var(--ink-2); }
+.dx-stack__file b{ color: var(--ink); font-weight: 600; }
+/* the imported file hangs off the layer that imports it */
+.dx-stack__import{
+  display: block;
+  margin-top: 4px;
+  padding-left: 12px;
+  border-left: 2px solid var(--rule);
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+@container (max-width: 500px){
+  .dx-stack__layer{ grid-template-columns: minmax(0, 1fr); gap: 5px; }
+}
+
+/* ── the board: what is plugged into this session ── */
+.dx-port{
+  display: grid;
+  grid-template-columns: 16px minmax(0, 140px) 66px minmax(0, 1fr);
+  align-items: center;
+  gap: 6px 12px;
+  padding: 11px;
+  border-top: 1px solid var(--rule);
+}
+.dx-port:first-of-type{ border-top: 0; }
+/* the plug: a small box with a lead into the row, drawn in CSS */
+.dx-port__plug{
+  position: relative;
+  width: 12px; height: 16px;
+  background: var(--bg-2);
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+}
+.dx-port__plug::after{
+  content: "";
+  position: absolute;
+  left: 100%; top: 50%;
+  width: 8px; height: 2px;
+  background: var(--rule-strong);
+}
+.dx-port__srv{
+  font: 600 13px/1.45 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.dx-port__tx{
+  justify-self: start;
+  padding: 2px 7px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+  font: 600 10.5px/1.6 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.dx-port__gives{ font-size: 14px; line-height: 1.5; color: var(--ink-2); }
+.dx-port__gives b{ color: var(--ink); font-weight: 600; }
+@container (max-width: 540px){
+  .dx-port{ grid-template-columns: 16px minmax(0, 1fr) auto; }
+  .dx-port__gives{ grid-column: 2 / -1; }
+}

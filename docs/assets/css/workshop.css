@@ -1,0 +1,3807 @@
+/* ────────────────────────────────────────────────────────────
+   workshop.css: shared design system for Working with Claude Code steps.
+   Design: "Run sheet". Import this on every new page:
+
+     <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Public+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+     <link rel="stylesheet" href="workshop.css" />
+
+   Three faces, three jobs:
+   • Headings are Archivo, at 700 or 800 only (those are the two
+     weights the page loads; anything else renders synthetic).
+   • Everything else is Public Sans.
+   • Mono is JetBrains Mono, never a system mono.
+
+   Rules of the system (do not break without good reason):
+   • Body 17px. Hints 16px. Footer help 15px. Never lower.
+   • Use --ink-2 for instructional copy. Reserve --ink-3 for
+     decorative-only text (separators, markers). Small text goes on
+     --ink-2: --ink-3 under about 14px fails AA.
+   • Status colors are semantic: --accent (green) is DONE and the
+     pass check, --accent-2 (blue) is NOW / current / actions,
+     --warn (amber) is the break. Never invent a new accent.
+     Extend the palette here.
+   • Those three hues are the terminal palette's own: the page's
+     green is --term-green's 150, its blue is --term-blue's 240,
+     its amber is --term-amber's 80, each darkened to read on
+     white. The prompt card and the page around it are one palette
+     at two lightnesses, which is what stops the dark card looking
+     pasted onto a foreign page. Move a page hue and you break
+     that; move the --term-* hue with it.
+   • Tight letter-spacing is for headings only (-.02em on h1,
+     -.01em on h2 and h3). Nothing else is tracked: the tracked
+     uppercase mono label is gone from the hero and the rail.
+   ──────────────────────────────────────────────────────────── */
+
+:root{
+  /* ground: pure white on purpose. The page is paper; the rail and
+     the panels are the only tinted surfaces and they are warm grey,
+     carrying the terminal's warm hue up into the daylight page */
+  --bg:           oklch(1 0 0);           /* #FFFFFF */
+  --bg-2:         oklch(0.968 0.006 85);  /* #F6F4F0 rail and panel, warm paper */
+  --paper:        oklch(1 0 0);
+
+  /* ink (text) */
+  --ink:          oklch(0.24 0.012 260);  /* #1F2328 headlines, primary copy */
+  --ink-2:        oklch(0.48 0.015 255);  /* #5B6470 instructional copy, hints */
+  --ink-3:        oklch(0.66 0.012 255);  /* #9AA3AE DECORATIVE ONLY: separators, markers */
+
+  /* rules */
+  --rule:         oklch(0.905 0.008 85);  /* #E2DFDA hairlines */
+  --rule-strong:  oklch(0.835 0.012 85);  /* #CCC8C0 */
+
+  /* semantic accents */
+  --accent:        oklch(0.50 0.14 150);  /* #007834 green: done, pass check (--term-green's hue) */
+  --accent-soft:   oklch(0.955 0.040 150);/* #DEF8E2 */
+  --accent-2:      oklch(0.50 0.14 240);  /* #006AAA blue: now, current, actions (--term-blue's hue) */
+  --accent-2-soft: oklch(0.955 0.035 240);/* #DCF4FF */
+  --accent-3:      oklch(0.51 0.16 330);  /* #963C91 magenta: the key recommendation, the Copilot crosswalk */
+  --accent-3-soft: oklch(0.955 0.030 330);/* #FCE9FA */
+  --accent-3-line: oklch(0.85 0.06 330);  /* #E5C0E1 */
+
+  /* amber: the break, and anything not ready for real use */
+  --warn:          oklch(0.525 0.13 80);  /* #915F00 reads on --warn-soft at AA (--term-amber's hue) */
+  --warn-soft:     oklch(0.955 0.045 85); /* #FEEFCF */
+  --warn-line:     oklch(0.82 0.10 80);   /* #E6BD77 */
+
+  /* terminal palette */
+  --term-bg:      oklch(0.16 0.008 80);
+  --term-bg-2:    oklch(0.13 0.008 80);
+  --term-fg:      oklch(0.96 0.005 85);
+  --term-dim:     oklch(0.80 0.008 85);   /* keep >= 0.78. Anything dimmer is unreadable */
+  --term-green:   oklch(0.78 0.14 150);
+  --term-amber:   oklch(0.82 0.12 80);
+  --term-blue:    oklch(0.78 0.10 240);
+
+  /* shape: quieter than the old system */
+  --radius-sm: 5px;
+  --radius:    8px;
+  --radius-lg: 10px;
+
+  /* spacing scale (use these, don't invent new pixel values) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 18px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+}
+
+/* ───── reset / base ───── */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body{
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Public Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-size: 17px;           /* learning floor: do not go lower for content */
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  min-height: 100vh;
+}
+.mono { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+/* ───── typography ───── */
+/* headings are the only Archivo on the page */
+h1, h2, h3, h4 {
+  margin: 0;
+  color: var(--ink);
+  font-family: "Archivo", "Public Sans", Arial, sans-serif;
+}
+
+h1 {
+  font-size: clamp(34px, 4vw, 50px);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  font-weight: 800;
+}
+h2 {
+  font-size: 22px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  font-weight: 800;
+}
+h3 {
+  font-size: 18px;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  font-weight: 800;
+}
+h4 {
+  font-size: 16px;
+  line-height: 1.3;
+  font-weight: 700;
+}
+
+p { margin: 0; }
+a { color: var(--ink); text-underline-offset: 3px; }
+
+/* ───── small text patterns ───── */
+
+/* section label above a title, e.g. "04 · Intent". Sentence case,
+   no tracking, no uppercase: the run sheet reads, it does not shout.
+   The number is the only coloured part. */
+.eyebrow{
+  font-family: "Public Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+.eyebrow .num { color: var(--accent-2); font-weight: 600; }
+
+/* compact label above a card title */
+.kicker{
+  font-family: "Public Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--ink-2);
+  margin: 0 0 8px;
+}
+
+/* instructional body: never smaller than 16px */
+.hint{
+  font-family: "Public Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  /* instructional copy sits at the body size, 17px. The spec's
+     component note said 16; its type table and pages.md say 17 to 18,
+     and .hint is instructional, so it matches the body floor. */
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  margin: 0;
+}
+
+/* helper-text rows in footers etc. */
+.help{
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  max-width: 60ch;
+}
+.help b { color: var(--ink); font-weight: 500; }
+
+/* standalone footer escape hatch ("Stuck? Raise a hand…") used on
+   step pages that have a step-bar instead of a .footer block */
+.footer-help{
+  margin-top: 56px;
+  padding-top: 26px;
+  border-top: 1px solid var(--rule);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+.footer-help b{ color: var(--ink); font-weight: 500; }
+
+/* ───── status badges ───── */
+.badge{
+  display: inline-block;
+  padding: 3px 9px 2px;
+  border-radius: 999px;
+  background: var(--bg-2);
+  border: 1px solid var(--rule);
+  color: var(--ink-2);
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+.badge--active{ background: var(--accent-2-soft); border-color: var(--accent-2); color: var(--accent-2); }
+.badge--done  { background: var(--accent-soft);   border-color: var(--accent);   color: var(--accent);   }
+.badge--soon  { background: var(--bg-2);           border-color: var(--rule-strong); color: var(--ink-2);    }
+.badge--warn  { background: var(--warn-soft);      border-color: var(--warn);     color: var(--warn);     }
+
+/* ───── kbd ───── */
+kbd{
+  display: inline-block;
+  padding: 3px 8px;
+  border: 1px solid var(--rule-strong);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: #fff;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1;
+}
+
+/* ─────────────────────────────────────────────
+   Instruction chips: the things a participant
+   is asked to type or press. Three flavors:
+
+   .input-chip               : wrapper, light surface
+     ├─ <span class="caret">  : "$" for shell, "›" inside Claude
+     ├─ <span class="cmd">    : the literal command text
+     ├─ (or) <kbd>…</kbd>     : for keyboard-shortcut chips
+     │      with optional .plus separators
+     └─ <span class="kbd">    : divider + "then <kbd>Return ↵</kbd>"
+   .input-chip--claude       : same chip, just signals
+                               "this is inside Claude" via the › caret
+
+   .verify-pill (in .pills-row): label : value confirm chips
+     used for steps that ask the participant to verify
+     an on-screen value matches an expected one.
+
+   These three patterns are the canonical way to render
+   instructions. Do not invent new chip styles per step;
+   extend this file instead.
+   ───────────────────────────────────────────── */
+/* One line, always. A command long enough to wrap at 960px is a
+   content bug: split it into two chips rather than shrinking it.
+   The max-width + overflow pair is the safety net so a long chip
+   can never make the page itself scroll sideways on a phone. */
+.input-chip{
+  display: inline-flex; align-items: center; gap: 10px;
+  max-width: 100%;
+  margin: 12px 8px 0 0;
+  padding: 8px 12px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow-x: auto;
+}
+.input-chip--claude{ border-color: var(--rule); }
+.input-chip .caret{ color: var(--accent-2); user-select: none; }
+.input-chip .cmd{ color: var(--ink); }
+.input-chip > kbd{
+  padding: 4px 10px;
+  font-size: 13px;
+  border-radius: 4px;
+}
+.input-chip .plus{ color: var(--ink-3); margin: 0 2px; }
+.input-chip .kbd{
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-left: 4px;
+  padding-left: 10px;
+  border-left: 1px solid var(--rule);
+  font-family: "Public Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.input-chip .kbd kbd{
+  padding: 3px 8px;
+  font-size: 12.5px;
+  border-radius: 4px;
+}
+
+/* verify pills: label : value confirm chips */
+.pills-row{ display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.verify-pill{
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 9px 13px;
+  background: var(--bg-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13.5px;
+}
+.verify-pill .label{ color: var(--ink-2); }
+.verify-pill .value{ color: var(--ink); font-weight: 500; }
+
+/* command output: quiet, monospaced, lives under a .input-chip.
+   On --ink-2, not --ink-3: at this size the decorative grey fails AA */
+.cmd-out{
+  margin-top: 6px;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+
+/* ───── card primitive ───── */
+.card{
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: var(--space-5);
+  transition: border-color .2s ease, background .25s ease, transform .25s ease;
+}
+.card--active{
+  border-color: var(--accent-2);
+  background: var(--accent-2-soft);
+  box-shadow: 0 0 0 1px var(--accent-2);
+}
+.card--done{
+  background: var(--accent-soft);
+  border-color: oklch(0.80 0.08 150);
+}
+/* --soon: placeholder for a not-yet-built unit (e.g. Lab 02 on
+   the workshop index). Muted but legible; never interactive. */
+.card--soon{
+  background: var(--bg-2);
+  border-color: var(--rule);
+  opacity: 0.78;
+}
+.card--soon h3{ color: var(--ink-2); }
+
+/* Links-as-cards. When the whole card is the CTA (e.g. lab cards
+   on the workshop index), wrap with <a class="card">. The link
+   inherits color/decoration and gets a hover lift. */
+a.card{
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+a.card:hover{
+  transform: translateY(-2px);
+  border-color: var(--rule-strong);
+  box-shadow: 0 10px 28px -14px oklch(0 0 0 / 0.18);
+}
+a.card:focus-visible{
+  border-color: var(--accent-2);
+}
+
+/* ─────────────────────────────────────────────
+   Callout: the "pay attention to this" block.
+
+   Use sparingly. ONE per step page, max. This is
+   reserved for the single most important takeaway,
+   recommendation, or action on the page. If you reach
+   for it twice in one step, you're diluting it.
+
+   Structure:
+     <aside class="callout callout--key">
+       <div class="callout__body">
+         <p class="callout__label"><i></i>Recommendation</p>
+         <h4>Heading goes here</h4>
+         <p>Body copy explaining the takeaway.</p>
+       </div>
+       <div class="callout__action">        ... optional, reads last
+         <span class="callout__arrow" aria-hidden="true">→</span>
+         <!-- usually an .input-chip the participant should run -->
+       </div>
+     </aside>
+
+   The card reads straight down: label, heading, copy, then the
+   action. .callout__action is optional and, when present, is a row
+   under the copy rather than a column beside it, because the link
+   is what you do after reading the two lines above it.
+
+   --key uses --accent-3 (magenta), so it never competes with
+   --accent-2 (NOW / the paste target) or --accent (DONE). Other
+   variants can be added here later as distinct semantics emerge.
+   Never invent ad-hoc versions in a step page.
+   ───────────────────────────────────────────── */
+/* Shape and rhythm come from .blk and .glossary, not from a card
+   library: 1px hairline, var(--radius), a panel tint, and content
+   that reads straight down. The old version was the one object on a
+   build step with a 14px radius, a 4px rail and a pill label, which
+   is why it read as pasted on from another site.
+
+   The action is a row under the copy, not a column floating beside
+   it: every other panel on these pages reads top to bottom, and the
+   link is what you do AFTER reading the two lines above it. */
+.callout{
+  margin-top: var(--space-6);
+  padding: 18px 20px 20px;
+  border-radius: var(--radius);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  display: grid;
+  gap: 14px;
+  position: relative;
+}
+
+/* the label: the system's own panel label (.glossary__label,
+   .sources-label) in the callout's accent, with the <i> drawn as a
+   hairline tick instead of a dot in a white pill. One accessory. */
+.callout__label{
+  display: inline-flex; align-items: center; gap: 9px;
+  margin: 0 0 8px;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+.callout__label i{
+  width: 16px; height: 2px;
+  background: var(--rule-strong);
+}
+/* .blk__title's exact setting, so the card and the numbered blocks
+   under it are one typographic family */
+.callout h4{
+  margin: 0 0 7px;
+  font: 800 18px/1.2 "Archivo", "Public Sans", Arial, sans-serif;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.callout p{
+  margin: 0;
+  font-size: 17px; line-height: 1.55;
+  color: var(--ink-2);
+  max-width: 62ch;
+  text-wrap: pretty;
+}
+.callout__action{
+  display: flex; align-items: center; gap: 12px;
+  flex-wrap: wrap;
+}
+.callout__arrow{
+  font-size: 20px;
+  line-height: 1;
+  animation: callout-nudge 1.8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce){
+  .callout__arrow{ animation: none; }
+}
+@keyframes callout-nudge {
+  0%, 100% { transform: translateX(0); }
+  50%      { transform: translateX(4px); }
+}
+
+/* The action column's link, for a callout whose next step is a page to
+   open rather than a command to type. Paper, a hairline and the
+   callout's own accent, never .btn: that button's ink fill is the dark
+   object a build step reserves for its brief, and a second one
+   above block 0 takes the paste target's job. Shaped like .btn (8px,
+   700/16) so it reads as this system's button, only unfilled. */
+.callout__go{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  font: 700 16px/1 "Public Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  color: var(--ink);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+.callout__go span{
+  font-size: 13px;
+  transition: transform .18s ease;
+}
+.callout--key .callout__go{
+  border-color: var(--accent-3-line);
+  color: var(--accent-3);
+}
+@media (hover: hover){
+  .callout__go:hover{ transform: translateY(-1px); }
+  .callout__go:hover span{ transform: translate(2px, -2px); }
+  .callout--key .callout__go:hover{
+    border-color: var(--accent-3);
+    box-shadow: 0 6px 14px -10px oklch(0.51 0.16 330 / 0.8);
+  }
+}
+@media (prefers-reduced-motion: reduce){
+  .callout__go, .callout__go span{ transition: none; }
+  .callout__go:hover{ transform: none; }
+}
+
+/* --key: the one key recommendation on a page. Magenta, so it never
+   competes with --accent-2 (NOW / the paste target) or --accent
+   (DONE). Same construction as .blk--now and .blk--pass, which is
+   this system's grammar for a panel that carries a status: the soft
+   tint, and the accent taken up into the 1px border. No rail. */
+.callout--key{
+  background: var(--accent-3-soft);
+  border-color: var(--accent-3-line);
+  box-shadow: none;
+}
+.callout--key .callout__label{ color: var(--accent-3); }
+.callout--key .callout__label i{ background: var(--accent-3); }
+.callout--key .callout__arrow{ color: var(--accent-3); }
+/* mono inline tokens inside a --key callout pick up the accent */
+.callout--key .mono-accent{
+  background: var(--paper);
+  border: 1px solid var(--accent-3-line);
+  padding: 1px 7px;
+  border-radius: 4px;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 14px;
+  color: var(--accent-3);
+  font-weight: 500;
+  /* a two-word command is one token: never break it across lines */
+  white-space: nowrap;
+}
+
+@media (max-width: 720px){
+  .callout{ padding: 16px 16px 18px; gap: 12px; }
+  .callout p{ max-width: none; }
+}
+
+/* ───── source-quote: cited material (editorial blockquote) ─────
+   Used when a step page leans on an external source (the Anthropic
+   blog, docs, etc.) and the quote itself is load-bearing for the
+   pedagogy. Quieter than .callout--key: no tinted background, no
+   shadow, just a vertical rail + an attribution row. Lives inline
+   with surrounding prose. */
+.source-quote{
+  margin: 22px 0 18px;
+  padding: 4px 0 4px 22px;
+  border-left: 3px solid var(--rule-strong);
+  max-width: 64ch;
+}
+.source-quote > p{
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--ink);
+  font-weight: 400;
+}
+.source-quote > p + p{ margin-top: 10px; }
+.source-quote__attr{
+  margin: 14px 0 0;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.source-quote__attr .lbl{
+  display: inline-block;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  margin-right: 10px;
+}
+.source-quote__attr a{
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--rule-strong);
+}
+.source-quote__attr a:hover{ color: var(--ink); text-decoration-color: var(--ink-2); }
+.callout__body a{
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+
+/* ───── crosswalk: Claude Code → GitHub Copilot bridge ─────
+   The recurring "how this maps to Copilot" block. Drops in right
+   after a Claude Code concept is taught so a skill learned in the
+   workshop's harness transfers to the agent participants drive every
+   day in their IDE. Quiet magenta identity (--accent-3) keeps it
+   distinct from the blue --callout--key (ACTIVE) and the green DONE
+   state without shouting. It is reference, not the page's one key
+   moment, so it does not compete with a .callout--key.
+
+     <aside class="crosswalk">
+       <p class="crosswalk__label"><span class="crosswalk__mark">⇄</span>In GitHub Copilot</p>
+       <div class="crosswalk__map">
+         <div class="crosswalk__row">
+           <span class="crosswalk__from">CLAUDE.md</span>
+           <span class="crosswalk__arrow" aria-hidden="true">→</span>
+           <span class="crosswalk__to">.github/copilot-instructions.md <em>or</em> AGENTS.md</span>
+         </div>
+       </div>
+       <p class="crosswalk__note">Same idea: persistent project rules…</p>
+       <p class="crosswalk__verdict"><b>✓ Transfers cleanly</b></p>
+     </aside>
+   ───────────────────────────────────────────────────────────── */
+.crosswalk{
+  margin: 22px 0 0;
+  padding: 18px 20px 16px;
+  background: var(--accent-3-soft);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--accent-3);
+  border-radius: var(--radius);
+  max-width: 72ch;
+}
+.crosswalk__label{
+  display: inline-flex; align-items: center; gap: 8px;
+  margin: 0 0 12px;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase;
+  font-weight: 600;
+  color: var(--accent-3);
+}
+.crosswalk__mark{ font-size: 14px; line-height: 1; }
+.crosswalk__map{ display: grid; gap: 8px; }
+.crosswalk__row{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 18px minmax(0, 1.25fr);
+  align-items: baseline;
+  gap: 10px;
+}
+.crosswalk__from, .crosswalk__to{
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13.5px; line-height: 1.5;
+}
+.crosswalk__from{ color: var(--ink-2); }
+.crosswalk__to{ color: var(--ink); font-weight: 500; }
+.crosswalk__to em{ font-style: normal; color: var(--ink-2); font-weight: 400; }
+.crosswalk__arrow{ color: var(--accent-3); justify-self: center; }
+.crosswalk__note{
+  margin: 12px 0 0;
+  font-size: 14px; line-height: 1.55;
+  color: var(--ink-2);
+}
+.crosswalk__note b{ color: var(--ink); font-weight: 500; }
+.crosswalk__note code{
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+  background: var(--paper);
+  border: 1px solid var(--accent-3-line);
+  padding: 1px 5px; border-radius: 4px;
+  color: var(--ink);
+}
+.crosswalk__verdict{
+  display: inline-flex; align-items: center; gap: 6px;
+  margin: 12px 0 0;
+  padding: 4px 10px 3px;
+  border-radius: 999px;
+  background: var(--paper);
+  border: 1px solid var(--accent-3-line);
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-2);
+}
+.crosswalk__verdict b{ color: var(--ink); font-weight: 600; letter-spacing: .1em; }
+@media (max-width: 560px){
+  .crosswalk__row{ grid-template-columns: 1fr; gap: 2px; }
+  .crosswalk__arrow{ display: none; }
+  .crosswalk__from::after{ content: " ↓"; color: var(--accent-3); }
+}
+
+/* ───── primary CTA ───── */
+.btn{
+  display: inline-flex; align-items: center; gap: 12px;
+  padding: 15px 24px;
+  background: var(--ink); color: #fff;
+  border: 1px solid var(--ink);
+  border-radius: 8px;
+  font: 700 16px/1 "Public Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all .2s ease;
+}
+.btn:hover:not(:disabled){
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px -8px oklch(0 0 0 / 0.35);
+}
+.btn:disabled{
+  background: var(--bg-2); color: var(--ink-3);
+  border-color: var(--rule); cursor: not-allowed;
+}
+
+/* ───── glossary: inline term definition ─────
+   Use ONCE per page, near the first use of a key term
+   that the page assumes the reader knows. Quieter than a
+   callout. Doesn't steal attention from the hero. Sized
+   to be skipped by readers who already know the term. */
+.glossary{
+  margin: 22px 0 0;
+  padding: 16px 20px;
+  background: var(--bg-2);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--rule-strong);
+  border-radius: var(--radius);
+}
+.glossary__label{
+  font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  margin: 0 0 6px;
+}
+.glossary__body{
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+.glossary__body .term{
+  color: var(--ink);
+  font-weight: 600;
+}
+.glossary__body b{
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* ───── prompt-block: a prompt the participant sends to Claude ─────
+   For prompts too long to fit an .input-chip (a paragraph of
+   instruction rather than a command). Mono, quiet paper surface,
+   a `›` marker so it reads as "type this into Claude". The
+   .input-chip stays the primitive for one-liners; this is its
+   long form. Optional .prompt-block__label names the intent
+   ("Prompt", "Follow-up", "Review"). */
+.prompt-block{
+  margin: 14px 0 0;
+  padding: 16px 18px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--accent-2);
+  border-radius: var(--radius);
+  max-width: 76ch;
+}
+.prompt-block__label{
+  font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  margin: 0 0 8px;
+}
+.prompt-block p:not(.prompt-block__label){
+  margin: 0;
+  font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 14.5px;
+  line-height: 1.62;
+  color: var(--ink);
+  text-indent: -14px;
+  padding-left: 14px;
+}
+.prompt-block p:not(.prompt-block__label) + p{ margin-top: 10px; }
+.prompt-block p:not(.prompt-block__label)::before{
+  content: "› ";
+  color: var(--accent-2);
+}
+.prompt-block--follow{ border-left-color: var(--rule-strong); }
+.prompt-block--follow p:not(.prompt-block__label)::before{ color: var(--ink-3); }
+
+/* ───── brand strip ─────
+   .brand layout lives in each page's <style> block.
+   This restyles only what's needed for the link state +
+   the home icon. */
+a.brand{
+  text-decoration: none;
+  transition: color .15s ease;
+}
+a.brand:hover{ color: var(--ink); }
+
+/* Home icon. Sits at the head of the brand strip on every
+   page. SVG uses currentColor so it inherits .brand color.
+   On hover, lifts slightly and shifts to the ACTIVE accent. */
+.brand-icon{
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  color: var(--ink);
+  transition: color .18s ease, transform .25s ease;
+}
+a.brand:hover .brand-icon{
+  color: var(--accent-2);
+  transform: translateY(-1.5px);
+}
+
+/* ───── frame: standard step page width ───── */
+.frame{
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 28px 40px 80px;
+}
+@media (max-width: 720px){
+  .frame{ padding: 20px 20px 60px; }
+}
+
+/* ───── accessibility ───── */
+:focus-visible{
+  outline: 2px solid var(--accent-2);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ───── cheat sheet primitives: .try terminal snippet, .memo chip ─────
+   Promoted from step-07 (Cheat sheet). .try is the dark one-line
+   terminal snippet under a command card; .memo is the row of
+   commit-to-memory chips inside a callout. ───── */
+.try{
+  margin: 4px 0 0;
+  padding: 10px 12px;
+  background: var(--term-bg);
+  color: var(--term-fg);
+  border-radius: var(--radius-sm);
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+.try .lbl{
+  color: var(--term-amber);
+  font-size: 11.5px;
+  letter-spacing: .12em;
+  margin-right: 8px;
+}
+.try .dim{ color: var(--term-dim); }
+.try .lead{ color: var(--term-amber); }
+.try .path{ color: var(--term-blue); }
+
+.memo{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 0;
+}
+.memo .chip{
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 10px;
+  background: var(--bg);
+  border: 1px solid var(--accent-2);
+  border-radius: 999px;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+  color: var(--accent-2);
+  font-weight: 600;
+}
+.memo .chip span.label{
+  color: var(--ink-2);
+  font-weight: 400;
+  font-size: 12px;
+}
+.memo .chip kbd{
+  display: inline-flex; align-items: center;
+  background: var(--bg);
+  border: 1px solid var(--rule-strong);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  color: var(--accent-2);
+}
+
+/* ─────────────────────────────────────────────
+   Challenge-step primitives: .challenge, .nudge,
+   .pass-check.
+
+   The rebuilt steps are challenge-first. A step page
+   reads in this order:
+
+     1. short tool brief (existing prose primitives)
+     2. .challenge   : the open task, the centerpiece
+     3. .nudge       : starter hints, collapsed until wanted
+     4. .pass-check  : the falsifiable success criterion
+
+   .callout--key stays the aside; .challenge holds the task
+   itself. They share the 4px ACTIVE rail, but the challenge
+   sits on plain paper with a neutral border and no tint, so
+   the two never read as the same block. ONE .challenge per
+   step page.
+
+     <section class="challenge">
+       <p class="challenge__label"><i></i>Challenge</p>
+       <h3>Title of the task</h3>
+       <p>Body copy framing the open task.</p>
+       <div class="challenge__split">          <!-- optional -->
+         <div class="challenge__fixed">
+           <h4>Fixed</h4>
+           <ul><li>Constraint</li></ul>
+         </div>
+         <div class="challenge__free">
+           <h4>Your call</h4>
+           <ul><li>Open decision</li></ul>
+         </div>
+       </div>
+     </section>
+   ───────────────────────────────────────────── */
+.challenge{
+  position: relative;
+  margin: var(--space-6) 0 0;
+  padding: 28px 32px 30px;
+  background: var(--paper);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 16px 34px -24px oklch(0 0 0 / 0.16);
+}
+.challenge::before{
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: 4px;
+  background: var(--accent-2);
+  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+}
+.challenge__label{
+  display: inline-flex; align-items: center; gap: 8px;
+  margin: 0 0 14px;
+  padding: 4px 11px 3px;
+  background: var(--accent-2-soft);
+  border: 1px solid var(--accent-2);
+  border-radius: 999px;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px; letter-spacing: .14em; text-transform: uppercase;
+  font-weight: 600;
+  color: var(--accent-2);
+}
+.challenge__label i{
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent-2);
+  box-shadow: 0 0 0 3px oklch(0.50 0.14 240 / 0.2);
+}
+.challenge > h3,
+.challenge > h4{
+  margin: 0 0 10px;
+  font-family: "Archivo", "Public Sans", Arial, sans-serif;
+  font-size: 20px; line-height: 1.25;
+  letter-spacing: -0.01em; font-weight: 700;
+  color: var(--ink);
+}
+.challenge > p:not(.challenge__label){
+  margin: 0;
+  font-size: 17px; line-height: 1.55;
+  color: var(--ink);
+  max-width: 62ch;
+}
+.challenge > p:not(.challenge__label) + p:not(.challenge__label){ margin-top: 8px; }
+
+/* optional scope split: FIXED constraints vs YOUR CALL decisions.
+   Auto-collapses to one column when the container gets narrow, so
+   no mobile-overrides rule is needed. */
+.challenge__split{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  gap: 20px 32px;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--rule);
+}
+.challenge__fixed > h4,
+.challenge__free > h4{
+  margin: 0 0 10px;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.challenge__free > h4{ color: var(--accent-2); }
+.challenge__split ul{
+  margin: 0; padding: 0; list-style: none;
+  display: grid; gap: 8px;
+}
+.challenge__split li{
+  position: relative;
+  padding-left: 18px;
+  font-size: 16px; line-height: 1.5;
+  color: var(--ink-2);
+}
+.challenge__split li b{ color: var(--ink); font-weight: 500; }
+/* markers are decorative: square for FIXED, round ACTIVE dot for
+   YOUR CALL */
+.challenge__split li::before{
+  content: "";
+  position: absolute;
+  left: 2px; top: 0.58em;
+  width: 5px; height: 5px;
+  border-radius: 1.5px;
+  background: var(--rule-strong);
+}
+.challenge__free li::before{
+  border-radius: 50%;
+  background: var(--accent-2);
+}
+/* inline mono token inside the challenge stack. Mirrors .tk from
+   lab02.css so Lab 01 pages get the same treatment without loading
+   lab02.css; on Lab 02 pages .tk keeps working unchanged. */
+.challenge code,
+.nudge__body code,
+.pass-check code{
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+  background: var(--bg-2);
+  border: 1px solid var(--rule);
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: var(--ink);
+}
+
+/* Inline code inside a numbered block, a hint or the pass check. This
+   lives here, not in six identical page-local <style> blocks, so the
+   design-system specimen renders it the same way a build step does.
+   nowrap because "git checkout ." broke before the period at 960 and
+   read as a typo. */
+/* A key combination is one unit. Without this the pair splits across a
+   line break and reads as two unrelated keys. */
+.keys{ white-space: nowrap; }
+
+.blk p code,
+.hint code,
+.lede code{
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+  white-space: nowrap;
+}
+@media (max-width: 720px){
+  .challenge{ padding: 20px 18px; }
+}
+
+/* ─────────────────────────────────────────────
+   Nudge: a collapsed disclosure for a worked example or
+   a reference table that would otherwise bloat the
+   column. Not for hints, extras or discussion prompts.
+   Native disclosure, closed by default (no open
+   attribute in the markup). The summary reads like a
+   quiet kicker; the body is copy the participant opted
+   into. Focus ring comes from the global :focus-visible
+   rule.
+
+     <details class="nudge">
+       <summary>See a worked example</summary>
+       <div class="nudge__body">
+         <ul>
+           <li>First line.</li>
+           <li>Second line.</li>
+         </ul>
+       </div>
+     </details>
+   ───────────────────────────────────────────── */
+.nudge{
+  margin: 18px 0 0;
+  max-width: 72ch;
+  background: var(--bg-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+.nudge > summary{
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--ink-2);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+.nudge > summary::-webkit-details-marker{ display: none; }
+.nudge > summary::before{
+  content: "▸";
+  font-size: 12px;
+  line-height: 1;
+  color: var(--ink-3);
+  transition: transform .15s ease;
+}
+.nudge > summary:hover{ color: var(--ink); }
+.nudge[open] > summary{
+  color: var(--ink);
+  border-bottom: 1px dashed var(--rule);
+}
+.nudge[open] > summary::before{ transform: rotate(90deg); }
+.nudge__body{
+  padding: 14px 18px 16px;
+  font-size: 16px; line-height: 1.55;
+  color: var(--ink-2);
+}
+.nudge__body > *{ margin: 0; }
+.nudge__body > * + *{ margin-top: 8px; }
+.nudge__body ul,
+.nudge__body ol{ padding-left: 22px; }
+.nudge__body li + li{ margin-top: 6px; }
+.nudge__body b{ color: var(--ink); font-weight: 500; }
+
+/* ─────────────────────────────────────────────
+   Numbered blocks: the spine of a build step.
+
+   Steps 04 to 08 are three blocks, in this order:
+     0  why this step exists
+     1  paste this into Claude   (.blk--now,  blue)
+     2  pass check               (.blk--pass, green)
+
+   Design rule: one heavy object per build step, and it is the
+   .brief card inside block 1 (until 2026-09-01 it was the prompt
+   card; the brief took its slot when the pasteable prompts left
+   route A). Blocks 0 and 2 stay light (paper or a soft tint, one
+   hairline border). Never give block 0 or block 2 a dark fill, a
+   thick border, or a numeral heavier than the brief. That contrast
+   is what makes the card a participant writes from win at a glance
+   from across a room and beside a terminal.
+
+     <section class="blocks">
+       <div class="blk">
+         <span class="blk__num" aria-hidden="true">0</span>
+         <div>
+           <h2 class="blk__title">Why this step exists</h2>
+           <p>Three to five sentences.</p>
+         </div>
+       </div>
+       <div class="blk blk--now">  ... 1, the .brief card and its chips
+       <div class="blk blk--pass"> ... 2, criterion, .miss, "Passed?"
+     </section>
+   ───────────────────────────────────────────── */
+.blocks{ display: grid; gap: 14px; margin-top: 26px; }
+.blk{
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 12px;
+  padding: 16px;                 /* part of the 960px width budget */
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--paper);
+}
+.blk__num{
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--ink); color: #fff;
+  display: grid; place-items: center;
+  font: 800 14px "Archivo", "Public Sans", Arial, sans-serif;
+}
+.blk__title{
+  margin: 2px 0 6px;
+  font: 800 18px/1.2 "Archivo", "Public Sans", Arial, sans-serif;
+  color: var(--ink);
+}
+/* the block title is an h2 in the markup, so it has to outrank the
+   22px h2 role and clear its tracking */
+.blk h2.blk__title{
+  margin: 2px 0 6px;
+  font: 800 18px/1.2 "Archivo", "Public Sans", Arial, sans-serif;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.blk p{ margin: 0 0 6px; max-width: 62ch; }
+.blk--now{ border-color: var(--accent-2); background: var(--accent-2-soft); }
+.blk--now .blk__num{ background: var(--accent-2); }
+.blk--pass{ border-color: var(--accent); background: var(--accent-soft); }
+.blk--pass .blk__num{ background: var(--accent); }
+/* inside block 1 the brief (or, on a concept page, the prompt card)
+   follows the block title directly: one spacing value, so a page
+   never has to add an inline margin */
+.blk .prompt-card,
+.blk .brief{ margin-top: 10px; }
+@media (max-width: 560px){
+  .blk{ grid-template-columns: 1fr; }
+  .blk__num{ width: 28px; height: 28px; font-size: 13px; }
+}
+
+/* ─────────────────────────────────────────────
+   ctx-pair: two context windows, side by side.
+
+   The figure that makes "a subagent has its own context window"
+   visible instead of asserted. Two window boxes with identical
+   chrome (they are two of the same thing), a channel between them
+   carrying one arrow out and one arrow back, and the thing that
+   never crosses back parked inside the right window.
+
+   The argument it draws is NOT token budget. On step 06 nothing is
+   built yet, so the first run prints a traceback and the saving is
+   nil; the payoff lands in step 08. What holds today is the tool split:
+   the side that reports the verdict has no Edit and no Write, so it
+   cannot make its own verdict come out differently. That is why
+   .ctx-pair__because sits directly under the withheld tools and is
+   the only sentence in the figure.
+
+   Never put a count in __keep. "1,400 lines" is an invented number,
+   it is false on an empty repo, and it invites arithmetic against
+   the 1M window step 03 just showed. Say there is output; never say
+   how much.
+
+   Everything is a CSS box with real DOM text: labels reflow with
+   the reader's font size, long strings wrap, and the figure stacks
+   itself on a phone. An inline SVG would fix the aspect ratio,
+   refuse to wrap its text, and need a second drawing for the
+   stacked form.
+
+   NO accent colour, by design. Green is PASS and blue is NOW in
+   this system, block 0 sits directly above the blue .blk--now and
+   its dark brief card, and a build step gets one heavy object.
+   Emphasis here is weight, not hue: the returning arrow is the
+   darkest line in the figure.
+
+   No <p> anywhere inside it, also by design: .blk p is 0,1,1 and
+   would outrank every 0,1,0 rule below.
+
+     <figure class="ctx-pair">
+       <div class="ctx-pair__grid">
+         <div class="ctx-pair__win">          ... "you"  area
+         <div class="ctx-pair__flow --out">   ... "out"  area
+         <div class="ctx-pair__win --sub">    ... "sub"  area
+         <div class="ctx-pair__flow --back">  ... "back" area
+       </div>
+       <figcaption class="ctx-pair__cap">
+     </figure>
+
+   DOM order is you, out, sub, back, which is also the reading
+   order; grid-template-areas puts both arrows in the middle column
+   without reordering the markup. Only the arrow shafts are
+   aria-hidden. The figure takes no role="img" and no aria-label:
+   the panel text is real text in the accessibility tree, and either
+   attribute would make the whole subtree presentational and throw
+   that text away. The figcaption is the text alternative.
+   ───────────────────────────────────────────── */
+.ctx-pair{
+  margin: 14px 0 4px;
+  /* the column inside a .blk is 610px at 960 and 742px at 1440. The
+     cap keeps the figure one width on both, near the 62ch prose
+     measure it sits under. */
+  max-width: 660px;
+  /* keyed to the figure's own box, not the viewport: the rail
+     undocks at 940 and the frame padding drops at 720, so a 939px
+     viewport gives a WIDER column than 960 does. A viewport media
+     query would leave a 600px viewport rendering 169px windows side
+     by side. */
+  container-type: inline-size;
+}
+.ctx-pair__grid{
+  display: grid;
+  /* fluid windows, fixed channel: the channel holds two short
+     labels and must not grow with the column */
+  grid-template-columns: minmax(0, 1fr) 148px minmax(0, 1fr);
+  grid-template-areas:
+    "you out  sub"
+    "you back sub";
+}
+.ctx-pair__win{
+  grid-area: you;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow: hidden;              /* clips the title strip's corners */
+  min-width: 0;
+}
+.ctx-pair__win--sub{ grid-area: sub; }
+
+/* title strip: the head-over-body split the prompt card has,
+   without the dark fill */
+.ctx-pair__name{
+  padding: 7px 11px;
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--rule);
+  font: 600 13px/1.45 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink);
+}
+
+.ctx-pair__list{
+  margin: 0;
+  padding: 9px 11px 10px;
+  list-style: none;
+  display: grid;
+  gap: 5px;
+}
+.ctx-pair__list li{
+  position: relative;
+  padding-left: 15px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ink);
+}
+.ctx-pair__list li::before{
+  content: "";
+  position: absolute;
+  left: 2px; top: 0.58em;
+  width: 5px; height: 5px;
+  border-radius: 1.5px;
+  background: var(--rule-strong);
+}
+/* the withheld tools: a hollow marker, so absence reads as absence.
+   Both selectors carry the li on purpose: .ctx-pair__list li is
+   0,1,1 and its ::before is 0,1,2, so a bare .ctx-pair__none would
+   lose to them and this state would render identical to a normal
+   row. It did, until a verifier measured it. */
+.ctx-pair__list li.ctx-pair__none{ color: var(--ink-2); }
+.ctx-pair__list li.ctx-pair__none::before{
+  background: none;
+  border: 1px solid var(--rule-strong);
+}
+
+/* the load-bearing sentence, directly under the withheld tools. It
+   answers "why should I believe the verdict", which is the question
+   the reader asks on their second pass. */
+.ctx-pair__because{
+  margin: 0 11px 10px;
+  padding-left: 15px;
+  font-size: 14px;
+  line-height: 1.45;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* what never crosses back. Unnumbered, on purpose: see the note at
+   the head of this block. The auto top margin pins it to the foot
+   of the window box. */
+.ctx-pair__keep{
+  margin: auto 11px 11px;
+  padding: 7px 9px;
+  background: var(--bg-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  font: 400 12.5px/1.5 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink-2);
+}
+
+/* ── the channel ── */
+.ctx-pair__flow{
+  grid-area: out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 9px;
+  min-width: 0;
+}
+.ctx-pair__flow--back{ grid-area: back; }
+
+/* shaft plus head, drawn with borders so both orientations are
+   exact and both survive rotation the way a text glyph does not */
+.ctx-pair__arrow{
+  position: relative;
+  flex: 0 0 auto;
+  width: 100%;
+  height: 1px;
+  background: var(--ink-3);
+}
+.ctx-pair__arrow::after{
+  content: "";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 5px solid transparent;
+}
+.ctx-pair__flow--out .ctx-pair__arrow::after{
+  right: 0;
+  border-left: 7px solid var(--ink-3);
+  border-right-width: 0;
+}
+/* the return is the darkest line in the figure: it is what the
+   participant is here to receive, and weight carries that where
+   an accent colour would collide with .blk--now below */
+.ctx-pair__flow--back .ctx-pair__arrow{ height: 2px; background: var(--ink); }
+.ctx-pair__flow--back .ctx-pair__arrow::after{
+  left: 0;
+  border-width: 6px;
+  border-right: 8px solid var(--ink);
+  border-left-width: 0;
+}
+
+.ctx-pair__label{
+  display: block;
+  text-align: center;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--ink);
+}
+/* the verdict's parts are spans, not commas, so each keeps its own
+   line at every width */
+.ctx-pair__label > span,
+.ctx-pair__label > b{ display: block; }
+.ctx-pair__tag{
+  font: 600 11px/1.4 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+/* the figcaption IS the text alternative for this figure, so it is
+   never decorative and never dropped */
+.ctx-pair__cap{
+  margin: 12px 0 0;
+  max-width: 62ch;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.ctx-pair__cap b{ color: var(--ink); font-weight: 600; }
+
+/* inline mono inside the figure. Bare, no pill: four tool names in
+   a row is already enough shape. */
+.ctx-pair code{
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92em;
+  color: var(--ink);
+}
+/* single identifiers never break mid-token, same reason .blk p code
+   has nowrap */
+.ctx-pair__list code,
+.ctx-pair__keep code{ white-space: nowrap; }
+
+/* ── stacked form ──
+   Below 560px of FIGURE width: one column, both arrows vertical,
+   labels beside them. 560 is the number .blk stacks at. */
+@container (max-width: 560px){
+  .ctx-pair__grid{
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "you" "out" "sub" "back";
+  }
+  .ctx-pair__flow{
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 13px;
+    padding: 9px 0 9px 13px;
+  }
+  /* the shaft runs the height of its own label, so a three-line
+     verdict gets a three-line arrow */
+  .ctx-pair__arrow{
+    width: 1px;
+    height: auto;
+    min-height: 28px;
+    margin: 0 7px;
+  }
+  .ctx-pair__flow--back .ctx-pair__arrow{ width: 2px; height: auto; background: var(--ink); }
+  .ctx-pair__arrow::after{
+    top: auto;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .ctx-pair__flow--out .ctx-pair__arrow::after{
+    right: auto;
+    bottom: 0;
+    border: 5px solid transparent;
+    border-top: 7px solid var(--ink-3);
+    border-bottom-width: 0;
+  }
+  .ctx-pair__flow--back .ctx-pair__arrow::after{
+    left: 50%;
+    top: 0;
+    border: 6px solid transparent;
+    border-bottom: 8px solid var(--ink);
+    border-top-width: 0;
+  }
+  .ctx-pair__label{ text-align: left; }
+}
+
+/* ─────────────────────────────────────────────
+   two-ways: the "instead of what?" figure. Block 0's answer to why
+   a build step exists.
+
+   Every step from 04 to 08 is a swap: there is a way this normally
+   goes, and the step trades it for a different one. Written as
+   prose that argument reads as an assertion the participant has to
+   take on trust, because the alternative it is arguing against is
+   never on the page. Put both on the page and the reader compares
+   two concrete situations instead of believing one claim. That
+   comparison is the WHY, and it is the thing a participant repeats
+   when they explain the step to someone else.
+
+   The two panels are deliberately NOT identical chrome, which is
+   where this parts company with .ctx-pair. There the two windows
+   are two of the same thing. Here they are the default you are
+   leaving behind and the thing you do today, so the left panel
+   sits on --bg-2 and the right on --paper: the white one is the
+   live one. That tint carries the whole "you are here" job, which
+   is why the component needs no accent colour (green is PASS, blue
+   is NOW, and block 0 sits directly above both).
+
+   Each panel ends in a __then line at weight 600, and those two
+   lines are the argument: what the usual way costs you, and what
+   this step buys. Write them as consequences, never as slogans. If
+   a __then line could open a landing page, the figure has stopped
+   teaching. Keep the panels concrete: a real sentence someone would
+   type beats a description of the kind of sentence.
+
+   Same construction rules as .ctx-pair and .runs-when, each from a
+   real finding: CSS boxes holding real DOM text so it reflows and
+   stacks, no <p> anywhere inside (.blk p is 0,1,1 and outranks
+   every rule here), and no role="img" or aria-label on the figure,
+   which would make the panel text presentational. The figcaption is
+   the text alternative.
+
+     <figure class="two-ways">
+       <div class="two-ways__grid">
+         <div class="two-ways__side">              ... the usual way
+           <span class="two-ways__name">
+           <span class="two-ways__say">            ... optional
+           <span class="two-ways__do">             ... optional
+           <span class="two-ways__then">
+         <div class="two-ways__side --this">       ... this step
+       </div>
+       <figcaption class="two-ways__cap">
+     </figure>
+   ───────────────────────────────────────────── */
+.two-ways{
+  margin: 16px 0 4px;
+  /* the same 660 .ctx-pair and .runs-when cap at, so a step that
+     carries more than one figure sets them to one width */
+  max-width: 660px;
+  /* keyed to the figure's own box, not the viewport: the rail
+     undocks at 940, so a 939px viewport hands this figure a WIDER
+     column than 960 does */
+  container-type: inline-size;
+}
+.two-ways__grid{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow: hidden;              /* clips the title strips' corners */
+}
+
+.two-ways__side{
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  /* the default being traded away: warm grey, the same ground the
+     rail and the panels use */
+  background: var(--bg-2);
+}
+.two-ways__side--this{
+  background: var(--paper);
+  border-left: 1px solid var(--rule);
+}
+
+/* title strip, the same one .ctx-pair__name and .runs-when__name
+   carry: the three figures are one family */
+.two-ways__name{
+  padding: 7px 11px;
+  border-bottom: 1px solid var(--rule);
+  font: 600 13px/1.45 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink-2);
+}
+.two-ways__side--this .two-ways__name{ color: var(--ink); }
+
+/* the thing someone would actually type or say. Mono, because on
+   these pages that is what typed-at-Claude looks like. */
+.two-ways__say{
+  margin: 10px 11px 0;
+  padding: 7px 9px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  font: 400 12.5px/1.5 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink);
+}
+.two-ways__side--this .two-ways__say{ background: var(--bg-2); }
+
+/* what happens, in one sentence */
+.two-ways__do{
+  padding: 10px 11px 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+/* the consequence. These two lines are the argument, so they sit at
+   the foot of both panels on the same baseline: auto top margin
+   pins them there however uneven the panels above are. */
+.two-ways__then{
+  margin-top: auto;
+  padding: 9px 11px 11px;
+  font-size: 14px;
+  line-height: 1.45;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* the figcaption IS the text alternative for this figure, so it is
+   never decorative and never dropped */
+.two-ways__cap{
+  margin: 12px 0 0;
+  max-width: 62ch;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.two-ways__cap b{ color: var(--ink); font-weight: 600; }
+
+.two-ways code{
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92em;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+/* ── stacked form ──
+   Below 460px of FIGURE width each column is under 230px, which is
+   too narrow for a sentence. Stacked, the divider moves from the
+   left edge of the second panel to its top edge. */
+@container (max-width: 460px){
+  .two-ways__grid{ grid-template-columns: minmax(0, 1fr); }
+  .two-ways__side--this{
+    border-left: 0;
+    border-top: 1px solid var(--rule);
+  }
+  /* nothing to bottom-align against once they are stacked */
+  .two-ways__then{ margin-top: 0; }
+}
+
+/* ─────────────────────────────────────────────
+   runs-when: what a step leaves in the repo, and what makes each
+   piece actually run.
+
+   The companion to .ctx-pair on a step that writes more than one
+   file. ctx-pair answers "who runs the check and why would you
+   believe it". This answers the question the reader asks next:
+   "and what makes any of it fire?" The second column is the whole
+   figure. Read down it and the answers get stronger on their own:
+   nothing calls it, someone has to ask, nobody has to ask, Claude
+   is not asked at all.
+
+   NOT a ladder, and never numbered. The rows are files in a folder.
+   The escalation is something the reader notices in the second
+   column, not a rank the figure asserts. A numbered version of this
+   idea shipped once into a page whose blocks are already numbered
+   0, 1, 2, and was cut for exactly that collision.
+
+   The repo boundary is drawn, not described: the skill that belongs
+   to no project sits outside the box, which is the entire personal
+   versus project distinction without a sentence spent on it. A row
+   for a file the participant is not writing today sits inside the
+   box on a dashed rule with a __tag, because the file is real and
+   today is not its day.
+
+   Same construction rules as .ctx-pair, for the same reasons: CSS
+   boxes holding real DOM text, so it reflows, zooms and stacks; no
+   accent colour (green is PASS, blue is NOW, and block 0 sits
+   directly above both); no <p> anywhere inside, since .blk p is
+   0,1,1 and outranks every 0,1,0 rule here; and no role="img" or
+   aria-label on the figure, which would make the row text
+   presentational and throw it out of the accessibility tree. The
+   figcaption is the text alternative.
+
+     <figure class="runs-when">
+       <span class="runs-when__away">      ... outside the repo
+       <div class="runs-when__box">
+         <span class="runs-when__name">
+         <div class="runs-when__row">      ... path / answer / note
+         <div class="runs-when__row runs-when__row--later">
+       </div>
+       <figcaption class="runs-when__cap">
+     </figure>
+   ───────────────────────────────────────────── */
+.runs-when{
+  margin: 16px 0 4px;
+  /* matches .ctx-pair, so the two figures are one width in a column
+     that is 610px at 960 and 742px at 1440 */
+  max-width: 660px;
+  /* keyed to the figure's own box and not the viewport, for the
+     reason spelled out on .ctx-pair: the rail undocks at 940, so a
+     939px viewport hands this figure a WIDER column than 960 does */
+  container-type: inline-size;
+}
+
+/* the one line that sits outside the box. Its job is positional:
+   what is written here is less important than where it is. */
+.runs-when__away{
+  display: block;
+  margin: 0 0 10px;
+  padding-left: 12px;
+  border-left: 2px solid var(--rule);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+.runs-when__box{
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow: hidden;              /* clips the title strip's corners */
+}
+/* the same title strip .ctx-pair__name carries: the two figures are
+   one family and share their chrome */
+.runs-when__name{
+  display: block;
+  padding: 7px 11px;
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--rule);
+  font: 600 13px/1.45 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink);
+}
+
+/* path column is fixed: it holds a 32-character path at 12.5px mono
+   (32 x 7.5px = 240) and must not steal width from the sentence
+   when the paths are short */
+.runs-when__row{
+  display: grid;
+  grid-template-columns: minmax(0, 246px) minmax(0, 1fr);
+  gap: 4px 14px;
+  padding: 10px 11px;
+  border-top: 1px solid var(--rule);
+}
+.runs-when__row:first-of-type{ border-top: 0; }
+
+.runs-when__path{
+  font: 500 12.5px/1.55 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink);
+  overflow-wrap: anywhere;       /* a longer path wraps, never scrolls the page */
+}
+
+.runs-when__fire{
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+/* the lead-in that makes the second column scannable, and the only
+   emphasis in the figure. Weight, not hue, exactly as
+   .ctx-pair__because. */
+.runs-when__ans{
+  color: var(--ink);
+  font-weight: 600;
+}
+/* the second line of a row: the trap, the caveat, the reason. Sits
+   under the sentence, never under the path. */
+.runs-when__note{
+  grid-column: 2;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+/* a file the participant is not writing today. Dashed rule and a
+   tag rather than a colour: amber is the break in this system and
+   nothing else. */
+.runs-when__row--later{
+  border-top-style: dashed;
+  background: var(--bg-2);
+}
+.runs-when__tag{
+  display: inline-block;
+  margin-left: 7px;
+  padding: 1px 5px;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-sm);
+  font: 600 10.5px/1.6 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  vertical-align: 1px;
+  white-space: nowrap;
+}
+
+/* the figcaption IS the text alternative for this figure, so it is
+   never decorative and never dropped */
+.runs-when__cap{
+  margin: 12px 0 0;
+  max-width: 62ch;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.runs-when__cap b{ color: var(--ink); font-weight: 600; }
+
+/* inline mono inside the figure. Bare, no pill, same as .ctx-pair
+   code; single identifiers never break mid-token. */
+.runs-when code{
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92em;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+/* ── stacked form ──
+   Below 520px of FIGURE width a 32-character path stops fitting
+   beside a sentence. 520 and not the 560 .ctx-pair stacks at: this
+   figure's first column is narrower than a context window. */
+@container (max-width: 520px){
+  .runs-when__row{
+    grid-template-columns: minmax(0, 1fr);
+    /* stacked, the path is a heading over its own sentence and needs
+       more air than it does sitting beside one */
+    gap: 6px;
+  }
+  .runs-when__note{ grid-column: auto; }
+}
+
+/* ─────────── skill-modes (the three moments a skill fires) ───────────
+   The retired Conventions page's block 0 (archive, 2026-09-03). Three rows on one axis: when a skill fires
+   relative to the work. Conventions load while Claude works, a
+   procedure IS the work, a review runs after it. The left column is
+   the axis; read down it and the moment moves later. The __eg line
+   names real, public skills of that row's kind, so each row is a
+   fact with an address rather than a category.
+
+   NOT a ranking, and never numbered. No row is better; the rows are
+   moments. The row the step is about is named in the caption, never
+   marked with colour: green is PASS, blue is NOW, and block 0 sits
+   directly above both.
+
+   Same construction rules as .ctx-pair and .runs-when, for the same
+   reasons: CSS boxes holding real DOM text, so it reflows, zooms and
+   stacks; no accent colour; no <p> anywhere inside, since .blk p is
+   0,1,1 and outranks every 0,1,0 rule here; and no role="img" or
+   aria-label on the figure, which would make the row text
+   presentational and throw it out of the accessibility tree. The
+   figcaption is the text alternative.
+
+     <figure class="skill-modes">
+       <div class="skill-modes__box">
+         <span class="skill-modes__name">
+         <div class="skill-modes__row">    ... when / what / eg
+       </div>
+       <figcaption class="skill-modes__cap">
+     </figure>
+   ───────────────────────────────────────────── */
+.skill-modes{
+  margin: 16px 0 4px;
+  /* matches .ctx-pair and .runs-when, so block-0 figures are one
+     width wherever two share a page */
+  max-width: 660px;
+  /* keyed to the figure's own box and not the viewport, for the
+     reason spelled out on .ctx-pair: the rail undocks at 940, so a
+     939px viewport hands this figure a WIDER column than 960 does */
+  container-type: inline-size;
+}
+.skill-modes__box{
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow: hidden;              /* clips the title strip's corners */
+}
+/* the same title strip .ctx-pair__name and .runs-when__name carry:
+   the block-0 figures are one family and share their chrome */
+.skill-modes__name{
+  display: block;
+  padding: 7px 11px;
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--rule);
+  font: 600 13px/1.45 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink);
+}
+/* the axis column is fixed: it holds a short moment phrase and must
+   not steal width from the sentence beside it */
+.skill-modes__row{
+  display: grid;
+  grid-template-columns: minmax(0, 158px) minmax(0, 1fr);
+  gap: 4px 14px;
+  padding: 10px 11px;
+  border-top: 1px solid var(--rule);
+}
+.skill-modes__row:first-of-type{ border-top: 0; }
+.skill-modes__when{
+  font: 500 12.5px/1.55 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink);
+}
+.skill-modes__what{
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+/* the lead-in that makes the rows scannable, and the only emphasis
+   in the figure. Weight, not hue, exactly as .runs-when__ans. */
+.skill-modes__kind{
+  color: var(--ink);
+  font-weight: 600;
+}
+/* real skills of this row's kind. Mono because they are names on
+   disk; dim because they are evidence, not the argument. Sits under
+   the sentence, never under the axis phrase. */
+.skill-modes__eg{
+  grid-column: 2;
+  font: 500 12.5px/1.55 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink-2);
+}
+/* the figcaption IS the text alternative for this figure, so it is
+   never decorative and never dropped */
+.skill-modes__cap{
+  margin: 12px 0 0;
+  max-width: 62ch;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.skill-modes__cap b{ color: var(--ink); font-weight: 600; }
+/* inline mono inside the figure. Bare, no pill, same as .ctx-pair
+   code; single identifiers never break mid-token. */
+.skill-modes code{
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92em;
+  color: var(--ink);
+  white-space: nowrap;
+}
+/* ── stacked form ──
+   Below 520px of FIGURE width the moment phrase becomes a heading
+   over its own sentence. Same threshold as .runs-when: the first
+   column here is narrower than a path column. */
+@container (max-width: 520px){
+  .skill-modes__row{
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+  .skill-modes__eg{ grid-column: auto; }
+}
+
+/* ─────────── lands (where each line of the input ends up) ───────────
+   Block 0 of steps 04 and 05. One row per kind of line in the file
+   the step reads and the heading it has to arrive under in the file
+   the step writes, so the sorting rule is read rather than recited.
+   The last row (--gap) is the one the step's decision is about: on 05
+   the line that can land nowhere, on 04 the line that is easiest to
+   file under the wrong heading.
+
+   Same construction rules as .ctx-pair and .runs-when, for the same
+   reasons: CSS boxes holding real DOM text, so it reflows, zooms and
+   stacks; no accent colour (green is PASS, blue is NOW, and block 0
+   sits directly above both); no <p> anywhere inside, since .blk p is
+   0,1,1 and outranks every 0,1,0 rule here; and no role="img" or
+   aria-label on the figure, which would make the row text
+   presentational and throw it out of the accessibility tree. The
+   figcaption is the text alternative.
+
+     <figure class="lands">
+       <div class="lands__box">
+         <span class="lands__name">
+         <div class="lands__row">          ... from / to
+         <div class="lands__row lands__row--gap">
+       </div>
+       <figcaption class="lands__cap">
+     </figure>
+   ───────────────────────────────────────────── */
+.lands{
+  margin: 16px 0 4px;
+  /* matches .ctx-pair and .runs-when, so every figure in this system
+     is one width in a column that is 610px at 960 and 742px at 1440 */
+  max-width: 660px;
+  /* keyed to the figure's own box and not the viewport, for the
+     reason spelled out on .ctx-pair: the rail undocks at 940, so a
+     939px viewport hands this figure a WIDER column than 960 does */
+  container-type: inline-size;
+}
+.lands__box{
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow: hidden;              /* clips the title strip's corners */
+}
+/* the same title strip .ctx-pair__name and .runs-when__name carry:
+   these figures are one family and share their chrome */
+.lands__name{
+  display: block;
+  padding: 7px 11px;
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--rule);
+  font: 600 13px/1.45 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink);
+}
+/* the from column is wider than .runs-when's, which holds a path:
+   this one holds a short phrase and reads as the subject of the row */
+.lands__row{
+  display: grid;
+  grid-template-columns: minmax(0, 232px) minmax(0, 1fr);
+  gap: 4px 14px;
+  padding: 10px 11px;
+  border-top: 1px solid var(--rule);
+}
+.lands__row:first-of-type{ border-top: 0; }
+.lands__from{
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+/* the destination, and the only emphasis in the figure. Weight, not
+   hue, exactly as .ctx-pair__because and .runs-when__ans. */
+.lands__to{
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+.lands__to b{ color: var(--ink); font-weight: 600; }
+/* the arrow is decorative: the grid already says which column is
+   which, and a screen reader gets the figcaption */
+.lands__to::before{
+  content: "\2192";
+  margin-right: 8px;
+  color: var(--ink-3);
+}
+/* the row that can land nowhere. Dashed rule and a tag rather than a
+   colour: amber is the break in this system and nothing else. */
+.lands__row--gap{
+  border-top-style: dashed;
+  background: var(--bg-2);
+}
+.lands__tag{
+  display: inline-block;
+  margin-left: 7px;
+  padding: 1px 5px;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-sm);
+  font: 600 10.5px/1.6 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  vertical-align: 1px;
+  white-space: nowrap;
+}
+/* the figcaption IS the text alternative for this figure, so it is
+   never decorative and never dropped */
+.lands__cap{
+  margin: 12px 0 0;
+  max-width: 62ch;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.lands__cap b{ color: var(--ink); font-weight: 600; }
+/* inline mono inside the figure. Bare, no pill, same as .ctx-pair
+   and .runs-when code; single identifiers never break mid-token. */
+.lands code{
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92em;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+/* ── stacked form ──
+   Below 500px of FIGURE width the from phrase stops fitting beside
+   its destination. 500 and not .runs-when's 520: this figure's first
+   column is a phrase, which wraps, where a path cannot. */
+@container (max-width: 500px){
+  .lands__row{
+    grid-template-columns: minmax(0, 1fr);
+    /* stacked, the phrase is a heading over its destination and needs
+       more air than it does sitting beside one */
+    gap: 6px;
+  }
+  /* stacked, the arrow stops pointing across and starts pointing
+     down, so it goes: the row order carries the direction */
+  .lands__to::before{ content: none; }
+  .lands__to{ padding-left: 14px; border-left: 2px solid var(--rule); }
+}
+
+/* ─────────── isnot (what a thing is, beside what it is not) ───────────
+   Block 0 of step 04: intent.md defined by contrast, one row per
+   pair, so a participant who has never written one sees the boundary
+   without reading a paragraph about it. The head names the two
+   columns; each row is one thing the file holds beside the thing it
+   is often mistaken for. The figcaption carries the why (who reads
+   the file later) and is the text alternative.
+
+   Same construction rules as .lands and the rest of the family, for
+   the same reasons: CSS boxes holding real DOM text so it reflows,
+   zooms and stacks; no accent colour (block 0 sits directly above
+   the blue block and the green one); no <p> anywhere inside (.blk p
+   is 0,1,1); no role="img" or aria-label on the figure. Below 440px
+   of FIGURE width the head goes and each cell carries its own small
+   label instead, so the stacked form still says which is which.
+
+     <figure class="isnot">
+       <div class="isnot__box">
+         <div class="isnot__head">
+           <span class="isnot__name">intent.md is</span>
+           <span class="isnot__name isnot__name--not">it is not</span>
+         </div>
+         <div class="isnot__row">
+           <span class="isnot__is">...</span>
+           <span class="isnot__not">...</span>
+         </div>
+       </div>
+       <figcaption class="isnot__cap">
+     </figure>
+   ───────────────────────────────────────────── */
+.isnot{
+  margin: 16px 0 4px;
+  max-width: 660px;               /* the figure family's width */
+  container-type: inline-size;    /* keyed to the figure, not the viewport */
+}
+.isnot__box{
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.isnot__head{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--rule);
+}
+.isnot__name{
+  padding: 7px 11px;
+  font: 600 13px/1.45 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink);
+}
+.isnot__name--not{
+  border-left: 1px solid var(--rule);
+  color: var(--ink-2);
+}
+.isnot__row{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  border-top: 1px solid var(--rule);
+}
+.isnot__head + .isnot__row{ border-top: 0; }
+.isnot__is,
+.isnot__not{
+  min-width: 0;
+  padding: 9px 11px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+/* the is column is the file; weight and ink carry it */
+.isnot__is{ color: var(--ink); }
+.isnot__is b{ font-weight: 600; }
+/* the not column: the thing it gets mistaken for, in the dimmer ink
+   with a cross marker. The marker is decorative: the head says which
+   column is which, and the stacked form prints a label instead. */
+.isnot__not{
+  color: var(--ink-2);
+  border-left: 1px solid var(--rule);
+}
+.isnot__not::before{
+  content: "\00d7";
+  margin-right: 7px;
+  color: var(--ink-3);
+}
+.isnot__cap{
+  margin: 12px 0 0;
+  max-width: 62ch;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.isnot__cap b{ color: var(--ink); font-weight: 600; }
+.isnot code{
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92em;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+/* ── stacked form ──
+   Below 440px of FIGURE width the two columns stack. The head goes,
+   and each cell prints its own label so the pair still reads. */
+@container (max-width: 440px){
+  .isnot__head{ display: none; }
+  .isnot__row{ grid-template-columns: minmax(0, 1fr); }
+  .isnot__is,
+  .isnot__not{ padding-left: 11px; }
+  .isnot__not{ border-left: 0; border-top: 1px dashed var(--rule); background: var(--bg-2); }
+  .isnot__is::before,
+  .isnot__not::before{
+    content: "is";
+    display: block;
+    margin: 0 0 2px;
+    font: 600 10.5px/1.6 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+  }
+  .isnot__not::before{ content: "is not"; }
+}
+
+/* ─────────── spar (the prompt round: building the prompt with Claude) ───
+   Step 04's block 1, directly under the intro paragraph and above the
+   /clear chip and the brief, and the thing every later build step
+   points back to. The class name and the id are from the sparring
+   round this replaced on 2026-09-03 (draft alone, one critique round;
+   reversed): they stay so the CSS, the specimen and the #spar links
+   stay put. What a participant takes home is this round: set the
+   scene for Claude (workshop, own idea, a loose version of the
+   playbook with the link, the stage the card names), ask Claude to
+   help write the prompt, answer its questions, hold each proposal
+   against the card's must list, go round until every must is
+   covered, then clear and paste the finished prompt. That is a
+   sequence of who acts on what, which is what a figure is for, and
+   it is drawn ONCE, on step 04 (id="spar"). Steps 05 to 08 carry a
+   one-line .hint that links to it, never a second copy.
+
+   Two columns: who, and what they do. Five turns: you set the scene,
+   Claude asks and proposes, you hold it against the card, you go
+   round again, you run. Claude's one turn sits on --bg-2 so it reads
+   as the other voice; the participant's turns are white. Claude's
+   turn holds the worked example (.spar__eg): the first proposal's
+   line, the must it left out, the line added. The last turn is the
+   run and sits under a heavier rule: everything above that line is
+   conversation, nothing has run yet.
+
+   Same construction rules as .two-ways, .lands and the rest of the
+   family, for the same reasons: CSS boxes holding real DOM text so it
+   reflows, zooms and stacks; no accent colour (green is PASS, blue is
+   NOW, and this figure sits INSIDE the blue block, so any hue here
+   would fight the block's own); no <p> anywhere inside (.blk p is
+   0,1,1 and outranks every 0,1,0 rule here); no role="img" or
+   aria-label on the figure. The figcaption is the text alternative.
+
+     <figure class="spar" id="spar">
+       <div class="spar__box">
+         <span class="spar__name">
+         <div class="spar__turn">                  ... you: set the scene
+           <span class="spar__who">
+           <div class="spar__what">                ... a div, not a span:
+             <ul class="spar__asks">                   two turns hold blocks
+         <div class="spar__turn spar__turn--claude"> ... Claude: asks, proposes
+           <div class="spar__what">
+             <div class="spar__eg">                ... first / missed / added
+         <div class="spar__turn">                  ... you: hold it against the card
+         <div class="spar__turn">                  ... you: go round again
+         <div class="spar__turn spar__turn--run">   ... you: run
+       </div>
+       <figcaption class="spar__cap">
+     </figure>
+   ───────────────────────────────────────────── */
+.spar{
+  margin: 18px 0 4px;
+  /* the figure family's width, so it lines up under the brief */
+  max-width: 660px;
+  /* keyed to the figure's own box, not the viewport, for the reason
+     spelled out on .ctx-pair: the rail undocks at 940 */
+  container-type: inline-size;
+}
+.spar__box{
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow: hidden;              /* clips the title strip's corners */
+}
+/* the same title strip the rest of the family carries */
+.spar__name{
+  display: block;
+  padding: 7px 11px;
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--rule);
+  font: 600 13px/1.45 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink);
+}
+.spar__turn{
+  display: grid;
+  grid-template-columns: minmax(0, 84px) minmax(0, 1fr);
+  gap: 4px 14px;
+  padding: 10px 11px;
+  border-top: 1px solid var(--rule);
+}
+.spar__turn:first-of-type{ border-top: 0; }
+/* Claude's turn: the grey ground the rail and panels use, so the two
+   voices alternate without a hue */
+.spar__turn--claude{ background: var(--bg-2); }
+/* the run: the only turn that changes anything, under the heaviest
+   rule in the figure */
+.spar__turn--run{ border-top: 2px solid var(--rule-strong); }
+.spar__who{
+  padding-top: 2px;
+  font: 600 12.5px/1.6 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .04em;
+  color: var(--ink);
+}
+.spar__what{
+  min-width: 0;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+/* emphasis is weight: the verb of each turn */
+.spar__what b{ color: var(--ink); font-weight: 600; }
+/* the things to tell Claude, as a list inside the first turn. Plain
+   markers, no numbers: the page's blocks are already 0, 1, 2. */
+.spar__asks{
+  margin: 6px 0 0; padding: 0;
+  list-style: none;
+  display: grid; gap: 3px;
+}
+.spar__asks li{
+  position: relative;
+  padding-left: 14px;
+}
+.spar__asks li::before{
+  content: "";
+  position: absolute;
+  left: 0; top: 0.72em;
+  width: 7px; height: 2px;
+  background: var(--ink-3);
+}
+/* the worked example: the first proposal's line, the must it left
+   out, the line added. Mono, in a box, the same grammar .two-ways__say uses
+   for a thing someone typed. It sits in Claude's turn, on the grey
+   ground, so the box is paper. Labels are weight, never colour. */
+.spar__eg{
+  display: grid; gap: 3px;
+  margin: 8px 0 0;
+  padding: 7px 9px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  font: 400 12.5px/1.5 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink);
+}
+.spar__eg span{
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  gap: 8px;
+  min-width: 0;
+}
+.spar__eg b{ font-weight: 600; color: var(--ink-2); }
+/* the figcaption IS the text alternative for this figure, so it is
+   never decorative and never dropped */
+.spar__cap{
+  margin: 12px 0 0;
+  max-width: 62ch;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.spar__cap b{ color: var(--ink); font-weight: 600; }
+/* inline mono inside the figure. Bare, no pill, same as the family. */
+.spar code{
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92em;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+/* ── stacked form ──
+   Below 440px of FIGURE width the who label becomes a heading over
+   its turn. */
+@container (max-width: 440px){
+  .spar__turn{
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+  .spar__who{ padding-top: 0; }
+}
+
+/* ─────────── route-map (what this route does, in three stages) ───────────
+   The at-a-glance figure at the top of a route page: last child of
+   .hero, where a build step carries .step-io. A route is not a step,
+   so it has no "you have / you decide / you leave with" to state;
+   what it has instead is an ORDER, and on a prototype-first route the
+   order IS the argument. Three stages, each naming who acts and what
+   exists when they are done: you say it, Claude draws it, you pick one.
+   No live page uses it since 2026-09-01; it stays for the next route
+   page.
+
+   The shape it draws is one out, three back, one built. The three
+   artboard tiles in the middle stage are the only drawn thing in
+   this system: they carry three DIFFERENT internal layouts (a
+   header over rows, a rail beside a body, a grid of blocks),
+   because "three genuinely different design hypotheses" is the
+   whole point of the middle stage and three identical tiles would
+   say the opposite. They are decorative and aria-hidden; the
+   sentence beside them is the real text.
+
+   Same construction rules as .two-ways, .ctx-pair, .runs-when,
+   .lands and .step-io, and for the same reasons: CSS boxes holding
+   real DOM text so it reflows, zooms and stacks; no <p> anywhere
+   inside; and no role="img" and no aria-label, either of which
+   would make the stage text presentational and throw it out of the
+   accessibility tree. Unlike .step-io this IS a <figure> with a
+   figcaption, because the stages say what happens and the caption
+   says why the order is that way round.
+
+   NO accent colour, as everywhere in the figure family. Emphasis is
+   weight, and the second arrow is the darkest line in the figure:
+   it is the pick, which is the one decision the route exists for.
+   Same grammar as .ctx-pair's returning arrow.
+
+     <figure class="route-map">
+       <div class="route-map__grid">
+         <div class="route-map__stage">
+           <span class="route-map__lbl">
+           <span class="route-map__val">
+           <span class="route-map__protos" aria-hidden="true">   ... middle stage only
+             <span class="route-map__proto route-map__proto--top">
+           <span class="route-map__sub">
+         <div class="route-map__sep">          ... and --pick on the second
+           <span class="route-map__arrow" aria-hidden="true">
+           <span class="route-map__pick">     ... --pick only
+       </div>
+       <figcaption class="route-map__cap">
+     </figure>
+   ───────────────────────────────────────────── */
+.route-map{
+  margin: 20px 0 0;
+  /* matches the figure family and .step-io, so the band and every
+     figure under it are one width in a column that caps at 820 */
+  max-width: 660px;
+  /* keyed to the figure's own box, not the viewport, for the reason
+     spelled out on .ctx-pair: the rail undocks at 940, so a 939px
+     viewport hands this figure a WIDER column than 960 does */
+  container-type: inline-size;
+}
+.route-map__grid{
+  display: grid;
+  /* fluid stages, fixed channels: a channel holds one short label
+     and must not grow with the column */
+  grid-template-columns:
+    minmax(0, 1fr) 62px minmax(0, 1fr) 62px minmax(0, 1fr);
+  align-items: stretch;
+  padding: 5px;
+  background: var(--bg-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+/* ── a stage ──
+   White panel on the band's warm grey, the same grammar
+   .step-io__cell--do uses. All three are white here on purpose:
+   every stage is a real hand-off, and marking one would claim a
+   hierarchy the route does not have. */
+.route-map__stage{
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  padding: 9px 11px 10px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+}
+.route-map__lbl{
+  font: 600 13px/1.4 "Public Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  color: var(--ink-2);
+}
+.route-map__val{
+  font-size: 15px;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--ink);
+}
+.route-map__sub{
+  margin-top: 1px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+/* bare mono, no pill, same as the rest of the figure family: these
+   are filenames and never break mid-token */
+.route-map code{
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92em;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+/* ── the three artboards ──
+   Decorative and aria-hidden in the markup. Three tiles, three
+   different internal layouts: the difference between them is the
+   thing being drawn. */
+.route-map__protos{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+  margin: 5px 0 2px;
+  max-width: 190px;
+}
+.route-map__proto{
+  display: grid;
+  gap: 3px;
+  height: 32px;
+  padding: 4px;
+  background: var(--bg-2);
+  border: 1px solid var(--rule-strong);
+  border-radius: 3px;
+}
+.route-map__proto i{
+  display: block;
+  min-width: 0;
+  border-radius: 1.5px;
+  background: var(--rule-strong);
+}
+/* a header strip over two rows */
+.route-map__proto--top{ grid-template-rows: 5px minmax(0, 1fr) minmax(0, 1fr); }
+.route-map__proto--top i:first-child{ background: var(--ink-3); }
+/* a rail beside a body */
+.route-map__proto--rail{
+  grid-template-columns: 6px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+}
+.route-map__proto--rail i:first-child{
+  grid-row: 1 / -1;
+  background: var(--ink-3);
+}
+/* four blocks */
+.route-map__proto--grid{
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+/* ── the channel between two stages ── */
+.route-map__sep{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 0;
+  padding: 0 7px;
+}
+/* shaft plus head, drawn with borders so both orientations are
+   exact and both survive rotation the way a text glyph does not */
+.route-map__arrow{
+  position: relative;
+  flex: 0 0 auto;
+  width: 100%;
+  height: 1px;
+  background: var(--ink-3);
+}
+.route-map__arrow::after{
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 5px solid transparent;
+  border-left: 7px solid var(--ink-3);
+  border-right-width: 0;
+}
+/* the pick is the darkest line in the figure: it is the one decision
+   this route exists for, and weight carries that where an accent
+   colour would collide with the blue .blk--now below */
+.route-map__sep--pick .route-map__arrow{ height: 2px; background: var(--ink); }
+.route-map__sep--pick .route-map__arrow::after{
+  border-width: 6px;
+  border-left: 8px solid var(--ink);
+  border-right-width: 0;
+}
+.route-map__pick{
+  text-align: center;
+  font: 600 11px/1.4 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+/* the figcaption IS the text alternative for this figure, so it is
+   never decorative and never dropped */
+.route-map__cap{
+  margin: 12px 0 0;
+  max-width: 62ch;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.route-map__cap b{ color: var(--ink); font-weight: 600; }
+
+/* ── stacked form ──
+   Below 600px of FIGURE width three stages plus two labelled
+   channels stop fitting side by side: the stage that holds the
+   artboards needs about 170px of its own. Stacked, the arrows stop
+   pointing across and start pointing down, exactly as they do in
+   .step-io and .lands. */
+@container (max-width: 600px){
+  .route-map__grid{ grid-template-columns: minmax(0, 1fr); }
+  .route-map__sep{
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 4px 0 4px 11px;
+  }
+  .route-map__arrow{
+    width: 1px;
+    height: 20px;
+  }
+  .route-map__arrow::after{
+    right: auto;
+    left: 50%;
+    top: auto;
+    bottom: 0;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top: 7px solid var(--ink-3);
+    border-bottom-width: 0;
+  }
+  .route-map__sep--pick .route-map__arrow{ width: 2px; height: 20px; }
+  .route-map__sep--pick .route-map__arrow::after{
+    border: 6px solid transparent;
+    border-top: 8px solid var(--ink);
+    border-bottom-width: 0;
+  }
+  /* stacked, the stage is full width, so the artboards can hold the
+     size they had beside two other stages */
+  .route-map__protos{ max-width: 210px; }
+}
+
+/* ─────────── spine (the afternoon: interview, plan, critique, verify) ───────────
+   The one figure on step 04, directly under the hero. The afternoon
+   is one workflow and the figure draws its order: interview first,
+   the plan persisted in the repo, a critique of that plan, then
+   Claude verifying its own work. Three moves are points on one
+   hairline; the fourth is a ring on that line, because it is a
+   loop: build, run it, look, fix, round again until it works.
+
+   The ring is the one bold element. The line enters it at "build"
+   and leaves it after "look", to a tick in --accent green, the
+   system's own DONE colour and the only hue in the figure. Nothing
+   else is heavier than a hairline. The names sit above the line in
+   Archivo, the page's heading face, and one plain sentence sits
+   below it: the two lanes are the order (above) and what it means
+   (below).
+
+   CSS boxes holding real DOM text, for the reasons on .ctx-pair:
+   labels reflow, zoom and stack. The ring is a border-radius box;
+   its four steps are positioned spans whose paper ground knocks the
+   ring line out behind them; the arrowheads are border triangles
+   rotated onto the circumference. No <p> anywhere inside, no
+   role="img" and no aria-label on the figure. The dots, the line,
+   the arrowheads and the tick are decorative and aria-hidden; the
+   figcaption is the text alternative.
+
+     <figure class="spine" id="spine">
+       <ol class="spine__track">
+         <li class="spine__node">
+           <span class="spine__dot" aria-hidden="true">
+           <span class="spine__name">
+           <span class="spine__text">
+         ... three of those
+         <li class="spine__node spine__node--loop">
+           <span class="spine__dot" aria-hidden="true">   ... stacked form only
+           <span class="spine__ring">
+             <span class="spine__verb">                   ... the ring's centre
+             <span class="spine__step spine__step--build">
+             <span class="spine__step spine__step--run">
+             <span class="spine__step spine__step--look">
+             <span class="spine__step spine__step--fix">
+             <i aria-hidden="true"> x4                     ... arrowheads
+           <span class="spine__text">
+         <li class="spine__node spine__node--end">
+           <span class="spine__tick" aria-hidden="true">
+           <span class="spine__name">
+       </ol>
+       <figcaption class="spine__cap">
+     </figure>
+   ───────────────────────────────────────────── */
+.spine{
+  --spine-ring: 150px;
+  /* room above the ring for the "run it" label that straddles its top */
+  --spine-top: 12px;
+  /* the line's y: the ring's centre */
+  --spine-line: calc(var(--spine-top) + var(--spine-ring) / 2);
+  margin: 34px 0 0;
+  /* keyed to the figure's own box, not the viewport, for the reason
+     spelled out on .ctx-pair: the rail undocks at 940 */
+  container-type: inline-size;
+}
+.spine__track{
+  position: relative;
+  display: grid;
+  /* three fluid moves, a wider column for the ring and its sentence,
+     and the tick's own 22px. The right padding is room for the word
+     over the tick. */
+  grid-template-columns:
+    minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.35fr) 22px;
+  column-gap: 14px;
+  margin: 0;
+  padding: 0 30px 0 0;
+  list-style: none;
+}
+/* the line: from the first dot's centre to the tick's centre */
+.spine__track::before{
+  content: "";
+  position: absolute;
+  left: 5px;
+  right: 41px;
+  top: var(--spine-line);
+  height: 1.5px;
+  background: var(--ink-3);
+  transform: translateY(-50%);
+}
+.spine__node{
+  position: relative;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-rows: var(--spine-line) auto;
+}
+.spine__dot{
+  position: absolute;
+  left: 0;
+  top: var(--spine-line);
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--ink);
+  transform: translateY(-50%);
+}
+/* a head on the line before every point but the first: the line has
+   a direction. The ring's head sits clear of the "build" label. */
+.spine__node + .spine__node .spine__dot::before,
+.spine__node + .spine__node .spine__tick::before,
+.spine__ring::before{
+  content: "";
+  position: absolute;
+  right: calc(100% + 4px);
+  top: 50%;
+  transform: translateY(-50%);
+  border: 4px solid transparent;
+  border-left: 6px solid var(--ink-3);
+  border-right-width: 0;
+}
+.spine__ring::before{ right: calc(100% + 26px); }
+/* the four names are the figure's headings, so they take the page's
+   heading face: the one place Archivo appears outside an h1 to h3 */
+.spine__name{
+  align-self: end;
+  padding-bottom: 14px;
+  font: 800 17px/1.2 "Archivo", "Public Sans", "Segoe UI", Arial, sans-serif;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.spine__text{
+  padding-top: 14px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+/* bare mono, no pill, same as the rest of the figure family: the
+   one command name never breaks mid-token */
+.spine code{
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92em;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+/* ── the ring ── */
+.spine__node--loop{
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--spine-top);
+}
+.spine__node--loop .spine__dot{ display: none; }
+.spine__ring{
+  position: relative;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  width: var(--spine-ring);
+  height: var(--spine-ring);
+  margin-left: 8px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  /* opaque, so the line stops at the ring's edge instead of running
+     through it */
+  background: var(--paper);
+  display: grid;
+  place-items: center;
+}
+.spine__verb{
+  font: 800 17px/1.2 "Archivo", "Public Sans", "Segoe UI", Arial, sans-serif;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+/* the four steps straddle the ring line at 9, 12, 3 and 6 o'clock.
+   The containing block is the padding box, so -1px centres a label on
+   the 2px border. */
+.spine__step{
+  position: absolute;
+  padding: 0 5px;
+  background: var(--paper);
+  font: 600 13px/1.3 "Public Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.spine__step--build{ left: -1px;  top: 50%;    transform: translate(-50%, -50%); }
+.spine__step--run{   top: -1px;   left: 50%;   transform: translate(-50%, -50%); }
+.spine__step--look{  right: -1px; top: 50%;    transform: translate(50%, -50%); }
+.spine__step--fix{   bottom: -1px; left: 50%;  transform: translate(-50%, 50%); }
+/* clockwise heads between the steps: a triangle at the centre,
+   turned by --a, pushed out to the border's centre line (74px), then
+   turned again onto the tangent */
+.spine__ring i{
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  margin: -4px 0 0 -5px;
+  border: 5px solid transparent;
+  border-bottom: 8px solid var(--ink);
+  border-top-width: 0;
+  transform: rotate(var(--a)) translateY(-74px) rotate(90deg);
+}
+.spine__ring i:nth-of-type(1){ --a: 315deg; }
+.spine__ring i:nth-of-type(2){ --a: 45deg; }
+.spine__ring i:nth-of-type(3){ --a: 135deg; }
+.spine__ring i:nth-of-type(4){ --a: 225deg; }
+
+/* ── the end ── */
+.spine__tick{
+  position: absolute;
+  left: 0;
+  top: var(--spine-line);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  transform: translateY(-50%);
+}
+.spine__tick::after{
+  content: "";
+  position: absolute;
+  left: 7.5px;
+  top: 4px;
+  width: 5px;
+  height: 10px;
+  border: solid var(--paper);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.spine__node--end .spine__name{
+  justify-self: center;
+  padding-bottom: 12px;
+  font: 600 13px/1.3 "Public Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+/* the figcaption IS the text alternative for this figure, so it is
+   never decorative and never dropped. 16px: on step 04 it is the
+   page's one explanatory paragraph after the lede. */
+.spine__cap{
+  margin: 22px 0 0;
+  max-width: 62ch;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+.spine__cap b{ color: var(--ink); font-weight: 600; }
+
+/* ── stacked form ──
+   Below 620px of FIGURE width the line turns downward: every move
+   is a dot at the left with its name and sentence beside it, and
+   the ring sits in the same column as the sentences. The heads
+   point down. */
+@container (max-width: 620px){
+  .spine__track{
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0;
+  }
+  .spine__track::before{
+    left: 5px;
+    right: auto;
+    top: 6px;
+    bottom: 11px;
+    width: 1.5px;
+    height: auto;
+    transform: none;
+  }
+  .spine__node{
+    display: block;
+    padding: 0 0 26px 28px;
+  }
+  .spine__dot{
+    top: 5px;
+    transform: none;
+  }
+  /* spans in a block: each lane becomes its own line */
+  .spine__name{ display: block; padding-bottom: 4px; }
+  .spine__text{ display: block; padding-top: 0; }
+  .spine__node + .spine__node .spine__dot::before,
+  .spine__node + .spine__node .spine__tick::before{
+    right: auto;
+    left: 50%;
+    top: auto;
+    bottom: calc(100% + 4px);
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top: 6px solid var(--ink-3);
+    border-bottom-width: 0;
+  }
+  .spine__ring::before{ display: none; }
+  .spine__node--loop{
+    display: block;
+    padding-top: 0;
+  }
+  .spine__node--loop .spine__dot{ display: block; }
+  .spine__ring{ margin: 10px 0 14px 22px; }
+  .spine__node--end{
+    min-height: 22px;
+    padding-bottom: 0;
+  }
+  .spine__tick{
+    top: 0;
+    transform: none;
+  }
+  /* justify-self reaches block boxes in current Chromium, so the
+     desktop centring has to be undone here or the word drifts to the
+     middle of the column */
+  .spine__node--end .spine__name{
+    display: block;
+    justify-self: start;
+    padding: 2px 0 0;
+    text-align: left;
+  }
+}
+
+/* ─────────── circuit (the loop, four moves) ───────────
+   The second figure on step 04, under the spine. The spine says what
+   the afternoon is; the circuit says how to run it: four moves, once
+   per work item of the plan, then clear and go round again. Drawn the way a
+   transit map draws a line. One closed 2px ink path runs down the
+   gutter through four station rings and back up to the top, so the
+   loop is visible as a loop and not as a list that happens to end
+   with "go back to 1". The one-sentence shortcut is a dashed inner
+   branch that leaves the line above 1 and rejoins it above 3.
+
+   Each move is a station: the ring with its numeral on the line,
+   the title in Archivo, one plain sentence, and at the far edge
+   exactly what the participant presses or types, as real key caps
+   and command chips. Moves 1 and 3 carry their prompts in the system's
+   own dark .prompt-card, the two dark objects on the page, sitting where
+   the participant pastes. No cards, no tinted bands, no accent
+   beyond the chip caret's blue, which is the system's own "inside
+   Claude" signal.
+
+   Built on subgrid: the track is the grid, every move is a row that
+   inherits its columns, so the hairlines, the stations and the key
+   caps line up across all four without a shared fixed height. The
+   loop, the branch and the arrowheads are absolutely positioned
+   children placed by grid line, so they follow the rows whatever the
+   text does. No <p> anywhere inside, no role="img" and no aria-label
+   on the figure; the drawn pieces are aria-hidden and the figcaption
+   is the text alternative.
+
+     <figure class="circuit">
+       <div class="circuit__track" role="list">
+         <span class="circuit__loop" aria-hidden="true">      ... the closed path
+           <span class="circuit__back">                        ... "next work item"
+         <span class="circuit__branch" aria-hidden="true">    ... the shortcut
+         <span class="circuit__in" aria-hidden="true">        ... head into 1
+         <span class="circuit__up" aria-hidden="true">        ... head on the way back
+         <span class="circuit__rule">                          ... the one-sentence rule
+         <div class="circuit__move" role="listitem">           ... --prompt on moves 1 and 3
+           <span class="circuit__n">
+           <span class="circuit__head">
+           <span class="circuit__mech">
+             <span class="circuit__keys"> <kbd> <span class="plus"> <kbd>
+             <span class="circuit__cmd"> <i>›</i> /clear
+             <span class="circuit__note">
+           <div class="prompt-card circuit__card">             ... moves 1 and 3
+           <span class="circuit__body">
+       </div>
+       <figcaption class="circuit__cap">
+     </figure>
+   ───────────────────────────────────────────── */
+.circuit{
+  margin: 22px 0 0;
+  container-type: inline-size;
+}
+.circuit__track{
+  position: relative;
+  display: grid;
+  /* gutter for the line and the stations, the reading column, and a
+     fixed column for the keys so the caps line up down the page */
+  grid-template-columns: 66px minmax(0, 1fr) 176px;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── the header row: the rule the shortcut draws ── */
+.circuit__rule{
+  grid-column: 2 / -1;
+  grid-row: 1;
+  padding: 18px 0 12px;
+  font-size: 14.5px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+.circuit__rule b{ color: var(--ink); font-weight: 600; }
+
+/* ── the line ──
+   One bordered box: its right edge is the track through the
+   stations, its left edge the way back up. It spans from the header
+   row to the top of the last station and its border reaches 64px
+   further down, to 31px below that station's centre (18px hairline
+   offset + 15px radius). Rounded on the way back only. The track sits
+   at x = 36, which leaves a lane between rail and track for the branch
+   and for the "next work item" label without either touching a ring.
+   The end line is spelled out as a number: row 1 is the rule, so it is
+   the station count plus one (four stations, so 5). An absolutely
+   positioned grid child cannot count implicit rows, so "-2" does not
+   work here. Move it whenever the figure gains or loses a station. */
+.circuit__loop{
+  position: absolute;
+  grid-column: 1;
+  grid-row: 1 / 5;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+.circuit__loop::before{
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: -64px;
+  width: 37px;
+  box-sizing: border-box;
+  border: 2px solid var(--ink);
+  border-radius: 18px 0 0 18px;
+}
+/* the way back, said in words along the rail it labels */
+.circuit__back{
+  position: absolute;
+  left: 7px;
+  bottom: -54px;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font: 600 12px/1.2 "Public Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  letter-spacing: .02em;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+/* the shortcut: leaves the track beside the rule, runs down inside
+   the loop, rejoins 9px above move 3's hairline */
+.circuit__branch{
+  position: absolute;
+  grid-column: 1;
+  grid-row: 1 / 4;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+.circuit__branch::before{
+  content: "";
+  position: absolute;
+  left: 16px;
+  top: 29px;
+  bottom: 9px;
+  width: 19px;
+  box-sizing: border-box;
+  border: 1.5px dashed var(--ink-3);
+  border-right: 0;
+  border-radius: 10px 0 0 10px;
+}
+.circuit__branch::after{
+  content: "";
+  position: absolute;
+  left: 29px;
+  bottom: 5px;
+  border: 4.5px solid transparent;
+  border-left: 6px solid var(--ink-3);
+  border-right-width: 0;
+}
+/* heads: down into station 1, up on the way back. Both ends of the
+   row placement are explicit on purpose: for an absolutely positioned
+   grid child a bare "grid-row: 4" is "4 / auto", and auto resolves to
+   the container's edge, not the row's. */
+.circuit__in,
+.circuit__up{
+  position: absolute;
+  grid-column: 1;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.circuit__in{
+  grid-row: 1 / 2;
+  left: 31px;
+  bottom: -12px;
+  border: 5px solid transparent;
+  border-top: 7px solid var(--ink);
+  border-bottom-width: 0;
+}
+.circuit__up{
+  grid-row: 4 / 5;
+  left: -4px;
+  top: 40%;
+  border: 5px solid transparent;
+  border-bottom: 7px solid var(--ink);
+  border-top-width: 0;
+}
+
+/* ── a move ── */
+.circuit__move{
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  padding: 0 0 26px;
+}
+.circuit__n{
+  grid-column: 1;
+  grid-row: 1 / 3;
+  align-self: start;
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  width: 30px;
+  height: 30px;
+  margin: 18px 0 0 21px;       /* centre at x = 36, the track */
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--paper);
+  display: grid;
+  place-items: center;
+  font: 800 15px/1 "Archivo", "Public Sans", "Segoe UI", Arial, sans-serif;
+  color: var(--ink);
+}
+.circuit__move--prompt .circuit__n{ grid-row: 1 / 4; }
+/* the hairline between moves is carried by the title and the keys
+   together, so it never crosses the gutter */
+.circuit__head{
+  grid-column: 2;
+  grid-row: 1;
+  padding: 18px 20px 0 0;
+  border-top: 1px solid var(--rule);
+  font: 800 17px/1.25 "Archivo", "Public Sans", "Segoe UI", Arial, sans-serif;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.circuit__body{
+  grid-column: 2;
+  grid-row: 2;
+  padding: 8px 20px 0 0;
+  max-width: 60ch;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.circuit__body b{ color: var(--ink); font-weight: 600; }
+.circuit__move--prompt .circuit__card{
+  grid-column: 2 / -1;
+  grid-row: 2;
+  margin: 14px 0 0;
+}
+.circuit__move--prompt .circuit__body{
+  grid-column: 2 / -1;
+  grid-row: 3;
+  padding-top: 12px;
+}
+/* bare mono, no pill, same as the figure family */
+.circuit__body code,
+.circuit__rule code{
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92em;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+/* ── what you press or type ── */
+.circuit__mech{
+  grid-column: 3;
+  grid-row: 1 / 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 7px;
+  padding: 18px 0 0 12px;
+  border-top: 1px solid var(--rule);
+  text-align: right;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+.circuit__move--prompt .circuit__mech{ grid-row: 1; }
+.circuit__keys{
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.circuit__keys .plus{ color: var(--ink-3); margin: 0 3px; }
+/* a typed command: the caret is the system's "inside Claude" blue */
+.circuit__cmd{
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 10px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 4px;
+  background: #fff;
+  font: 500 13px/1.2 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.circuit__cmd i{ font-style: normal; color: var(--accent-2); }
+.circuit__note{ display: block; max-width: 22ch; }
+
+/* the figcaption IS the text alternative for this figure, so it is
+   never decorative and never dropped */
+.circuit__cap{
+  margin: 6px 0 0 66px;
+  max-width: 62ch;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+.circuit__cap b{ color: var(--ink); font-weight: 600; }
+
+/* ── stacked form ──
+   Below 600px of FIGURE width the keys column goes: what you press
+   sits directly under the title, then the sentence. The line and the
+   stations keep their geometry, the gutter only loses its slack. */
+@container (max-width: 600px){
+  .circuit__track{ grid-template-columns: 58px minmax(0, 1fr); }
+  .circuit__rule{ grid-column: 2; }
+  .circuit__n{ grid-row: 1 / 4; }
+  .circuit__move--prompt .circuit__n{ grid-row: 1 / 5; }
+  .circuit__head{ padding-right: 0; }
+  .circuit__mech{
+    grid-column: 2;
+    grid-row: 2;
+    align-items: flex-start;
+    padding: 10px 0 0;
+    border-top: 0;
+    text-align: left;
+  }
+  .circuit__move--prompt .circuit__mech{ grid-row: 2; }
+  .circuit__body{
+    grid-row: 3;
+    padding-right: 0;
+  }
+  .circuit__move--prompt .circuit__card{
+    grid-column: 2;
+    grid-row: 3;
+  }
+  .circuit__move--prompt .circuit__body{
+    grid-column: 2;
+    grid-row: 4;
+  }
+  .circuit__cap{ margin-left: 58px; }
+}
+
+/* ─────────── miss cases ───────────
+   The recovery line of a pass check, when more than one thing can
+   go wrong. A participant reads .miss under time pressure, looking
+   for the one line that matches what just happened on their screen,
+   so the symptoms have to be findable and not buried mid-sentence:
+   symptom in bold, fix behind it, one case per row.
+
+   Two or three cases. A .miss with one recovery move stays a
+   sentence; a .miss with five is a step that does too much. */
+.miss-cases{
+  margin: 8px 0 12px;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 7px;
+  max-width: 62ch;
+}
+.miss-cases li{
+  position: relative;
+  padding-left: 15px;
+  /* 16px is the instructional-copy floor and this is read under time
+     pressure; a step down from the 17px criterion above it, no more */
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.miss-cases li::before{
+  content: "";
+  position: absolute;
+  left: 2px; top: 0.62em;
+  width: 5px; height: 5px;
+  border-radius: 1.5px;
+  background: var(--rule-strong);
+}
+/* the symptom: what the participant is scanning for */
+.miss-cases b{ color: var(--ink); font-weight: 600; }
+
+/* ─────────── pass check (step success criterion) ─────────── */
+/* The sentence that tells the participant whether the step worked.
+   On a build step the pass check is block 2 (.blk--pass) and this
+   primitive is not used; it stays for the concept pages and the
+   design inventory. White card, green rail, instructional copy at
+   body size. Never set a pass check in .fig-cite; that class is for
+   decorative captions. */
+.pass-check{
+  margin: 16px 0 0;
+  padding: 14px 18px 15px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius);
+}
+.pass-check .pc-label{
+  margin: 0 0 6px;
+  font: 700 13px/1.4 "Public Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  color: var(--accent);
+}
+.pass-check p{
+  margin: 0;
+  font-size: 17px; line-height: 1.55;
+  color: var(--ink);
+  /* keep the criterion at a readable measure; without this the box
+     runs full-bleed and long criteria set 150+ chars per line */
+  max-width: 70ch;
+}
+.pass-check p + p{ margin-top: 6px; }
+.pass-check p b{ font-weight: 700; }
+.pass-check .miss{ color: var(--ink-2); }
+
+/* glossary paragraphs keep a readable measure; the specimen caps at
+   760px and pages should match it */
+.glossary{ max-width: 760px; }
+
+/* ─────────── meta chip (hero time + fallback line) ─────────── */
+/* Not a chip any more: a plain row of Public Sans spans, separated
+   by the middle dot the markup supplies. No pill, no mono, no
+   uppercase, no tracking. */
+.meta-chip{
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px;
+  margin-top: 18px;
+  font-family: "Public Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px; line-height: 1.5;
+  color: var(--ink-2);
+}
+
+/* ─────────── step-io (have / decide / leave with) ───────────
+   The at-a-glance band on a build step: last child of .hero, above
+   .blocks. Three cells, in reading order: the artifact this step
+   reads, the one decision the participant makes, and the artifact
+   they leave with.
+
+   It exists because this project's own test for a build step is
+   "what does the participant decide here?", and until now that
+   answer only surfaced in block 2, below the prompt. Stating it
+   above the fold is what lets a page cut its prose: the band says
+   what happens, so block 0 only has to argue why.
+
+   Same construction rules as .two-ways, .lands, .ctx-pair and
+   .runs-when, for the same reasons: CSS boxes holding real DOM text,
+   so it reflows, zooms and stacks; no <p> anywhere inside; and no
+   role="img" and no aria-label, either of which would make the cell
+   text presentational and throw it out of the accessibility tree.
+   Unlike those four this is NOT a <figure> and carries no
+   figcaption: the cells are the text alternative, in reading order.
+
+   NO accent colour, for the reason the figures carry none: green is
+   PASS and blue is NOW in this system. The middle cell is marked by
+   tint, the same grammar .two-ways--this uses: white on the band's
+   warm grey. The white panel is the live one here as everywhere, and
+   the live one is the participant's own job.
+
+   Keep each value to a phrase. A cell that needs a sentence is a
+   step whose decision has not been named yet.
+
+     <div class="step-io">
+       <div class="step-io__grid">
+         <div class="step-io__cell">          ... you have
+           <span class="step-io__lbl">
+           <span class="step-io__val">
+         <span class="step-io__sep" aria-hidden="true"></span>
+         <div class="step-io__cell --do">     ... you decide
+         <span class="step-io__sep" aria-hidden="true"></span>
+         <div class="step-io__cell">          ... you leave with
+       </div>
+     </div>
+   ─────────────────────────────────────────── */
+.step-io{
+  margin-top: 20px;
+  /* matches the figure family, so the band and the figures under it
+     are one width in a reading column that caps at 820 */
+  max-width: 660px;
+  /* keyed to the band's own box, not the viewport, for the reason
+     spelled out on .ctx-pair: the rail undocks at 940, so a 939px
+     viewport hands this band a WIDER column than 960 does. The grid
+     sits on the child because a container cannot query itself. */
+  container-type: inline-size;
+}
+.step-io__grid{
+  display: grid;
+  /* the decision cell is the widest: it holds a phrase where the
+     other two usually hold a filename */
+  grid-template-columns: minmax(0, 1fr) 20px minmax(0, 1.2fr) 20px minmax(0, 1fr);
+  align-items: stretch;
+  padding: 5px;
+  background: var(--bg-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+.step-io__cell{
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 9px 11px 10px;
+}
+.step-io__cell--do{
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+}
+.step-io__lbl{
+  font: 600 13px/1.4 "Public Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  color: var(--ink-2);
+}
+.step-io__val{
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--ink);
+}
+/* the decision is the one thing on the band that is not a filename,
+   and weight is how this system emphasises inside a neutral box */
+.step-io__cell--do .step-io__val{ font-weight: 600; }
+/* bare mono, no pill, same as the figures: these are filenames and
+   never break mid-token */
+.step-io code{
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.94em;
+  color: var(--ink);
+  white-space: nowrap;
+}
+/* decorative. The cell order already carries the direction and the
+   spans are aria-hidden in the markup. */
+.step-io__sep{
+  align-self: center;
+  justify-self: center;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--ink-3);
+}
+.step-io__sep::after{ content: "\2192"; }
+
+/* ── stacked form ──
+   Below 520px of BAND width three phrases stop fitting side by side.
+   Stacked, the arrow stops pointing across and starts pointing down,
+   exactly as it does in .lands. */
+@container (max-width: 520px){
+  .step-io__grid{ grid-template-columns: minmax(0, 1fr); }
+  .step-io__sep{ justify-self: start; padding-left: 11px; }
+  .step-io__sep::after{ content: "\2193"; }
+}
+
+/* ─────────── prompt card (terminal-style copy block) ─────────── */
+/* The one heavy object on a concept page that carries it (until
+   2026-09-01 also on every build step; the .brief card below took
+   that slot when route A dropped its pasteable prompts). Where it
+   appears it is the only dark surface on the page, which is what
+   makes the paste target win at a glance beside a terminal.
+   The copy-to-clipboard handler lives in workshop-nav.js and binds
+   to any .prompt-card with a [data-prompt] body. */
+.prompt-card{
+  background: var(--term-bg);
+  color: var(--term-fg);
+  border: 0;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-top: 8px;
+}
+.pc-head{
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 8px 12px;
+  border-bottom: 1px solid oklch(1 0 0 / 0.12);
+  font: 600 12.5px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--term-dim);
+}
+.pc-head .meta{
+  display: flex; align-items: center; gap: 10px;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+  color: var(--term-dim);
+}
+/* "PROMPT" stays a plain label: inside the card head the pill
+   chrome of the global .badge is stripped. Both selectors are
+   listed so the label outranks .badge either way the markup nests. */
+.pc-head .badge,
+.pc-head .meta .badge{
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  color: var(--term-fg);
+  font-size: 12.5px;
+  letter-spacing: .06em;
+}
+.pc-head .meta .badge i{
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--term-amber);
+}
+/* the line and character count workshop-nav.js fills in */
+.pc-head [data-count]{ color: var(--term-dim); }
+.copy-btn{
+  display: inline-flex; align-items: center; gap: 9px;
+  padding: 7px 12px;
+  background: var(--accent-2);
+  color: #fff;
+  border: 0;
+  border-radius: var(--radius-sm);
+  font: 700 14px/1 "Public Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  cursor: pointer;
+  transition: all .18s ease;
+}
+.copy-btn:hover{ transform: translateY(-1px); }
+.copy-btn.copied{ background: var(--accent); color: #fff; }
+.copy-btn svg{ width: 14px; height: 14px; }
+/* 12px padding and 13px mono are load-bearing, not taste: at a
+   960px viewport the width budget leaves the prompt text 588px and
+   a 72-character line at 13px JetBrains Mono needs 562px. Raise
+   either value and every line of every prompt wraps. Measure with a
+   DOM Range over the text, never by eye. */
+.pc-body{
+  margin: 0;
+  padding: 12px;
+  font: 400 13px/1.7 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--term-fg);
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+/* the foot carries the fallback sentence (where the file goes, what
+   to do without an idea of your own), so it is never dim */
+.pc-foot{
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px;
+  border-top: 1px solid oklch(1 0 0 / 0.12);
+  font: 400 14px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--term-fg);
+}
+.pc-foot .arrow{ color: var(--term-amber); }
+.pc-foot code{
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* nowrap for the same reason .blk p code has it: a path that breaks
+     mid-token renders as two pills and reads as two unrelated files. */
+  white-space: nowrap;
+  background: oklch(1 0 0 / 0.08);
+  color: var(--term-fg);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+.pc-foot a{ color: var(--term-fg); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ─────────── brief (the checklist card: what the prompt has to carry) ───────────
+   The one heavy object on a build step since 2026-09-01, in the slot
+   the prompt card held. Route A pages print no prompt to paste: the
+   participant builds the prompt with Claude and holds each proposal
+   against this card, so it is a CHECKLIST and has to read as one at
+   a glance beside a terminal. Since 2026-09-03 (evening) it is a
+   paper card, not a dark block: an ink border with a hard offset
+   shadow so it sits on the page like a card on a table, a dark head
+   band in the terminal palette (the one dark strip on the page), the
+   musts on white with an empty checkbox each, the where row and the
+   tips on the warm panel grey so the musts are the brightest thing
+   in the card. Never put a pasteable prompt in it; the retired
+   prompts live in docs/facilitator-prompts.md, unlinked.
+
+   Three rows, in the order the participant uses them:
+     where   which stage and play of the playbook the step interprets,
+             with the link, so Claude reads the stage itself
+     must    what has to be in the prompt: the file, the commit, and
+             only what the NEXT step or the pass check reads. One
+             empty checkbox per must: the participant ticks it in
+             their head as Claude's proposal covers it.
+     tips    the hints: nothing later depends on one
+   Musts carry the checkbox, tips a dim dash. That marker is the
+   whole distinction, so never restyle one to look like the other.
+   No accent colour anywhere on the paper: green is PASS, blue is
+   NOW (the block this card sits in), amber is the break. The amber
+   dot survives only in the dark head band, where the terminal
+   palette applies.
+
+   Row labels and the stage name are load-bearing, so they render in
+   --ink, never --ink-3. Body text is 16px Public Sans, the
+   instructional floor: this card is read by a person.
+
+   Not a figure: no figcaption, and the rows are the text
+   alternative in reading order. No <p> inside, for the reason the
+   figures give: .blk p is 0,1,1 and outranks every rule here. A
+   container query keyed to the card's own width stacks the label
+   over its row, never a viewport query (the rail undocks at 940).
+
+     <div class="brief">
+       <div class="brief__head">
+         <span class="brief__badge"><i></i>CHECKLIST</span>
+         <span class="brief__stage">stage 1 · plan</span>
+       </div>
+       <div class="brief__row brief__row--where">
+         <span class="brief__lbl">which stage this is</span>
+         <span class="brief__val">... <a href>the playbook</a> ...</span>
+       </div>
+       <div class="brief__row brief__row--must">
+         <span class="brief__lbl">must be in your prompt
+           <span class="brief__sub">a later step or the pass check needs it</span></span>
+         <ul class="brief__list"><li>... <span class="brief__why">...</span></li></ul>
+       </div>
+       <div class="brief__row brief__row--tips">
+         <span class="brief__lbl">tips and hints
+           <span class="brief__sub">nothing later depends on it</span></span>
+         <ul class="brief__list"><li>...</li></ul>
+       </div>
+       <div class="brief__foot">
+         <span class="arrow">▲</span><span>...</span>
+       </div>
+     </div>
+   ─────────────────────────────────────────── */
+.brief{
+  margin: 10px 6px 6px 0;         /* room for the shadow on the right and below */
+  background: var(--paper);
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius);
+  /* the card on the table: a hard offset shadow in ink, no blur, so
+     it reads as an object and not as a glow */
+  box-shadow: 5px 5px 0 var(--ink);
+  overflow: hidden;
+  container-type: inline-size;
+}
+/* the head band: the one dark strip on the page, in the terminal
+   palette, so the card is still the thing an eye coming back from
+   the terminal lands on */
+.brief__head{
+  display: flex; align-items: center; gap: 12px;
+  padding: 9px 14px;
+  background: var(--term-bg);
+  font: 600 12.5px/1.5 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--term-fg);
+}
+.brief__badge{
+  display: inline-flex; align-items: center; gap: 7px;
+  letter-spacing: .08em;
+}
+.brief__badge i{
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--term-amber);
+}
+/* the stage name is what the participant tells Claude, so it is
+   never dim; the separating dot before it is */
+.brief__stage{ color: var(--term-fg); }
+.brief__stage::before{
+  content: "\00b7";
+  margin-right: 12px;
+  color: var(--term-dim);
+}
+
+/* a row: label beside its content. The label column is fixed so the
+   three labels align down the card and the content column stays the
+   same width in every row */
+.brief__row{
+  display: grid;
+  grid-template-columns: minmax(0, 150px) minmax(0, 1fr);
+  gap: 4px 16px;
+  padding: 13px 14px 14px;
+  border-top: 1px solid var(--rule-strong);
+}
+.brief__head + .brief__row{ border-top: 0; }
+/* the where row and the tips row sit on the panel grey; the musts
+   stay on white, so the checklist is the brightest thing in the card */
+.brief__row--where,
+.brief__row--tips{ background: var(--bg-2); }
+.brief__lbl{
+  padding-top: 2px;
+  font: 600 12.5px/1.6 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .04em;
+  color: var(--ink);
+}
+/* the must label is the heading of the checklist: uppercase, the
+   heaviest mono weight the page loads */
+.brief__row--must .brief__lbl{
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.brief__val{
+  min-width: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+.brief__list{
+  margin: 0; padding: 0;
+  list-style: none;
+  display: grid; gap: 9px;
+  min-width: 0;
+}
+.brief__list li{
+  position: relative;
+  padding-left: 20px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+/* the hint marker: a short dim dash, so a hint reads as optional */
+.brief__list li::before{
+  content: "";
+  position: absolute;
+  left: 1px; top: 0.72em;
+  width: 8px; height: 2px;
+  background: var(--ink-3);
+}
+/* the must marker: an empty checkbox, so a must reads as a line to
+   tick off. Ink border, no fill: nothing here is done yet. */
+.brief__row--must .brief__list li{ padding-left: 28px; }
+.brief__row--must .brief__list li::before{
+  left: 0; top: 0.28em;
+  width: 15px; height: 15px;
+  background: var(--paper);
+  border: 1.5px solid var(--ink);
+  border-radius: 3px;
+}
+/* the why under a must (since 2026-09-03): what goes wrong, or which
+   later step reads it, when the must is missing. Its own line, 15px
+   in --ink-2 (instructional copy, AA on white at this size), so the
+   must stays the line a participant checks against and the reason
+   sits under it. Musts only: a tip carries its reason in its own
+   sentence. */
+.brief__why{
+  display: block;
+  margin-top: 3px;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+/* the test under a row label (since 2026-09-03): what sorts a line
+   into that row, in the participant's words. Same face and size as
+   the label, weight 400, sentence case even under the uppercase must
+   label. */
+.brief__sub{
+  display: block;
+  margin-top: 2px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-2);
+}
+/* the tips row: nothing later depends on a tip, so it is the one
+   part of the card that is not load-bearing, and it reads in --ink-2
+   on the panel grey while the musts read in --ink on white */
+.brief__row--tips .brief__list li{ color: var(--ink-2); }
+/* emphasis inside the card is weight */
+.brief b{ color: var(--ink); font-weight: 600; }
+/* file names. Same pill the prompt card's foot gives a path, and
+   nowrap for the reason .blk p code has it: a path that breaks
+   mid-token reads as two files. Keep every token under about 35
+   characters; the card clips, the page must not scroll sideways. */
+.brief code{
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 14px;
+  white-space: nowrap;
+  background: oklch(0 0 0 / 0.07);
+  color: var(--ink);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+.brief a{
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--ink-3);
+  /* the playbook address is printed as the link text, because a
+     participant has to TYPE it into the prompt: a link they can only
+     click is a stall. 44 characters with no space, so it may break
+     mid-word rather than push the card wider than the column */
+  overflow-wrap: anywhere;
+}
+.brief a:hover{ text-decoration-color: var(--ink); }
+/* the foot carries the one instruction that is the same on every
+   step: build the prompt with Claude, check it against the list, run it.
+   Never dim. */
+.brief__foot{
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 9px 14px;
+  border-top: 1.5px solid var(--ink);
+  font: 500 14px/1.5 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink);
+}
+.brief__foot .arrow{ color: var(--ink-2); }
+
+/* ── stacked form ──
+   Below 480px of CARD width the label stops fitting beside a
+   sentence and becomes a heading over its row. */
+@container (max-width: 480px){
+  .brief__row{
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+  .brief__lbl{ padding-top: 0; }
+}
+
+/* ─────────── sources (page-foot citation list) ─────────── */
+/* Moved here from lab02.css so every lab can use it. The canonical
+   citation format: numbered refs with publisher and a checked date. */
+.sources{
+  margin: 56px 0 0;
+  padding: 16px 18px;
+  background: var(--bg-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  display: grid; gap: 10px;
+}
+.sources .sources-label{
+  font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--ink-2); margin-bottom: 2px;
+}
+.sources ol{ margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.sources li{
+  font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px; line-height: 1.5; color: var(--ink-2);
+  display: grid; grid-template-columns: 24px 1fr; column-gap: 8px; align-items: baseline;
+}
+.sources li .n{ color: var(--ink-2); }
+.sources li a{ color: var(--ink); text-decoration: none; }
+.sources li a:hover{ text-decoration: underline; text-underline-offset: 3px; }
+.sources li .when{ color: var(--ink-2);   white-space: nowrap;   /* the ISO date must not split at its hyphens */
+}
