@@ -3232,6 +3232,82 @@ a.brand:hover .brand-icon{
   .circuit__cap{ margin-left: 58px; }
 }
 
+/* ─────────── pointers (things worth knowing) ───────────
+   The whole body of the afternoon page. Step 04 sets no task and
+   hands out no procedure: the participant builds an idea of their
+   own, and the page's only job is to give them a few things worth
+   knowing before they start.
+
+   The rows are DELIBERATELY unordered. No numbers, no line joining
+   one marker to the next, no arrowheads, and no sequencing words in
+   the copy ("first", "then", "once"). A reader has to be able to
+   take one row and ignore the other three. Anything that makes the
+   set read as a procedure is a bug in this component, not a
+   variation of it: that is the whole reason it exists rather than
+   .spine or .circuit.
+
+   Each row is a marker and one hint, and the marker is a square
+   rather than a dot so it never reads as a point on a route. The
+   list is a real <ul>, so the set is announced as a set, and the
+   markers are CSS pseudo-elements, so none of it reaches the
+   accessibility tree.
+   ───────────────────────────────────────────── */
+.pointers{
+  margin: 38px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  /* air is what makes four lines a page. Nothing separates the rows
+     but the gap: a rule between them would group them into a table
+     and a table has an order. */
+  gap: 30px;
+  max-width: 62ch;
+}
+.pointers li{
+  position: relative;
+  padding-left: 34px;
+  /* the page's only body copy, so a step up from the 17px floor
+     rather than at it */
+  font-size: 19px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+.pointers li::before{
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.56em;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  background: var(--rule-strong);
+}
+/* the clause that names what the hint is about. Weight and ink,
+   never hue: green is DONE, blue is NOW and magenta is the key
+   callout, and this page carries none of those states. */
+.pointers b{ color: var(--ink); font-weight: 600; }
+/* the key caps sit inside a 19px line, so they take a size of their
+   own; the global kbd rule is set for 17px copy */
+.pointers kbd{ font-size: 14px; }
+.pointers code{
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+  color: var(--ink);
+  white-space: nowrap;
+}
+/* the source marks: present on every hint, never louder than it */
+.pointers__ref{
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+@media (max-width: 560px){
+  .pointers{ gap: 24px; }
+  .pointers li{ font-size: 18px; padding-left: 28px; }
+}
+
 /* ─────────── miss cases ───────────
    The recovery line of a pass check, when more than one thing can
    go wrong. A participant reads .miss under time pressure, looking
