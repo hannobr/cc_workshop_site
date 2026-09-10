@@ -40,8 +40,7 @@ its name. Read the page's own markup and apply the matching contracts:
   progress checks in section 4 apply.
 - **`data-step` is a number**: a step page in the numbered sequence.
   `step-01` to `step-03` are concept pages; `step-04` is the afternoon page
-  (a hero, the `.spine` figure, then under a hairline the loop section with
-  the `.circuit` figure).
+  (a hero, one hint callout and three reference bands).
 - **`data-step="break"`**: see the paragraph below.
 - **No `data-step`**: a page outside the step sequence with no step nav.
   Today that is `index.html`, `cheat-sheet.html`, the six
@@ -164,8 +163,9 @@ spotted; they are never the primary pass.
 
 Look for these specifically. A screenshot only surfaces what you look for.
 Run them at 960 first, then confirm at 1440 and 390. The pages are the
-state since 2026-09-04: one track of four steps, one afternoon page with
-one figure, no build-step chrome anywhere live.
+state since 2026-09-09: one track of four steps, an afternoon page that is
+a hero, a hint and three reference bands, no build-step chrome anywhere
+live.
 
 - **Canon match.** Any component you added or changed must match its specimen
   in `design-system.html` (the full inventory per CLAUDE.md). Open the
@@ -187,34 +187,46 @@ one figure, no build-step chrome anywhere live.
   four step rows plus the break row and the bookend, and
   `document.documentElement.scrollWidth === 390`.
 - **The afternoon page.** `step-04.html` is a hero (eyebrow, H1, lede, no
-  meta-chip), the `.spine` figure directly under it, then under a hairline
-  the loop section (an H2, one lede line, the `.circuit` figure), then the
-  footer. Compare the spine with `design-system.html#spine`: four moves on
-  one hairline above 620px of figure width (Interview, Plan in the repo,
-  Critique, the Verify ring), names above the line in Archivo, one plain
-  sentence below each, the ring the only bold element, the tick in
-  `--accent` green the only hue, the figcaption at 16px, and the copy
-  identical to the specimen word for word. Below 620px the line turns
-  downward and nothing overlaps. Compare the circuit with
-  `design-system.html#circuit`: four stations on one closed line (interview
-  in plan mode, critique the plan yourself, set the finish line then look
-  at the proof, commit and clear for the next work item), the one-sentence
-  shortcut as a dashed branch into station 3, each station with a title, one plain
-  sentence and its key caps or command chips, stations 1 and 3 each carrying
-  a `.prompt-card` with its copy button wired, the figcaption at 16px, and
-  the copy identical to the specimen. The closed line is drawn by grid
-  line, not by content: `.circuit__loop`'s `grid-row` end is the station
-  count plus one (row 1 is the rule). Whenever the figure gains or loses a
-  station, measure that the back edge still lands on the last station's top
-  and that the dashed branch still rejoins at 3; a stale number overshoots
-  or falls short and no other check catches it. Any `.step-io`, `.blocks`, `.blk`,
-  `.brief`, `.spar`, plan-mode chip or pass check on this page is a
-  finding: the build-step template was retired on 2026-09-04 and lives only
-  in `archive/two-route-fork/` and as design-system specimens.
+  meta-chip), one `.callout--key` hint, three reference bands, then the
+  `.sources` aside and the footer. The bands, in order: "Plan mode, then
+  auto mode" (a title and two sentences, no rows: where to start, and when
+  not to bother), "Give Claude a way to check itself" (a sub line, a
+  `.source-quote` carrying a verbatim Boris Cherny quote with its link in
+  the attribution footer, then three unnumbered hairline rows naming a
+  channel and what it lets Claude do), and "Two moves worth knowing" (two
+  rows, each a name, one line and an `.input-chip--claude`). No accent
+  colour in any band: green is PASS, blue is NOW, and a band means
+  neither.
+
+  The quote is the one thing on this page that must be checked against
+  its source rather than against a screenshot. It is a real quotation
+  from a named living person: confirm the words on the page match the
+  linked post exactly, that the link resolves, and that the attribution
+  names the speaker. A rendered pass cannot approve a misquote.
+
+  Check them as bands: one H2 and one sub line each, hairline rows on
+  `--rule` where a band has rows, and nothing wider than its container at
+  390. The first band is deliberately short. Two sentences under a title
+  is the whole of it, so an empty-looking section there is the contract,
+  not a finding. The one container stack left on the page is keyed to BAND
+  width, not viewport width, so confirm it by narrowing the window rather
+  than by reading the media query: the self-check pairs stack at 620px of
+  band width.
+
+  Two things on this page are NOT findings, and each was reported as one
+  while an older contract stood: text a participant could copy, and an
+  `.input-chip` holding a line to type. Examples beside a build are
+  reference, and the page still sets no task. If a checklist you remember
+  says otherwise, it is the retired one.
+
+  Findings on sight, unchanged: a simulated session (a terminal mock, a
+  transcript, an invented question from Claude, a status bar), and any
+  `.step-io`, `.blocks`, `.blk`, `.brief`, `.spar`, plan-mode chip or pass
+  check, all retired on 2026-09-04 and living only in
+  `archive/two-route-fork/` and as design-system specimens.
 - **Prompt wrap, measured at 960 on every page that carries a
   `.prompt-card`.** Measure every `.pc-body` the page has, wherever it sits:
-  `step-03.html`, stations 1 and 3 of the circuit on `step-04.html`, the
-  `harness-*.html` reference pages and the `design-system.html` specimens
+  `step-03.html`, the `harness-*.html` reference pages and the `design-system.html` specimens
   all carry one or more. A `.prompt-card` is a shared primitive with a
   specimen, so its presence is never itself a finding; only a wrap
   mismatch is. Do not eyeball this. In the page, run (for each `.pc-body`

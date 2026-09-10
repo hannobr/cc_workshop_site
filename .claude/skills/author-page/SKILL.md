@@ -82,27 +82,76 @@ Page-local `<style>` holds layout only.
   step; the prompt card on a concept page is the dark object there.
 - No new accent colours. A further semantic state goes in `workshop.css`.
 
+## Reference bands
+
+A band is reference that sits beside a build, never a task of its own.
+It is a section with an H2 title, one sub line under it, and then
+whatever the reference needs: a run of hairline rows (a `--rule`
+border-top per row), a pair of examples, or nothing more than a second
+sentence. No card, no accent colour. Green is PASS and blue is NOW, and
+a band means neither. A band that has shrunk to two sentences is still a
+band; it does not get promoted back into rows to look substantial.
+
+A band earns its place when the reader is working and needs something to
+hand. What separates it from a figure is that a band holds prose the
+reader reads, not an argument drawn in boxes, so the figure rules do not
+apply to it. A number on a row means a real sequence and nothing else.
+
+Bands are page-local by design. Their CSS sits in the page's own
+`<style>` and the comment above it says why: `step-04.html` is the only
+page that carries them, so promoting them to `workshop.css` would ship an
+unused component to every page. Prefix the names (`.modes`,
+`.selfcheck`, `.tactics`) so they clear the shared and archived ones:
+`mobile-overrides.css` still styles the archived `.flow`, `.phase` and
+`.ba-*`, and every live page links it. The Stop hook checks that
+collision for you.
+
+Examples inside a band are examples. A quoted source, a command in an
+`.input-chip`, a line worth typing: all of it is fine, because a band is
+read while the participant works on an idea of their own and none of it
+is the task. What a band never does is set one.
+
+A band may quote an outside source, in the shared `.source-quote`
+primitive (specimen in `design-system.html`, live on `step-01.html` and
+`step-04.html`), never in a page-local blockquote. Quote a named person
+verbatim or not at all: exact words, `[...]` for anything trimmed, and
+the attribution footer links the page the words are actually on. Check
+the wording against that page before shipping, and again whenever the
+band is edited.
+
 ## The afternoon page
 
-`step-04.html` is a hero (eyebrow, H1, lede, no meta-chip) and two
-figures. Under the hero, `.spine`: the afternoon's workflow as one
-line, interview first, the plan in the repo, a critique, then Claude
-verifying its own work, with the fourth move drawn as a ring (build,
-run it, look, fix) that leaves to a green tick. Under a hairline, the
-loop section: an H2, one lede line, and `.circuit`: the four moves run
-once per work item (interview in plan mode, critique the plan
-yourself, set the finish line then look at the proof, commit and clear
-for the next work item), drawn as one closed line through four
-stations with the one-sentence shortcut as a dashed branch into 3.
-A work item is the plan's own unit, WI- and a number; the word "step"
-belongs to the workshop's four steps and never to the plan. Each station carries
-the title, one plain sentence, and what the participant presses or
-types as key caps or command chips. Moves 1 and 3 carry their prompts
-in a `.prompt-card` each (72-column wrap, at most one placeholder named
-in the foot, copy buttons wired by `workshop-nav.js`). Specimens:
-`design-system.html#spine` and `#circuit`. The words on both figures
-are the workflow's own: nothing a move does not say. Each figcaption
-sits at 16px.
+`step-04.html` is a hero (eyebrow, H1, lede, no meta-chip), one
+`.callout--key` hint, and three reference bands: which mode to start in,
+the self-check habit, and two moves worth knowing. Then the `.sources`
+aside and the footer.
+
+The page sets no task. The participant builds an idea of their own, so
+the page hands over one move (ask Claude to interview you about your
+idea, one question at a time) and everything under it is reference for
+while the build runs. The lede says so out loud: take what helps and
+leave the rest.
+
+**One rule survives from every rejected draft: no simulated session.** No
+terminal mock, no transcript, no invented question from Claude. The page
+never shows a screen.
+
+Two rules stood here until 2026-09-09 and are gone. "No prompt on the
+page, ever" and "no order" described a page that was a hero and four
+`.pointers` hints. The page now carries a quotation and two lines a
+participant can type, because on this page an example is reference beside
+a build and not a script for it. Do not restore either rule from
+an older draft of this file, and do not read them back in from
+`verify-page`, which was changed with it.
+
+Every claim in a band carries a bracketed number resolving to the
+`.sources` aside: grounded in Anthropic's own documentation, never in
+workshop folklore. Re-check the claims against the live docs and move the
+checked date when you touch them.
+
+`.pointers`, `.spine` and `.circuit` are design-system inventory. Any of
+them can serve a page that needs it; none of them is the afternoon page
+any more.
 
 The build-step template (the `.step-io` band, `.blocks` with three
 `.blk`, the `.brief` checklist card, the `.spar` prompt round, the
