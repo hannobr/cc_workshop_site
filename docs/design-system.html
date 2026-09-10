@@ -450,6 +450,7 @@
       <a href="#routemap">Route map</a>
       <a href="#spine">Spine</a>
       <a href="#circuit">Circuit</a>
+      <a href="#pointers">Pointers</a>
       <a href="#agenda">Agenda</a>
       <a href="#cards">Cards</a>
       <a href="#badges">Badges</a>
@@ -1789,7 +1790,7 @@ time and stop when you can write the intent down.</pre>
   <section class="block" id="spine">
     <header>
       <h2>Spine</h2>
-      <span class="meta">.spine · one per page · directly under .hero on step 04</span>
+      <span class="meta">.spine · retired from the live pages 2026-09-09 · inventory only</span>
     </header>
 
     <p class="spec-note">The first figure on the afternoon page. Since 2026-09-04 the
@@ -1873,7 +1874,7 @@ time and stop when you can write the intent down.</pre>
   <section class="block" id="circuit">
     <header>
       <h2>Circuit</h2>
-      <span class="meta">.circuit · one per page · under the spine on step 04</span>
+      <span class="meta">.circuit · retired from the live pages 2026-09-09 · inventory only</span>
     </header>
 
     <p class="spec-note">The second figure on the afternoon page. The <a href="#spine">spine</a>
@@ -2012,6 +2013,64 @@ No file under tests/ changes. Stop after 15 turns.</pre>
       The prompt inside keeps the prompt-card rules: 72-column wrap, one
       angle-bracket placeholder named in the foot. Requires subgrid (Chrome 117,
       Safari 16, Firefox 71).</p>
+  </section>
+
+  <!-- ─── POINTERS ─── -->
+  <section class="block" id="pointers">
+    <header>
+      <h2>Pointers</h2>
+      <span class="meta">.pointers &middot; one per page &middot; retired from the live pages 2026-09-09 &middot; inventory only</span>
+    </header>
+
+    <p class="spec-note">The body of the afternoon page for one day, 2026-09-09,
+      between <a href="#spine">spine</a> and the reference bands that carry step 04
+      now. Step 04 still sets no task: what changed is that the page carries
+      reference beside the build (a recommended workflow, a self-check habit, two
+      moves) rather than four hints alone. Spine, circuit and pointers are all
+      kept here as inventory and are on no live page.</p>
+
+    <p class="spec-note">The rows are <b>unordered on purpose</b>, and that is
+      the component's whole reason to exist: no numbers, no line joining one
+      marker to the next, no arrowheads, and no sequencing words in the copy
+      ("first", "then", "once"). A reader has to be able to take one row and
+      ignore the other three. The marker is a square rather than a dot so it
+      never reads as a point on a route, and nothing separates the rows but the
+      gap: a rule between them would group them into a table, and a table has an
+      order. Anything that makes the set read as a procedure is a bug in this
+      component, not a variation of it.</p>
+
+    <p class="sub-label">Four hints, each carrying its source mark</p>
+    <ul class="pointers" style="margin-top: 18px;">
+      <li>
+        <b><kbd>Shift</kbd> + <kbd>Tab</kbd> puts you in plan mode</b>, where
+        Claude reads and proposes and changes nothing on disk.
+        <span class="pointers__ref">[1]</span>
+      </li>
+      <li>
+        <b>Asking to be interviewed, one question at a time</b>, surfaces the
+        parts of your idea you had not thought about.
+        <span class="pointers__ref">[2]</span>
+      </li>
+      <li>
+        <b>Claude has no clock.</b> Say you have three hours.
+        <span class="pointers__ref">[2]</span>
+      </li>
+      <li>
+        <b>Something working can still get better.</b> There is always another
+        round. <span class="pointers__ref">[2]</span>
+      </li>
+    </ul>
+
+    <p class="spec-note" style="margin-top: 26px">The list is a real
+      <code class="mono">&lt;ul&gt;</code>, so the set is announced as a set, and
+      the markers are CSS pseudo-elements, so none of the drawing reaches the
+      accessibility tree. The copy sits at <b>19px</b>, a step above the 17px
+      body floor rather than at it, because these four lines are the only body
+      copy on the page. <code class="mono">&lt;b&gt;</code> names what each hint
+      is about; <b>no accent colour</b>, since green is DONE, blue is NOW and
+      magenta is the key callout, and this page carries none of those states.
+      The bracketed numbers resolve to the page's own
+      <a href="#instructions">sources</a> aside.</p>
   </section>
 
   <!-- ─── AGENDA ─── -->
@@ -2240,8 +2299,8 @@ No file under tests/ changes. Stop after 15 turns.</pre>
         <p>For a callout whose next step is a page to open rather than a
         command to type. Paper, a hairline and the callout's own magenta;
         never <code class="mono">.btn</code>, whose ink fill is the dark
-        object a build step keeps for its prompt card. Live on
-        <code class="mono">step-04.html</code>.</p>
+        object a build step keeps for its prompt card. No live use at
+        present: step 04's callout is a hint with no action column.</p>
       </div>
       <div class="callout__action">
         <a class="callout__go" href="#callout">The playbook <span aria-hidden="true">↗</span></a>
