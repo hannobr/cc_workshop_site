@@ -10,19 +10,20 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Public+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 
-<!-- Shared design system. DO NOT redefine tokens inline. Every step
-     page carries its topbar and hero layout in the style block
-     below; nothing else is page-local. -->
+<!-- Shared design system. DO NOT redefine tokens inline. -->
 <link rel="stylesheet" href="assets/css/workshop.css" />
 <link rel="stylesheet" href="assets/css/workshop-nav.css" />
 <link rel="stylesheet" href="assets/css/mobile-overrides.css" />
 
 <style>
   /* ────────────────────────────────────────────────
-     Page-specific layout only. Tokens, type, and the
-     shared primitives (.spine, .circuit, .prompt-card)
-     all live in workshop.css. Grep the shared sheets
-     before defining any new class name here.
+     Page-specific layout only. Tokens, type and the shared primitives
+     (.callout, .input-chip, .hint, .sources) live in workshop.css.
+     Grep the shared sheets before defining any new class name here.
+
+     The afternoon page carries no meta-chip and no .step-io band: it
+     sets no task, because the idea is the participant's own. What it
+     carries instead is reference beside that build, in three bands.
      ──────────────────────────────────────────────── */
 
   /* hero */
@@ -37,18 +38,118 @@
     line-height: 1.55;
     color: var(--ink-2);
   }
-  .lede b{ color: var(--ink); font-weight: 500; }
 
-  /* the loop section: layout only. A hairline and air between the
-     overview figure and the four moves, and the heading's own lede. */
-  .loop-section{
-    margin-top: 44px;
-    padding-top: 28px;
+  /* ─────────── the reference bands ───────────
+     Three sections sit under the hint, and none of them sets a task:
+     which mode to start in, the verify habit and the two moves. All
+     three are ported from archive/step-06.html, the retired workflow
+     page, and rewritten in this system's voice: no block quotes, the
+     citation is the numbered source at the foot. Page-local, and said
+     out loud: step 04 is the only page that carries reference material
+     beside a build. The names clear the archived .flow, .phase and
+     .ba-* that mobile-overrides.css still styles, and this page links
+     it. No accent colour anywhere below: green is PASS and blue is
+     NOW, and neither is what these bands mean.
+
+     The first band ran as four numbered rows until 2026-09-10. It is
+     two sentences now: a page whose reader builds an idea of their own
+     needs to know where to start, not a procedure to work through. */
+  .modes,
+  .selfcheck,
+  .tactics{
+    margin: 30px 0 0;
+    padding-top: 22px;
     border-top: 1px solid var(--rule);
   }
-  .loop-section h2{ margin: 0; }
-  .loop-section .lede{ margin-top: 8px; font-size: 17px; }
+  .modes__title,
+  .selfcheck__title,
+  .tactics__title{
+    margin: 0 0 4px;
+    font: 800 22px/1.2 "Archivo", "Public Sans", Arial, sans-serif;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  /* .selfcheck__lead sits between the quote and the rows and carries the
+     same type as a band sub: it is the second half of the same thought,
+     naming whose examples the rows are. */
+  .modes__sub,
+  .selfcheck__sub,
+  .selfcheck__lead,
+  .tactics__sub{
+    margin: 0 0 18px;
+    max-width: 62ch;
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--ink-2);
+  }
+  /* the modes band has no rows, so its sub is not a lead-in to anything
+     below it: it is the first of two sentences. Dropping the 18px lets
+     the closing .hint carry the same 16px it carries in the other two
+     bands, so all three closing hints are written the same way. */
+  .modes__sub{ margin-bottom: 0; }
 
+  /* the verify habit: a quote, then one row per channel. The rows are
+     alternatives and not a sequence, so they carry no numbers and sit in
+     a <ul>: a reader picks the one their own idea can be checked with.
+     The name holds a fixed track so the three read as a column. */
+  .selfcheck{ container-type: inline-size; }
+  .selfcheck__list{ list-style: none; margin: 0; padding: 0; }
+  .selfcheck__row{
+    display: grid;
+    grid-template-columns: 190px minmax(0, 1fr);
+    gap: 4px 16px;
+    align-items: baseline;
+    padding: 14px 0;
+    border-top: 1px solid var(--rule);
+  }
+  .selfcheck__name{
+    font: 700 17px/1.4 "Public Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+  }
+  .selfcheck__what{
+    max-width: 56ch;
+    font-size: 16.5px;
+    line-height: 1.5;
+    color: var(--ink-2);
+  }
+  /* the quote follows the sub directly. The primitive's own 22px top
+     margin collapses against the sub's 18px bottom to 22px, which is
+     4px more than the gap a sub carries to whatever follows it in the
+     other two bands; 4px here collapses to the sub's 18px instead, so
+     all three bands open the same way. Scoped to this band and never to
+     the primitive: .source-quote keeps its own spacing everywhere else
+     it is used. Measured, not guessed: 18px above, 22px below. */
+  .selfcheck .source-quote{ margin: 4px 0 22px; }
+  /* stacked below 560px of BAND width, not viewport width: the rail
+     undocks at 940, so a 939px viewport hands this band a wider column
+     than 960 does. */
+  @container (max-width: 560px){
+    .selfcheck__row{ grid-template-columns: minmax(0, 1fr); }
+  }
+
+  /* ─────────── the two moves ───────────
+     Not a task either: these two are worth knowing whatever you build.
+     One row each, name over one line over the chip you type. Page-local
+     because nothing else in the workshop presents optional moves this
+     way. */
+  .tactics__list{ list-style: none; margin: 0; padding: 0; }
+  .tactics__list > li{
+    padding: 16px 0 18px;
+    border-top: 1px solid var(--rule);
+  }
+  .tactic__name{
+    display: block;
+    font: 700 17px/1.3 "Public Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+  }
+  .tactic__what{
+    display: block;
+    margin: 6px 0 12px;
+    max-width: 62ch;
+    font-size: 16.5px;
+    line-height: 1.5;
+    color: var(--ink-2);
+  }
 </style>
 </head>
 <!-- data-step carries the display number read by workshop-nav.js.
@@ -117,178 +218,116 @@
   </div>
 
   <!-- HERO: eyebrow + H1 + lede. No meta-chip: the build has no
-       estimate, it takes the rest of the afternoon. The lede is the
-       workflow in one sentence; the figure under the hero draws it. -->
+       estimate, it takes the rest of the afternoon. The lede says out
+       loud that the bands below are reference and not a checklist. -->
   <header class="hero">
-    <p class="eyebrow"><span class="num">04</span> &nbsp;·&nbsp; Build</p>
+    <p class="eyebrow"><span class="num">04</span> &nbsp;&middot;&nbsp; Build</p>
     <h1>Build your own idea.</h1>
     <p class="lede">
-      One workflow for the afternoon: interview first, the plan
-      persisted in the repo, a critique of that plan, then Claude
-      verifying its own work in a browser or a simulator.
+      Build what you came to build, at your own pace. Everything below is
+      reference: take what helps and leave the rest.
     </p>
   </header>
 
-  <!-- THE SPINE (workshop.css, specimen: design-system.html#spine).
-       The workflow as one line: interview, the plan in the repo,
-       critique, then the ring, where Claude builds, runs what it
-       built, looks and fixes until it works. The dots, the line, the
-       arrowheads and the tick are decorative and aria-hidden; the
-       figcaption is the text alternative. -->
-  <figure class="spine" id="spine">
-    <ol class="spine__track">
+  <!-- THE WAY IN: one line, not a task. The idea is the participant's
+       own, so the only move worth handing over is the first one, and
+       that is all the page asks for. The bands under it are reference
+       for while the build runs. -->
+  <aside class="callout callout--key">
+    <div class="callout__body">
+      <p class="callout__label"><i></i>Hint</p>
+      <h4>Begin by asking Claude Code to interview you about your idea, one question at a time.</h4>
+    </div>
+  </aside>
 
-      <li class="spine__node">
-        <span class="spine__dot" aria-hidden="true"></span>
-        <span class="spine__name">Interview</span>
-        <span class="spine__text">Claude interviews you first, before it writes anything.</span>
-      </li>
-
-      <li class="spine__node">
-        <span class="spine__dot" aria-hidden="true"></span>
-        <span class="spine__name">Plan in the repo</span>
-        <span class="spine__text">The plan is a file, committed to the repo. Not a chat message.</span>
-      </li>
-
-      <li class="spine__node">
-        <span class="spine__dot" aria-hidden="true"></span>
-        <span class="spine__name">Critique</span>
-        <span class="spine__text">Read the plan critically and fix it before anything is built.</span>
-      </li>
-
-      <li class="spine__node spine__node--loop">
-        <span class="spine__dot" aria-hidden="true"></span>
-        <span class="spine__ring">
-          <span class="spine__verb">Verify</span>
-          <span class="spine__step spine__step--build">build</span>
-          <span class="spine__step spine__step--run">run it</span>
-          <span class="spine__step spine__step--look">look</span>
-          <span class="spine__step spine__step--fix">fix</span>
-          <i aria-hidden="true"></i><i aria-hidden="true"></i><i aria-hidden="true"></i><i aria-hidden="true"></i>
-        </span>
-        <span class="spine__text">You set the finish line with <code>/goal</code>, then Claude runs what it built and fixes what it sees until that check is met: in a browser through the <code>playwright-cli</code> skill, or in the Xcode simulator.</span>
-      </li>
-
-      <li class="spine__node spine__node--end">
-        <span class="spine__tick" aria-hidden="true"></span>
-        <span class="spine__name">works</span>
-      </li>
-
-    </ol>
-    <figcaption class="spine__cap"><b>Nothing is built before there is a plan: interviewed, written to the repo, critiqued.</b> Then the checking is Claude's own: you state the finish line with <code>/goal</code>, and Claude runs the result in a browser or a simulator and fixes it until a separate check says it is met.</figcaption>
-  </figure>
-
-  <!-- THE LOOP (workshop.css .circuit, specimen: design-system.html#circuit).
-       Four moves, once per work item of the plan, drawn as one closed line through four
-       stations. The shortcut is the dashed branch. Moves 1 and 3 carry
-       their prompts in the system's .prompt-card, copy buttons wired by
-       workshop-nav.js. The drawn pieces are aria-hidden; the figcaption
-       is the text alternative. -->
-  <section class="loop-section" aria-labelledby="loop-title">
-    <h2 id="loop-title">The loop, four moves.</h2>
-    <p class="lede">Run it once per work item of your plan. Each move names what you press or type.</p>
-
-    <figure class="circuit" id="circuit">
-      <div class="circuit__track" role="list">
-        <span class="circuit__loop" aria-hidden="true"><span class="circuit__back">next work item</span></span>
-        <span class="circuit__branch" aria-hidden="true"></span>
-        <span class="circuit__in" aria-hidden="true"></span>
-        <span class="circuit__up" aria-hidden="true"></span>
-
-        <span class="circuit__rule"><b>Can you describe the change in one sentence?</b> Then skip 1 and 2 and start at 3, in auto mode.</span>
-
-        <div class="circuit__move circuit__move--prompt" role="listitem">
-          <span class="circuit__n">1</span>
-          <span class="circuit__head">Interview in plan mode</span>
-          <span class="circuit__mech">
-            <span class="circuit__keys"><kbd>Shift</kbd><span class="plus">+</span><kbd>Tab</kbd></span>
-            <span class="circuit__note">plan mode, then this one prompt</span>
-          </span>
-          <div class="prompt-card circuit__card">
-            <div class="pc-head">
-              <div class="meta">
-                <span class="badge"><i></i>THE ONE PROMPT</span>
-                <span data-count>… lines · … chars</span>
-              </div>
-              <button class="copy-btn" aria-label="Copy prompt">
-                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                  <rect x="4.5" y="4.5" width="8" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
-                  <path d="M2.5 11V3.5A1.5 1.5 0 0 1 4 2h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                </svg>
-                <span class="label">Copy prompt</span>
-              </button>
-            </div>
-            <pre class="pc-body" data-prompt aria-label="Interview prompt">I want to build &lt;your idea&gt;. Interview me one question at a time
-with the AskUserQuestion tool until you could write an implementation
-plan for a coding agent without guessing. Split the work into work
-items, called WI- and a number, starting at WI-1. Make each work item a
-thin vertical slice, small enough for a subagent to execute.
-Then write docs/plan.md with the files, the order, and how each work
-item is proven. No code.</pre>
-            <div class="pc-foot">
-              <span class="arrow">▲</span>
-              <span>Replace <code>&lt;your idea&gt;</code> with what you are building, then paste.</span>
-            </div>
-          </div>
-          <span class="circuit__body">Answer with letters and numbers. "You decide" is allowed only on things you would not mind being surprised by.</span>
-        </div>
-
-        <div class="circuit__move" role="listitem">
-          <span class="circuit__n">2</span>
-          <span class="circuit__head">Critique the plan yourself</span>
-          <span class="circuit__mech">
-            <span class="circuit__keys"><kbd>Ctrl</kbd><span class="plus">+</span><kbd>G</kbd></span>
-            <span class="circuit__note">opens the plan in your editor</span>
-          </span>
-          <span class="circuit__body">Read it. Send it back once with what is wrong. You are the critic here, not a subagent: plan-review subagents were measured and found no gain. Approve with <b>Yes, and use auto mode</b>. That approval does not start the build: the prompt in move 1 asked for no code, so Claude writes <code>docs/plan.md</code> and stops. Auto mode is the edit mode for the rest of the session.</span>
-        </div>
-
-        <div class="circuit__move circuit__move--prompt" role="listitem">
-          <span class="circuit__n">3</span>
-          <span class="circuit__head">Set the finish line, then look</span>
-          <span class="circuit__mech">
-            <span class="circuit__cmd"><i>›</i>/goal</span>
-            <span class="circuit__note">one work item of the plan, then this prompt</span>
-          </span>
-          <div class="prompt-card circuit__card">
-            <div class="pc-head">
-              <div class="meta">
-                <span class="badge"><i></i>THE GOAL</span>
-                <span data-count>… lines · … chars</span>
-              </div>
-              <button class="copy-btn" aria-label="Copy goal">
-                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                  <rect x="4.5" y="4.5" width="8" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
-                  <path d="M2.5 11V3.5A1.5 1.5 0 0 1 4 2h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                </svg>
-                <span class="label">Copy prompt</span>
-              </button>
-            </div>
-            <pre class="pc-body" data-prompt aria-label="Goal prompt">/goal WI-1 of docs/plan.md is built and its proof passed: run the
-check the plan names for this work item and show the output, for example the
-test command exiting 0 or a playwright-cli screenshot of the screen.
-No file under tests/ changes. Stop after 15 turns.</pre>
-            <div class="pc-foot">
-              <span class="arrow">▲</span>
-              <span>Paste it as it is for work item 1. Next time round, change the work item number.</span>
-            </div>
-          </div>
-          <span class="circuit__body">The plan ends every work item with how it is proven. This move hands that proof to Claude as the goal. Claude builds, runs the check and fixes until a second, smaller model reading the session agrees the goal is met, or the turn cap stops it. When it stops, look at the proof yourself: the command and its output, or the screenshot. "Tests pass" without the output is not evidence.</span>
-        </div>
-
-        <div class="circuit__move" role="listitem">
-          <span class="circuit__n">4</span>
-          <span class="circuit__head">Commit, clear, then the next work item</span>
-          <span class="circuit__mech">
-            <span class="circuit__cmd"><i>›</i>/clear</span>
-            <span class="circuit__note">next work item, back to 3</span>
-          </span>
-          <span class="circuit__body">Commit the work yourself, with a message that starts with the work item number. Then <code>/clear</code>: work item 2 starts with an empty context window, and a new session begins with the last commits in view. That log is the record of what was built. <code>CLAUDE.md</code> is for what to do differently: when Claude gets the same thing wrong twice, one line there, nothing else today. Paste the move 3 prompt again with the work item number changed, and keep going until the plan is done.</span>
-        </div>
-      </div>
-      <figcaption class="circuit__cap">One work item of the plan per loop: build it, look at the proof, commit it with the work item number, then clear and paste move 3 again with the next work item number. Back to 1 only for a different piece of work. A change you can describe in one sentence starts at 3.</figcaption>
-    </figure>
+  <!-- WHICH MODE TO START IN + VERIFY HABIT: ported from
+       archive/step-06.html, the retired workflow page, and rewritten in
+       this system's voice. The first band carried Anthropic's four
+       phases (explore, plan, implement, commit) until 2026-09-10, when
+       it came down to the two lines a participant needs before
+       starting: where to begin, and when not to bother. Both were
+       checked against the live docs that day. The exact Shift+Tab cycle
+       is deliberately not spelled out, because the mode list has grown
+       past the three the archived page named and the status bar is the
+       durable answer. This is reference, not task. -->
+  <section class="modes" aria-labelledby="modes-title">
+    <h2 class="modes__title" id="modes-title">Plan mode, then auto mode</h2>
+    <p class="modes__sub">Start in plan mode, then run the plan in auto mode. <span class="keys"><kbd>Shift</kbd>+<kbd>Tab</kbd></span> switches modes and the status bar names the one you are in [1].</p>
+    <p class="hint" style="margin: 16px 0 0;">You do not have to plan everything. If the change is small, ask Claude for it directly in auto mode [3].</p>
   </section>
+
+  <!-- THE SELF-CHECK HABIT: the quotation and the three rows under it
+       are Cherny's, and the lead line above the rows says so, because a
+       reader who meets the rows first reads them as this workshop's
+       list. The closing hint is the one line about this room: the
+       machines here have no Chrome extension, so it names what they do
+       have. That sentence carries no source number on purpose. It is a
+       fact about the room and no document states it. -->
+  <section class="selfcheck" aria-labelledby="selfcheck-title">
+    <h2 class="selfcheck__title" id="selfcheck-title">Give Claude a way to check itself</h2>
+    <p class="selfcheck__sub">Without a check Claude can run on its own, you are the only feedback loop, and every mistake waits for your attention [3].</p>
+    <blockquote class="source-quote">
+      <p>"The most important tip for using Claude Code is: give Claude a way to verify its output. Once you do that, Claude will iterate until the result is great."</p>
+      <footer class="source-quote__attr"><span class="lbl">Source</span>
+        <a href="https://x.com/bcherny/status/2038454347156398333" target="_blank" rel="noopener">B. Cherny, creator of Claude Code, on X, 30 March 2026</a>
+      </footer>
+    </blockquote>
+    <p class="selfcheck__lead">Boris Cherny gives three examples of such a check [4]. Your idea may need a different one.</p>
+    <ul class="selfcheck__list">
+      <li class="selfcheck__row">
+        <span class="selfcheck__name">Unit tests</span>
+        <span class="selfcheck__what">Claude runs them, reads what failed and goes again, without waiting for you to look.</span>
+      </li>
+      <li class="selfcheck__row">
+        <span class="selfcheck__name">The Chrome extension</span>
+        <span class="selfcheck__what">Claude opens the page it just built, looks at the result and fixes what does not match.</span>
+      </li>
+      <li class="selfcheck__row">
+        <span class="selfcheck__name">A device simulator</span>
+        <span class="selfcheck__what">Claude taps the flow through on a phone and sees where it breaks.</span>
+      </li>
+    </ul>
+    <p class="hint" style="margin: 16px 0 0;">The Chrome extension is not installed on the workshop machines. The <code>playwright-cli</code> skill is, and it does the same job: Claude opens the page it built, takes a screenshot and reads the result back. Give Claude one check it can run without you.</p>
+  </section>
+
+  <!-- TWO MOVES: reference like the two bands above it. Each one is a
+       line you type when the session gives you a reason to. -->
+  <section class="tactics" aria-labelledby="tactics-title">
+    <h2 class="tactics__title" id="tactics-title">Two moves worth knowing</h2>
+    <p class="tactics__sub">Neither is on a schedule. Reach for them when the session gives you a reason to.</p>
+    <ol class="tactics__list">
+      <li>
+        <span class="tactic__name">Clear between tasks</span>
+        <span class="tactic__what">A session carries everything you did earlier, and all of it stays in the context window you watched on step 03. When you switch to something unrelated, clear it: what is left over fills the window and can pull the next answer off course [3].</span>
+        <div class="input-chip input-chip--claude">
+          <span class="caret">&rsaquo;</span>
+          <span class="cmd">/clear</span>
+          <span class="kbd">then <kbd>Return &#8629;</kbd></span>
+        </div>
+      </li>
+      <li>
+        <span class="tactic__name">Send the review to a subagent</span>
+        <span class="tactic__what">A subagent starts in a fresh, isolated context window [2]. It does not see your conversation, so it reads your work the way someone who never sat through the session reads it, and it is not defending a choice it made an hour ago. Name what it reads: the plan, the last change, one file.</span>
+        <div class="input-chip input-chip--claude">
+          <span class="caret">&rsaquo;</span>
+          <span class="cmd">Launch a subagent for an adversarial review of the plan.</span>
+          <span class="kbd">then <kbd>Return &#8629;</kbd></span>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- SOURCES: numbered refs with publisher and checked date. Every
+       claim in the bands above carries its number. -->
+  <aside class="sources" aria-label="Sources">
+    <p class="sources-label">Sources</p>
+    <ol>
+      <li><span class="n">[1]</span><span><a href="https://code.claude.com/docs/en/permission-modes">code.claude.com &middot; Choose a permission mode</a> &middot; Anthropic <span class="when">&middot; checked 2026-09-09</span></span></li>
+      <li><span class="n">[2]</span><span><a href="https://code.claude.com/docs/en/sub-agents">code.claude.com &middot; Create custom subagents</a> &middot; Anthropic <span class="when">&middot; checked 2026-09-09</span></span></li>
+      <li><span class="n">[3]</span><span><a href="https://code.claude.com/docs/en/best-practices">code.claude.com &middot; Best practices for Claude Code</a> &middot; Anthropic <span class="when">&middot; checked 2026-09-09</span></span></li>
+      <li><span class="n">[4]</span><span><a href="https://x.com/bcherny/status/2004711722926616680">x.com &middot; Three ways to give Claude a way to verify its output</a> &middot; B. Cherny <span class="when">&middot; checked 2026-09-10</span></span></li>
+    </ol>
+  </aside>
 
   <!-- FOOTER -->
   <p class="footer-help"><b>Stuck?</b> Raise a hand, a facilitator will help.</p>
