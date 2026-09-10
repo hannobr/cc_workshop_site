@@ -71,8 +71,11 @@
   }
 
   /* ─────────── the run sheet ───────────
-     One list: the morning, 01 to 03, the break as a row of its own,
-     then the afternoon build. workshop-nav.css draws .lab-card as a
+     One list: the basics, 01 to 03, the break as a row of its own,
+     then the build. The two group rows name a half of the day by what
+     happens in it, never by a time of day: the workshop is run at more
+     than one hour, and "the afternoon" was wrong whenever it was not.
+     workshop-nav.css draws .lab-card as a
      bordered card and .labs in two columns; both are undone here,
      because this is a list under a subhead and there is only one of
      it. The .lab-card and .lab-toc class names stay because
@@ -413,8 +416,8 @@
   <section class="door labs-section" id="workshop" aria-labelledby="door-workshop">
     <h2 class="door__title" id="door-workshop">The workshop</h2>
     <p class="door__sub">
-      Three steps everyone does, then a break. After it the afternoon
-      is one build on an idea of your own.
+      Three steps everyone does, then a break. After it, one build on
+      an idea of your own.
     </p>
 
     <!-- The opening slide. Facilitator's, not a step: it is the three
@@ -422,7 +425,7 @@
     <p class="present"><a href="opening.html">Opening slide: context, goal, scope <span class="arrow" aria-hidden="true">&rarr;</span></a></p>
 
     <section class="lab-card runsheet" data-lab="01" aria-labelledby="door-workshop">
-      <ol class="lab-toc rows" aria-label="The morning, the break and the afternoon build">
+      <ol class="lab-toc rows" aria-label="The basics, the break and the build">
 
         <li><p class="rows__group">The basics<span class="who">Everyone · 15 min</span></p></li>
 
@@ -448,7 +451,7 @@
           <span class="o">A group break to discuss the next steps.</span>
           <span class="s"></span></a></li>
 
-        <li><p class="rows__group">The afternoon<span class="who">Everyone · your own idea</span></p></li>
+        <li><p class="rows__group">The build<span class="who">Everyone · your own idea</span></p></li>
 
         <li><a href="step-04.html" data-slug="step-04.html" data-min="">
           <span class="d"></span>
